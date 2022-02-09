@@ -1,0 +1,433 @@
+# Research Question 3 {#rq-3}
+
+__How can we incorporate climate metrics into a marine reserve design workflow?__
+
+To answer this, we basically do what we did in [Research Question 2](#rq-2), but for the other two approaches: "feature" and "penalty" approaches.
+
+The "feature" approach treats the climate metrics as features, with their own representation targets (i.e. conserving 40% of low exposure/high retention areas). The "penalty" approach treats the climate metrics as linear penalties, penalizing solutions that select areas of high exposure/low retention. Again, we only show results forced under SSP 5-8.5.
+
+We, however, don't compare the results of the spatial designs created using the same approach. Instead, we compare them across approaches. To more effectively compare the approaches, we created __low-regret areas__, which are areas that are selected as climate refugia regardless of the climate metric used (for each approach). This is explored in greater detail in the [next section](#rq-4) where we aim to answer the differences between climate-smart strategies (metrics + approaches).
+
+In this section, we focus on creating the actual climate-smart spatial designs for "feature" and "percentile" approach.
+
+## Climate-smart spatial designs under the "feature" approach
+
+### Climate-smart spatial design (Rate of Climate Warming; "Feature" Approach)
+```{r include = FALSE}
+# Create the climate layer.
+ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+features <- append(features, "climate_layer") # add "climate_layer" to features
+
+out_sf <- cbind(aqua_sf, ClimateFeature, cost)
+```
+We first create the spatial planning problem:
+```{r}
+# using Effective 40% Protection. Since we only considered the climate_layer as 1s if they are under (or above for phos and o2os) the 50th percentile (0.5), we multiply it by 0.8 to get an effective protection of 40%.
+targets <- features %>% as_tibble() %>% 
+  setNames(., "Species") %>% 
+  add_column(target = 0.4) %>% 
+  mutate(target = ifelse(Species == "climate_layer", 0.8, 0.4))
+
+p6 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(targets$target) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+```
+We then solve this problem:
+```{r}
+s6 <- prioritizr::solve(p6)
+```
+```{r echo = FALSE}
+s6_plot <- s6 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol6 <- fSpatPlan_PlotSolution(s6_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Feature, SSP 5-8.5"))
+```
+
+### Climate-smart spatial design (Rate of Ocean Acidification; "Feature" Approach)
+```{r include = FALSE}
+# Create climate layer
+ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = roc_phos_SSP585)
+
+# list of features should be the same as above, so no need to re-do the code.
+
+out_sf <- cbind(aqua_sf, ClimateFeature, cost)
+
+# targets should also be the same as above as well
+```
+We create the spatial planning problem:
+```{r}
+p7 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(targets$target) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+```
+We solve the problem:
+```{r}
+s7 <- prioritizr::solve(p7)
+```
+```{r echo = FALSE}
+s7_plot <- s7 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol7 <- fSpatPlan_PlotSolution(s7_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Feature, SSP 5-8.5"))
+```
+
+### Climate-smart spatial design (Rate of Declining Oxygen Concentration; "Feature" Approach)
+```{r include = FALSE}
+# Create climate layer
+ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = roc_o2os_SSP585)
+
+# list of features as well as the targets should be the same as above
+
+out_sf <- cbind(aqua_sf, ClimateFeature, cost)
+```
+We create the spatial planning problem:
+```{r}
+p8 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(targets$target) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+```
+Then we solve it:
+```{r}
+s8 <- prioritizr::solve(p8)
+```
+```{r echo = FALSE}
+s8_plot <- s8 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol8 <- fSpatPlan_PlotSolution(s8_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Feature, SSP 5-8.5"))
+```
+
+### Climate-smart spatial design (Climate Velocity; "Feature" Approach)
+```{r include = FALSE}
+# Create climate layer
+ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = velocity_SSP585)
+
+# list of features and targets should still be the same.
+out_sf <- cbind(aqua_sf, ClimateFeature, cost)
+```
+We then create the spatial planning problem:
+```{r}
+p9 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(targets$target) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+```
+Then solve it:
+``` {r}
+s9 <- prioritizr::solve(p9)
+```
+```{r echo = FALSE}
+s9_plot <- s9 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol9 <- fSpatPlan_PlotSolution(s9_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Feature, SSP 5-8.5"))
+```
+```{r include = FALSE}
+# We also solve for the summaries of the feature climate-smart spatial designs here but we don't show it until the end.
+
+# Feature representation
+list <- c("feature_tos_585", "feature_phos_585", "feature_o2os_585", "feature_velocity_585")
+problem_list <- list(p6, p7, p8, p9)
+solution_list <- list(s6, s7, s8, s9)
+for (i in 1:length(list)) {
+  tmp_df <- represent_feature(problem_list[[i]], solution_list[[i]], list[i])
+  feat_rep <- left_join(tmp_df, feat_rep)
+}
+
+# Computing summaries for all "feature" approach designs
+run_list <- c("feature_tos_585", "feature_phos_585", "feature_o2os_585",
+              "feature_velocity_585")
+solution_list <- list(s6, s7, s8, s9)
+emptyList <- list()
+for (i in 1:length(run_list)) {
+  emptyList[[i]] <- compute_summary(solution_list[[i]], total_area, PU_size, run_list[i], Cost = "Cost_squish")
+}
+featureSummary <- do.call(rbind, emptyList)
+
+# Get the mean rate of climate warming for all designs
+warming <- get_ClimateSummary(solution_list, climate_layer = roc_tos_SSP585, metric = "tos", col_scenario = "585", col_approach = "feature", col_run = run_list) %>% 
+  left_join(., featureSummary)
+
+# Get the mean rate of ocean acidification for all designs
+acidification <- get_ClimateSummary(solution_list, climate_layer = roc_phos_SSP585, metric = "phos", col_scenario = "585", col_approach = "feature", col_run = run_list) %>% 
+  left_join(., warming, by = c("run", "scenario", "approach"))
+
+# Get the mean rate of declining oxygen concentration for all designs
+oxygen <- get_ClimateSummary(solution_list, climate_layer = roc_o2os_SSP585, metric = "o2os", col_scenario = "585", col_approach = "feature", col_run = run_list) %>% 
+  left_join(., acidification, by = c("run", "scenario", "approach"))
+
+# Get the mean climate velocity for all designs, then bind it with the summary
+summary <- get_ClimateSummary(solution_list, climate_layer = velocity_SSP585, metric = "velocity", col_scenario = "585", col_approach = "feature", col_run = run_list) %>% 
+  left_join(., oxygen, by = c("run", "scenario", "approach")) %>% 
+  rbind(., summary)
+
+## Create Low-Regret Areas
+solution_list <- list(s6, s7, s8, s9)
+col_names <- c("feature_tos_585", "feature_phos_585", "feature_o2os_585", "feature_velocity_585")
+LowRegret_Feature <- create_LowRegretSf(solution_list, col_names, PUs)
+
+## Create Low-Regret Area Summary
+LowRegret_SummaryFeature <- compute_summary(LowRegret_Feature, total_area, PU_size, "low_regret", Cost = "Cost_squish") %>% 
+  mutate(approach = "feature", scenario = "585")
+```
+For now, just check Cohen's Kappa Correlation Matrix. All other summaries will be reported at the end of this section.
+``` {r include = FALSE}
+list <- c("uninformed", "feature_tos_585", "feature_phos_585", "feature_o2os_585", "feature_velocity_585")
+object_list <- list() # empty list
+solution_list <- list(s1, s6, s7, s8, s9)
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], list[i])
+  object_list[[i]] <- obj
+}
+```
+```{r message = FALSE, echo = FALSE}
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+```
+
+## Climate-smart spatial designs under the "penalty" approach
+The penalty scaling for each of the designs is different. It's calculated using the following equation:
+
+$scaling_{ClimateMetric}$ $= \frac{(Cost_{Max} - Cost_{Min})}{(ClimateMetric_{Max} - ClimateMetric_{Min})} \cdot (Scaling_{percent})$
+
+### Climate-smart spatial design (Rate of Climate Warming; "Penalty" Approach)
+``` {r include = FALSE}
+# Create climate layer
+scaling_PenaltyWarming <- create_Scaling(cost$Cost_squish, roc_tos_SSP585$slpTrends, "tos")
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+out_sf <- cbind(aqua_sf, roc_tos_SSP585, cost)
+scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+```
+Set up the spatial planning problem:
+```{r}
+p10 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.4) %>% # target is 40% for all features.
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+  add_linear_penalties(scaling, data = "slpTrends")
+```
+Solve problem:
+```{r}
+s10 <- prioritizr::solve(p10)
+```
+```{r echo = FALSE}
+s10_plot <- s10 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol10 <- fSpatPlan_PlotSolution(s10_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Penalty, SSP 5-8.5"))
+```
+
+### Climate-smart spatial design (Rate of Ocean Acidification; "Penalty" Approach)
+```{r include = FALSE}
+# Create climate layer
+scaling_PenaltyAcidification <- create_Scaling(cost$Cost_squish, roc_phos_SSP585$slpTrends, "phos")
+
+# feature list should be the same as above.
+
+out_sf <- cbind(aqua_sf, roc_phos_SSP585, cost)
+scaling <- scaling_PenaltyAcidification %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+```
+We create the problem:
+```{r}
+p11 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.4) %>% # target is 40% for all features.
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+  add_linear_penalties(scaling, data = "slpTrends")
+```
+Then solve it:
+```{r}
+s11 <- prioritizr::solve(p11)
+```
+```{r echo = FALSE}
+s11_plot <- s11 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol11 <- fSpatPlan_PlotSolution(s11_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Penalty, SSP 5-8.5"))
+```
+
+### Climate-smart spatial design (Rate of Declining Oxygen Concentration; "Penalty" Approach)
+```{r include = FALSE}
+# Create climate layer
+scaling_PenaltyOxygen <- create_Scaling(cost$Cost_squish, roc_o2os_SSP585$slpTrends, "o2os")
+
+# feature list should still be the same as above
+
+out_sf <- cbind(aqua_sf, roc_o2os_SSP585, cost)
+scaling <- scaling_PenaltyOxygen %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+```
+We create the problem:
+```{r}
+p12 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.4) %>% # target is 40% for all features.
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+  add_linear_penalties(scaling, data = "slpTrends")
+```
+We solve it:
+```{r}
+s12 <- prioritizr::solve(p12)
+```
+```{r include = FALSE}
+s12_plot <- s12 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol12 <- fSpatPlan_PlotSolution(s12_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Penalty, SSP 5-8.5"))
+```
+
+### Cliamte-smart spatial design (Climate velocity; "Penalty" Approach)
+```{r include = FALSE}
+# Create climate layer
+scaling_PenaltyVelocity <- create_Scaling(cost$Cost_squish, velocity_SSP585$voccMag, "velocity")
+
+# feature list should be the same as above
+
+out_sf <- cbind(aqua_sf, velocity_SSP585, cost)
+scaling <- scaling_PenaltyVelocity %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+```
+Create the spatial planning problem:
+```{r}
+p13 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.4) %>% # target is 40% for all features.
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+  add_linear_penalties(scaling, data = "voccMag")
+```
+Solve it:
+```{r}
+s13 <- prioritizr::solve(p13)
+```
+```{r echo = FALSE}
+s13_plot <- s13 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol13 <- fSpatPlan_PlotSolution(s13_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Penalty, SSP 5-8.5"))
+```
+```{r include = FALSE}
+# Calculate summaries
+
+# Feature representation
+list <- c("penalty_tos_585", "penalty_phos_585", "penalty_o2os_585", "penalty_velocity_585")
+problem_list <- list(p10, p11, p12, p13)
+solution_list <- list(s10, s11, s12, s13)
+for (i in 1:length(list)) {
+  tmp_df <- represent_feature(problem_list[[i]], solution_list[[i]], list[i])
+  feat_rep <- left_join(tmp_df, feat_rep)
+}
+
+# Summaries
+# Computing summaries for all "penalty" approach designs
+run_list <- c("penalty_tos_585", "penalty_phos_585", "penalty_o2os_585",
+              "penalty_velocity_585")
+solution_list <- list(s10, s11, s12, s13)
+emptyList <- list()
+for (i in 1:length(run_list)) {
+  emptyList[[i]] <- compute_summary(solution_list[[i]], total_area, PU_size, run_list[i], Cost = "Cost_squish")
+}
+penaltySummary <- do.call(rbind, emptyList)
+
+# Get the mean rate of climate warming for all designs
+warming <- get_ClimateSummary(solution_list, climate_layer = roc_tos_SSP585, metric = "tos", col_scenario = "585", col_approach = "penalty", col_run = run_list) %>% 
+  left_join(., penaltySummary)
+
+# Get the mean rate of ocean acidification for all designs
+acidification <- get_ClimateSummary(solution_list, climate_layer = roc_phos_SSP585, metric = "phos", col_scenario = "585", col_approach = "penalty", col_run = run_list) %>% 
+  left_join(., warming, by = c("run", "scenario", "approach"))
+
+# Get the mean rate of declining oxygen concentration for all designs
+oxygen <- get_ClimateSummary(solution_list, climate_layer = roc_o2os_SSP585, metric = "o2os", col_scenario = "585", col_approach = "penalty", col_run = run_list) %>% 
+  left_join(., acidification, by = c("run", "scenario", "approach"))
+
+# Get the mean climate velocity for all designs, then bind it with the summary
+summary <- get_ClimateSummary(solution_list, climate_layer = velocity_SSP585, metric = "velocity", col_scenario = "585", col_approach = "penalty", col_run = run_list) %>% 
+  left_join(., oxygen, by = c("run", "scenario", "approach")) %>% 
+  rbind(., summary)
+
+# Create Low-Regret Objects
+solution_list <- list(s10, s11, s12, s13)
+col_names <- c("penalty_tos_585", "penalty_phos_585", "penalty_o2os_585", "penalty_velocity_585")
+LowRegret_Penalty <- create_LowRegretSf(solution_list, col_names, PUs)
+
+# Create Low-Regret Summary
+LowRegret_SummaryPenalty <- compute_summary(LowRegret_Penalty, total_area, PU_size, "low_regret", Cost = "Cost_squish") %>% 
+  mutate(approach = "penalty", scenario = "585")
+```
+Cohen's Kappa Correlation Matrix:
+```{r include = FALSE}
+list <- c("uninformed", "penalty_tos_585", "penalty_phos_585", "penalty_o2os_585", "penalty_velocity_585")
+object_list <- list() # empty list
+solution_list <- list(s1, s10, s11, s12, s13)
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], list[i])
+  object_list[[i]] <- obj
+}
+```
+```{r message = FALSE, echo = FALSE}
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+```
+
+## Compare climate-smart spatial designs
+
+This part also partially answers the [fourth research question](#rq-4).
+
+```{r include = FALSE}
+df <- summary %>% 
+  dplyr::mutate(metric = case_when(str_detect(run, pattern = "tos") ~ "tos",
+                                   str_detect(run, pattern = "phos") ~ "phos",
+                                   str_detect(run, pattern = "o2os") ~ "o2os",
+                                   str_detect(run, pattern = "velocity") ~ "velocity",
+                                   str_detect(run, pattern = "uninformed") ~ "uninformed")) %>% 
+  dplyr::mutate(approach = ifelse(str_detect(run, pattern = "uninformed"), yes = "uninformed", no = approach))
+
+# Set up the plots.
+ggComparison_Cost <- plot_ComparisonStatistics(df, col_name = "log10(total_cost)", y_axis = "log10(cost)")
+ggComparison_Area <- plot_ComparisonStatistics(df, col_name = "percent_area", y_axis = "% area")
+
+ggComparison_Warming <- plot_ComparisonStatistics(df, col_name = "mean_climate_warming", y_axis = expression('Δ'^"o"*'C yr'^"-1"*''))
+ggComparison_LogWarming <- plot_ComparisonStatistics(df, col_name = "mean_log_climate_warming", y_axis = expression('log Δ'^"o"*'C yr'^"-1"*'')) + scale_y_reverse()
+
+ggComparison_OceanAcidification <- plot_ComparisonStatistics(df, col_name = "mean_ocean_acidification", y_axis = expression('Δ pH yr'^"-1"*'')) + scale_y_reverse()
+ggComparison_LogOceanAcidification <- plot_ComparisonStatistics(df, col_name = "mean_log_ocean_acidification", y_axis = expression('log Δ pH yr'^"-1"*'')) + scale_y_reverse()
+
+ggComparison_OxygenDecline <- plot_ComparisonStatistics(df, col_name = "mean_oxygen_decline", y_axis = expression('Δ mol m'^"-3"*' yr'^"-1"*'')) + scale_y_reverse()
+ggComparison_LogOxygenDecline <- plot_ComparisonStatistics(df, col_name = "mean_log_oxygen_decline", y_axis = expression('Δ mol m'^"-3"*' yr'^"-1"*'')) + scale_y_reverse()
+
+ggComparison_ClimateVelocity <- plot_ComparisonStatistics(df, col_name = "median_velocity", y_axis = expression('km yr'^"-1"*''))
+ggComparison_LogClimateVelocity <- plot_ComparisonStatistics(df, col_name = "mean_log_velocity", y_axis = expression('log km yr'^"-1"*''))
+```
+Total cost and percent area protected:
+```{r}
+ggComparison_Cost + ggComparison_Area + plot_layout(guides = "collect")
+```
+Climate warming:
+```{r}
+ggComparison_Warming + ggComparison_LogWarming + plot_layout(guides = "collect")
+```
+Ocean Acidification:
+```{r}
+ggComparison_OceanAcidification + ggComparison_LogOceanAcidification + plot_layout(guides = "collect")
+```
+Declining Oxygen Concentration:
+```{r}
+ggComparison_OxygenDecline + ggComparison_LogOxygenDecline + plot_layout(guides = "collect")
+```
+Climate velocity:
+```{r}
+ggComparison_ClimateVelocity + ggComparison_LogClimateVelocity + plot_layout(guides = "collect")
+```

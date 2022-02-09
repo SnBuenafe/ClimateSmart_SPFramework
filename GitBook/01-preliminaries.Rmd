@@ -1,0 +1,157 @@
+# Preliminaries {#preliminary}
+
+To create any spatial design, we need the following:
+
+1. Planning region
+
+2. Conservation features each with a representation target
+
+3. Cost layer
+
+And, since we're creating _climate-smart_ designs, we also need:
+
+4. Climate layers
+
+## Planning Region {#planning-region}
+We chose the planning region to be the __Western Pacific__.
+```{r include = FALSE}
+# set working directory:
+setwd("/Users/tinbuenafe/GitHub/SpatialPlanning/")
+
+# setting save details
+Region <- "WestPacific"
+save_name <- "WestPacific"
+PU_size = 669.9 # km2 (0.25 deg at equator)
+Shape <- "Hexagon" # "Shape of PUs
+
+PUs <- read_rds(file.path("Output", paste(save_name, "PU", paste0(PU_size,"km2"), "Output.rds", sep = "_")))
+source("fSpatPlan_Convert2PacificRobinson.R")
+land <- ne_countries(scale = 'large', returnclass = 'sf') %>% 
+  fSpatPlan_Convert2PacificRobinson() 
+
+num_row = nrow(PUs)
+```
+```{r}
+(ggPU <- fSpatPlan_PlotPUs(PUs, land))
+```
+
+We used $0.25^{\circ} x 0.25^{\circ}$ resolution ($~670 km^2$ per planning unit) and the Robinson projection. The entire planning region yielded a total of `r num_row` planning units.
+
+## Conservation Features {#conservation-features}
+```{r include = FALSE}
+# set working directory:
+setwd("/Users/tinbuenafe/GitHub/SpatialPlanning/")
+aqua_sf <- read_rds(file.path("Output", paste(save_name, "PU", paste0(PU_size,"km2"), "AquaMaps_Output.rds", sep = "_")))
+
+num_col <- ncol(aqua_sf)
+```
+
+We used species distribution maps AquaMaps [@AquaMaps] as the conservation features. We restricted the species considered within the bounds of the planning region, within the epipelagic zone (0-200m depth), and occurring at >= 0.5.
+
+Of the 33,518 species in AquaMaps, we considered `r num_col` species/features.
+
+For simplicity, we chose to use effective targets of 40% for all runs.
+
+``` {r message = FALSE}
+(ggFeatureNo <- fSpatPlan_FeatureNo(aqua_sf, land))
+```
+
+## Cost Layer {#cost-layer}
+To calculate the cost layer, we multiplied the cost per kg (in US$/kg) of each species to their mean catch (in kg) [@Watson].
+
+``` {r include = FALSE}
+# set working directory:
+setwd("/Users/tinbuenafe/GitHub/SpatialPlanning/")
+cost <- read_rds(file.path("Output", paste(save_name, "PU", paste0(PU_size,"km2"), "CostLayer_Output.rds", sep = "_"))) %>% 
+  mutate(Cost_squish = scales::oob_squish(Cost, quantile(Cost, c(0.01, 0.99))))
+```
+``` {r}
+(ggCost <- fSpatPlan_PlotCost(cost, land))
+```
+
+## Climate Layers {#climate-metrics}
+We explored 5 climate metrics, each of which was calculated from a multi-model ensemble of projected sea surface temperature, pH, and oxygen concentration. 
+
+The ensemble was calculated from 5 GCMs (2015-2100) [@CMIP6], namely: 1. Can-ESM5, 2. CMCC-ESM2, 3. GFDL-ESM4, 4. IPSL-CM6A-LR, and 5. NorESM2-MM. 
+
+The GCMs used were forced under three climate scenarios: 1. SSP 1-2.6, 2. SSP 2-4.5, and 3. SSP 5-8.5.
+
+The five climate metrics are the following:
+
+1. Rate of climate warming
+
+2. Rate of ocean acidification
+
+3. Rate of declining oxygen concentration
+
+4. Climate velocity
+
+5. Mean annual intensity of marine heatwaves
+
+Rates of climate warming, ocean acidification and declining oxygen concentration, and mean annual intensity of MHWs are exposure climate metrics. Climate velocity is a retention climate metric.
+
+```{r include = FALSE}
+# set working directory:
+setwd("/Users/tinbuenafe/GitHub/SpatialPlanning/")
+# Load files for all the metrics.
+
+ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/tos"
+ClimateLayer_files <- list.files(ClimateLayer_path)
+roc_tos_SSP126 <- readRDS(file.path("Output", paste(save_name, "PU", paste0(PU_size, "km2"), ClimateLayer_files[1], sep = "_")))
+roc_tos_SSP245 <- readRDS(file.path("Output", paste(save_name, "PU", paste0(PU_size, "km2"), ClimateLayer_files[2], sep = "_")))
+roc_tos_SSP585 <- readRDS(file.path("Output", paste(save_name, "PU", paste0(PU_size, "km2"), ClimateLayer_files[3], sep = "_")))
+
+ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/phos/"
+ClimateLayer_files <- list.files(ClimateLayer_path)
+roc_phos_SSP126 <- readRDS(file.path("Output", paste(save_name, "PU", paste0(PU_size, "km2"), ClimateLayer_files[1], sep = "_")))
+roc_phos_SSP245 <- readRDS(file.path("Output", paste(save_name, "PU", paste0(PU_size, "km2"), ClimateLayer_files[2], sep = "_")))
+roc_phos_SSP585 <- readRDS(file.path("Output", paste(save_name, "PU", paste0(PU_size, "km2"), ClimateLayer_files[3], sep = "_")))
+
+ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/o2os/"
+ClimateLayer_files <- list.files(ClimateLayer_path)
+roc_o2os_SSP126 <- readRDS(file.path("Output", paste(save_name, "PU", paste0(PU_size, "km2"), ClimateLayer_files[1], sep = "_")))
+roc_o2os_SSP245 <- readRDS(file.path("Output", paste(save_name, "PU", paste0(PU_size, "km2"), ClimateLayer_files[2], sep = "_")))
+roc_o2os_SSP585 <- readRDS(file.path("Output", paste(save_name, "PU", paste0(PU_size, "km2"), ClimateLayer_files[3], sep = "_")))
+ClimateLayer_path <- "Data/Climate/ClimateMetrics/ClimateVelocity/"
+ClimateLayer_files <- list.files(ClimateLayer_path)
+velocity_SSP126 <- readRDS(file.path("Output", paste(save_name, "PU", paste0(PU_size, "km2"), ClimateLayer_files[1], sep = "_")))
+velocity_SSP245 <- readRDS(file.path("Output", paste(save_name, "PU", paste0(PU_size, "km2"), ClimateLayer_files[2], sep = "_")))
+velocity_SSP585 <- readRDS(file.path("Output", paste(save_name, "PU", paste0(PU_size, "km2"), ClimateLayer_files[3], sep = "_")))
+
+# Creating plots for climate layers
+gg_roc_tos_SSP126 <- fSpatPlan_PlotClimate(roc_tos_SSP126, land, metric = "roc_tos", from = 0, to = 0.05) + labs(subtitle = "SSP 1-2.6")
+gg_roc_tos_SSP245 <- fSpatPlan_PlotClimate(roc_tos_SSP245, land, metric = "roc_tos", from = 0, to = 0.05) + labs(subtitle = "SSP 2-4.5")
+gg_roc_tos_SSP585 <- fSpatPlan_PlotClimate(roc_tos_SSP585, land, metric = "roc_tos", from = 0, to = 0.05) + labs(subtitle = "SSP 5-8.5")
+
+gg_roc_phos_SSP126 <- fSpatPlan_PlotClimate(roc_phos_SSP126, land, metric = "roc_phos", from = -0.005, to = 0) + labs(subtitle = "SSP 1-2.6")
+gg_roc_phos_SSP245 <- fSpatPlan_PlotClimate(roc_phos_SSP245, land, metric = "roc_phos", from = -0.005, to = 0) + labs(subtitle = "SSP 2-4.5")
+gg_roc_phos_SSP585 <- fSpatPlan_PlotClimate(roc_phos_SSP585, land, metric = "roc_phos", from = -0.005, to = 0) + labs(subtitle = "SSP 5-8.5")
+
+gg_roc_o2os_SSP126 <- fSpatPlan_PlotClimate(roc_o2os_SSP126, land, metric = "roc_o2os", from = -0.0002, to = 9.08e-05) + labs(subtitle = "SSP 1-2.6")
+gg_roc_o2os_SSP245 <- fSpatPlan_PlotClimate(roc_o2os_SSP245, land, metric = "roc_o2os", from = -0.0002, to = 9.08e-05) + labs(subtitle = "SSP 2-4.5")
+gg_roc_o2os_SSP585 <- fSpatPlan_PlotClimate(roc_o2os_SSP585, land, metric = "roc_o2os", from = -0.0002, to = 9.08e-05) + labs(subtitle = "SSP 5-8.5")
+
+gg_velocity_SSP126 <- fSpatPlan_PlotClimate(velocity_SSP126, land, metric = "velocity", from = 0, to = 200) + labs(subtitle = "SSP 1-2.6")
+gg_velocity_SSP245 <- fSpatPlan_PlotClimate(velocity_SSP245, land, metric = "velocity", from = 0, to = 200) + labs(subtitle = "SSP 2-4.5")
+gg_velocity_SSP585 <- fSpatPlan_PlotClimate(velocity_SSP585, land, metric = "velocity", from = 0, to = 200) + labs(subtitle = "SSP 5-8.5")
+```
+
+### Rate of climate warming
+```{r}
+(gg_roc_tos_SSP126 + gg_roc_tos_SSP245) / (gg_roc_tos_SSP585 + plot_spacer()) + plot_layout(guides = "collect")
+```
+
+### Rate of ocean acidification
+```{r}
+(gg_roc_phos_SSP126 + gg_roc_phos_SSP245) / (gg_roc_phos_SSP585 + plot_spacer()) + plot_layout(guides = "collect")
+```
+
+### Rate of declining oxygen concentration
+```{r}
+(gg_roc_o2os_SSP126 + gg_roc_o2os_SSP245) / (gg_roc_o2os_SSP585 + plot_spacer()) + plot_layout(guides = "collect")
+```
+
+### Climate velocity
+```{r}
+(gg_velocity_SSP126 + gg_velocity_SSP245) / (gg_velocity_SSP585 + plot_spacer()) + plot_layout(guides = "collect")
+```

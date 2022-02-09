@@ -1,0 +1,241 @@
+# Research Question 2 {#rq-2}
+
+__How does utilizing climate metrics calculated from different climatic variables change climate-smart spatial designs?__
+
+To answer this, we use the "percentile" approach and create different climate-smart spatial designs using different [climate metrics](#climate-metrics). We have already created the [climate-smart spatial design for rate of climate warming](#rq-1).
+
+## Climate-smart spatial design (Rate of Ocean Acidification; "Percentile" Approach)
+Here, climate refugia are defined as low exposure areas that have magnitudes of ocean acidification greater (or more positive) than the median. (*Note*: We don't want a smaller value of pH or more acidic pH.)
+
+```{r include = FALSE}
+# Create the climate layer.
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = roc_phos_SSP585, PUs = PUs)
+
+# Get the list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+out_sf <- cbind(aqua_percentile, roc_phos_SSP585, cost)
+```
+We create the spatial planning problem:
+```{r}
+p3 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.8) %>% # using Effective 40% Protection. Since we only retained planning units that intersect with both biodiversity features and areas >= 50th percentile (0.5), by multiplying this by 0.8 target, we effectively protect only 40%.
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+```
+Then solve the problem:
+```{r}
+s3 <- prioritizr::solve(p3)
+```
+```{r echo = FALSE}
+s3_plot <- s3 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol3 <- fSpatPlan_PlotSolution(s3_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5"))
+```
+
+## Climate-smart spatial design (Rate of Declining Oxygen Concentration; "Percentile" Approach)
+Climate refugia are defined as low exposure areas that have magnitudes of declining oxygen concentration greater (or more positive) than the median. (*Note*: We don't want a smaller value of oxygen.)
+```{r include = FALSE}
+# Create the climate layer.
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = roc_o2os_SSP585, PUs = PUs)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+out_sf <- cbind(aqua_percentile, roc_o2os_SSP585, cost)
+```
+We create the spatial planning problem:
+```{r}
+p4 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.8) %>% # using Effective 40% Protection. Since we only retained planning units that intersect with both biodiversity features and areas >= 50th percentile (0.5), by multiplying this by 0.8 target, we effectively protect only 40%.
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+```
+Then, we solve it:
+```{r}
+s4 <- prioritizr::solve(p4)
+```
+```{r echo = FALSE}
+s4_plot <- s4 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol4 <- fSpatPlan_PlotSolution(s4_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concetration", subtitle = "Percentile, SSP 5-8.5"))
+```
+
+## Climate-smart spatial design (Climate Velocity; "Percentile" Approach)
+Climate refugia are defined as high retention areas that climate velocity values less than the median.
+
+```{r include = FALSE}
+# Create climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = velocity_SSP585, PUs = PUs)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+out_sf <- cbind(aqua_percentile, velocity_SSP585, cost)
+```
+We create the spatial planning problem:
+```{r}
+p5 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.8) %>% # using Effective 40% Protection. Since we only retained planning units that intersect with both biodiversity features and areas <= 50th percentile (0.5), by multiplying this by 0.8 target, we effectively protect only 40%.
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+```
+Then, we solve the problem:
+```{r}
+s5 <- prioritizr::solve(p5)
+```
+```{r echo = FALSE}
+s5_plot <- s5 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol5 <- fSpatPlan_PlotSolution(s5_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Percentile, SSP 5-8.5"))
+```
+```{r include = FALSE}
+## Get summary:
+
+# Feature representation
+list <- c("percentile_phos_585", "percentile_o2os_585", "percentile_velocity_585")
+for (i in 3:5) {
+  p <- get(paste0("p",i))
+  s <- get(paste0("s", i))
+  tmp_df <- represent_feature(p, s, list[i-2])
+  feat_rep <- left_join(tmp_df, feat_rep)
+}
+
+# Summary
+# Check Normality
+check_normality(roc_phos_SSP585, "slpTrends")
+# Looks Normal! So I'll use the mean for rate of ocean acidification.
+
+check_normality(roc_o2os_SSP585, "slpTrends")
+# Looks normal with a few outliers? Maybe use the mean as well?
+
+check_normality(velocity_SSP585, "voccMag")
+# Definitely not normal! Use median.
+
+# Get the summary and the mean rate of climate warming, also the mean log rate? for all designs
+run_list <- c("percentile_phos_585", "percentile_o2os_585", "percentile_velocity_585")
+solution_list <- list(s3, s4, s5)
+emptyList <- list()
+for (i in 1:length(run_list)) {
+  emptyList[[i]] <- compute_summary(solution_list[[i]], total_area, PU_size, run_list[i], Cost = "Cost_squish")
+}
+percentileSummary <- do.call(rbind, emptyList)
+
+summary <- summary %>% dplyr::mutate(scenario = "585",
+                                     approach = ifelse(run == "uninformed", yes = NA, no = "percentile"))
+
+summary <- get_ClimateSummary(solution_list, climate_layer = roc_tos_SSP585, metric = "tos", col_scenario = "585", col_approach = "percentile", col_run = run_list) %>% 
+  left_join(., percentileSummary) %>% 
+  rbind(summary)
+
+# Get the mean rate of ocean acidification for all designs (and also the mean of the log), starting from the uninformed
+solution_list1 <- list(s1)
+run_list1 <- c("uninformed")
+tmp <- get_ClimateSummary(solution_list1, climate_layer = roc_phos_SSP585, metric = "phos", col_scenario = "585", col_approach = NA, col_run = run_list1)
+  
+solution_list <- list(s2, s3, s4, s5)
+run_list <- c( "percentile_tos_585", "percentile_phos_585", "percentile_o2os_585", "percentile_velocity_585")
+summary <- get_ClimateSummary(solution_list, climate_layer = roc_phos_SSP585, metric = "phos", col_scenario = "585", col_approach = "percentile", col_run = run_list) %>% 
+  rbind(., tmp) %>% 
+  left_join(., summary, by = c("run", "scenario", "approach"))
+
+# Get mean rate of decline in oxygen concentration (and also the mean of the log) for all designs, starting with uninformed
+tmp <- get_ClimateSummary(solution_list1, climate_layer = roc_o2os_SSP585, metric = "o2os", col_scenario = "585", col_approach = NA, col_run = run_list1)
+
+summary <- get_ClimateSummary(solution_list, climate_layer = roc_o2os_SSP585, metric = "o2os", col_scenario = "585", col_approach = "percentile", col_run = run_list) %>% 
+  rbind(., tmp) %>%
+  left_join(., summary, by = c("run", "scenario", "approach"))
+
+# Get median climate velocity concentrations & also mean of the log! starting from the uninformed
+tmp <- get_ClimateSummary(solution_list1, climate_layer = velocity_SSP585, metric = "velocity", col_scenario = "585", col_approach = NA, col_run = run_list1)
+
+summary <- get_ClimateSummary(solution_list, climate_layer = velocity_SSP585, metric = "velocity", col_scenario = "585", col_approach = "percentile", col_run = run_list) %>%
+  rbind(., tmp) %>% 
+  left_join(., summary, by = c("run", "scenario", "approach"))
+```
+
+## Comparisons across approaches
+```{r include = FALSE}
+# Cost
+ggSummary_Cost <- plot_statistics(summary, col_name = "log10(total_cost)", y_axis = "log10(cost)")
+# Area
+ggSummary_Area <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area")
+# Climate Warming
+ggSummary_Warming <- plot_statistics(summary, col_name = "mean_climate_warming", y_axis = expression('Δ'^"o"*'C yr'^"-1"*''))
+ggSummary_log_Warming <- plot_statistics(summary, col_name = "mean_log_climate_warming", y_axis = expression('log Δ'^"o"*'C yr'^"-1"*'')) + scale_y_reverse()
+# Ocean Acidification
+ggSummary_Ocean_Acidification <- plot_statistics(summary, col_name = "mean_ocean_acidification", y_axis = expression('Δ pH yr'^"-1"*'')) + scale_y_reverse()
+ggSummary_log_Ocean_Acidification <- plot_statistics(summary, col_name = "mean_log_ocean_acidification", y_axis = expression('log Δ pH yr'^"-1"*'')) + scale_y_reverse()
+# Oxygen Decline
+ggSummary_Oxygen_Decline <- plot_statistics(summary, col_name = "mean_oxygen_decline", y_axis = expression('Δ mol m'^"-3"*' yr'^"-1"*'')) + scale_y_reverse()
+ggSummary_log_Oxygen_Decline <- plot_statistics(summary, col_name = "mean_log_oxygen_decline", y_axis = expression('Δ mol m'^"-3"*' yr'^"-1"*'')) + scale_y_reverse()
+# Climate Velocity
+ggSummary_Climate_Velocity <- plot_statistics(summary, col_name = "median_velocity", y_axis = expression('km yr'^"-1"*''))
+ggSummary_Log_Climate_Velocity <- plot_statistics(summary, col_name = "mean_log_velocity", y_axis = expression('log km yr'^"-1"*''))
+```
+
+Total cost and percent area selected for protection:
+```{r}
+ggSummary_Cost + ggSummary_Area + plot_layout(guides = "collect")
+```
+
+Summary of climate metrics:
+
+1. Climate warming
+```{r}
+ggSummary_Warming + ggSummary_log_Warming + plot_layout(guides = "collect")
+```
+
+2. Ocean acidification
+```{r}
+ggSummary_Ocean_Acidification + ggSummary_log_Ocean_Acidification + plot_layout(guides = "collect")
+```
+
+3. Declining oxygen concentration
+```{r}
+ggSummary_Oxygen_Decline + ggSummary_log_Oxygen_Decline + plot_layout(guides = "collect")
+```
+
+4. Climate velocity
+```{r}
+ggSummary_Climate_Velocity + ggSummary_Log_Climate_Velocity + plot_layout(guides = "collect")
+```
+
+Cohen's Kappa Correlation Matrix:
+```{r include = FALSE}
+list <- c("uninformed", "temperature", "pH", "O2", "velocity")
+object_list <- list() # empty list
+solution_list <- list(s1, s2, s3, s4, s5)
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], list[i])
+  object_list[[i]] <- obj
+}
+```
+```{r message = FALSE, echo = FALSE}
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+```
+
+
+```{r include = FALSE}
+# Create low-regret
+solution_list <- list(s2, s3, s4, s5)
+col_names <- c("percentile_tos_585", "percentile_phos_585", "percentile_o2os_585", "percentile_velocity_585")
+LowRegret_Percentile <- create_LowRegretSf(solution_list, col_names, PUs)
+
+# Check low-regret summary
+LowRegret_SummaryPercentile <- compute_summary(LowRegret_Percentile, total_area, PU_size, "low_regret", Cost = "Cost_squish") %>%
+  mutate(approach = "percentile", scenario = "585")
+```
