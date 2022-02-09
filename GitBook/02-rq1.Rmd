@@ -9,9 +9,6 @@ For this comparison, we chose to use the __"percentile" approach__, one of the t
 ## Climate-uninformed spatial design
 
 ```{r include = FALSE}
-# set working directory:
-setwd("/Users/tinbuenafe/GitHub/SpatialPlanning/")
-
 # List of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
@@ -110,15 +107,15 @@ We now compare the two designs.
 
 Total cost and percent area selected for protection:
 ```{r include = FALSE}
-ggSummary_Cost <- plot_statistics1(summary, col_name = "log10(total_cost)", y_axis = "log10(cost)")
-ggSummary_Area <- plot_statistics1(summary, col_name = "percent_area", y_axis = "% area")
+ggSummary_Cost <- plot_statistics(summary, col_name = "log10(total_cost)", y_axis = "log10(cost)", color = 2)
+ggSummary_Area <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 2)
 ```
 ```{r}
 ggSummary_Cost + ggSummary_Area
 ```
 ```{r include = FALSE}
-ggSummary_Warming <- plot_statistics1(summary, col_name = "mean_climate_warming", y_axis = expression('Δ'^"o"*'C yr'^"-1"*''))
-ggSummary_LogWarming <- plot_statistics1(summary, col_name = "mean_log_climate_warming", y_axis = expression('log Δ'^"o"*'C yr'^"-1"*'')) + scale_y_reverse()
+ggSummary_Warming <- plot_statistics(summary, col_name = "mean_climate_warming", y_axis = expression('Δ'^"o"*'C yr'^"-1"*''), color = 2)
+ggSummary_LogWarming <- plot_statistics(summary, col_name = "mean_log_climate_warming", y_axis = expression('log Δ'^"o"*'C yr'^"-1"*''), color = 2) + scale_y_reverse()
 ```
 ```{r}
 ggSummary_Warming + ggSummary_LogWarming

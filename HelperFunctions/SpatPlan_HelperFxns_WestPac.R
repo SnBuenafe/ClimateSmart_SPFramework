@@ -1,4 +1,4 @@
-# Write helper functions for running prioritzr
+# Created Helper Functions to make running prioritizr easier.
 
 # This function extracts the percentage of each feature that is selected
 represent_feature <- function(p, s, col_name) {
@@ -23,12 +23,13 @@ compute_summary <- function(s, total_area, PU_size, run_name, Cost) {
     filter(solution_1 == 1) %>% 
     summarize(sum_area = nrow(.) * PU_size, total_cost = sum(!!sym(Cost)))
 
-  summary %<>% mutate(percent_area = sum_area*100/total_area, num_pu = nrow(s %>% as_tibble() %>% filter(solution_1 == 1)),
-           run = run_name)
+  summary %<>% mutate(percent_area = sum_area*100/total_area, num_pu = nrow(s %>% as_tibble() %>% 
+                                                                              filter(solution_1 == 1)), run = run_name)
   
   return(summary)
 }
 
+# This function arranges the object that is ultimately used to create Cohen's Kappa Correlation Matrix
 select_solution <- function(obj, col_name) {
   obj <- obj %>% 
     as_tibble() %>% 
@@ -36,6 +37,7 @@ select_solution <- function(obj, col_name) {
     dplyr::rename(!!sym(col_name) := solution_1)
 }
 
+# This function creates Cohen's Kappa Correlation Matrix
 create_corrmatrix <- function(list_plans) {
   pacman::p_load(irr)
 
@@ -64,6 +66,7 @@ create_corrmatrix <- function(list_plans) {
   return(matrix)
 }
 
+# This plots the Correlation Matrix.
 plot_corrplot <- function(matrix, num) {
   pacman::p_load(corrplot)
   # creating corrplot
@@ -78,14 +81,23 @@ plot_corrplot <- function(matrix, num) {
   return(plot)
 }
 
-plot_statistics <- function(summary, col_name, y_axis) {
-  color_legend <- c("uninformed" = "#a6611a", "tos" = "#dfc27d", "phos" = "#80cdc1", "o2os" = "#018571", "velocity" = "#ffffbf")
-  
-  summary %<>% dplyr::mutate(approach = case_when(str_detect(run, pattern = "uninformed") ~ "uninformed",
-                                                  str_detect(run, pattern = "tos") ~ "tos",
-                                                  str_detect(run, pattern = "phos") ~ "phos",
-                                                  str_detect(run, pattern = "o2os") ~ "o2os",
-                                                  str_detect(run, pattern = "velocity") ~ "velocity"))
+# Plot statistics
+plot_statistics <- function(summary, col_name, y_axis, color) {
+  if (color == 1) { # For plotting related to RQ2
+    color_legend <- c("uninformed" = "#a6611a", "tos" = "#dfc27d", "phos" = "#80cdc1", "o2os" = "#018571", "velocity" = "#ffffbf")
+    
+    summary %<>% dplyr::mutate(approach = case_when(str_detect(run, pattern = "uninformed") ~ "uninformed",
+                                                    str_detect(run, pattern = "tos") ~ "tos",
+                                                    str_detect(run, pattern = "phos") ~ "phos",
+                                                    str_detect(run, pattern = "o2os") ~ "o2os",
+                                                    str_detect(run, pattern = "velocity") ~ "velocity"))
+    
+  } else if (color == 2) { # For plotting related to RQ1
+    color_legend <- c("uninformed" = "#a6611a", "tos" = "#dfc27d")
+    
+    summary %<>% dplyr::mutate(approach = case_when(str_detect(run, pattern = "uninformed") ~ "uninformed",
+                                                    str_detect(run, pattern = "tos") ~ "tos"))
+  }
   
   plot <- ggplot(data = summary, aes(x = as.factor(approach))) + # TODO: add in aes (later on) group = scenario
     geom_bar(aes_string(y = col_name, fill = "as.factor(approach)"), stat = 'identity', position = position_dodge()) +
@@ -96,26 +108,6 @@ plot_statistics <- function(summary, col_name, y_axis) {
     theme(legend.position = "bottom") +
     theme_classic()
     
-  return(plot)
-}
-
-# TODO: fix this
-plot_statistics1 <- function(summary, col_name, y_axis) {
-  color_legend <- c("uninformed" = "#a6611a", "tos" = "#dfc27d")
-  
-  summary %<>% dplyr::mutate(approach = case_when(str_detect(run, pattern = "uninformed") ~ "uninformed",
-                                                  str_detect(run, pattern = "tos") ~ "tos"))
-  
-  plot <- ggplot(data = summary, aes(x = as.factor(approach))) + # TODO: add in aes (later on) group = scenario
-    geom_bar(aes_string(y = col_name, fill = "as.factor(approach)"), stat = 'identity', position = position_dodge()) +
-    scale_fill_manual(name = 'Run',
-                      values = color_legend,
-                      labels = c("uninformed", "tos")) +
-    xlab("Run") +
-    ylab(y_axis) +
-    theme(legend.position = "bottom") +
-    theme_classic()
-  
   return(plot)
 }
 
@@ -150,18 +142,7 @@ plot_LowRegretStatistics <- function(LowRegret_df, col_name, y_axis) {
   
 }
 
-# This function filters planning units that have biodiversity values
-filter_biodiversity_features <- function(aqua_sf) {
-  tmp <- aqua_sf %>% 
-    as_tibble() %>% 
-    dplyr::select(-geometry) %>% 
-    mutate(sum = rowSums(., na.rm = TRUE)) %>% 
-    dplyr::select(sum) %>% 
-    mutate(biodiversity = case_when(sum == 0 ~ 0,
-                                    sum != 0 ~ 1))
-  return(tmp)
-}
-
+# Streamlines the creation of the climate layer for the "percentile" approach
 create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs) {
   
   spp <- aqua_sf %>% as_tibble() %>% 
@@ -218,6 +199,7 @@ create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs
   return(aqua_df)
 }
 
+# Streamlines the creation of the climate layer for the "feature" approach
 create_FeatureLayer <- function(aqua_sf, metric_name, colname, metric_df) {
   
   #metric_name = tos, phos, o2os, velocity
@@ -244,9 +226,8 @@ create_FeatureLayer <- function(aqua_sf, metric_name, colname, metric_df) {
   return(filtered)
 }
 
-get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenario, col_approach) {
-  # metric: "tos", "phos", "o2os", "velocity"
-  col_run <- paste(col_approach, metric, col_scenario, sep = "_")
+# Streamlines calculating the summaries of the climate metrics of the spatial designs
+get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenario, col_approach, col_run) {
   
   get_mean <- function(s, metric) {
     df <- s %>% as_tibble() %>% 
@@ -271,7 +252,7 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
       df[[i]] %<>% summarize(median_velocity = median(voccMag),
                              mean_log_velocity = mean(log(voccMag)))
     }
-    df[[i]] %<>% dplyr::mutate(run = col_run,
+    df[[i]] %<>% dplyr::mutate(run = col_run[[i]],
                                scenario = col_scenario,
                                approach = col_approach)
   }
@@ -280,6 +261,7 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
   return(tmp)
 }
 
+# Check normality of metric.
 check_normality <- function(df, col_name) {
   tmp <- df %>% as_tibble() %>%
     dplyr::select(!!sym(col_name))
@@ -287,6 +269,7 @@ check_normality <- function(df, col_name) {
   qqline(tmp[[ col_name ]])
 }
 
+# Plots Low Regret Areas
 plot_lowregret <- function(data, land) {
   gg <- ggplot() + geom_sf(data = data, aes(fill = as.factor(selection)), color = NA, size = 0.01) +
     geom_sf(data = land, color = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
@@ -297,6 +280,7 @@ plot_lowregret <- function(data, land) {
     labs(subtitle = "Low-Regret Areas")
 }
 
+# Create low regret areas for specific approach
 create_LowRegretSf <- function(solution_list, col_names, PUs) {
    
   df <- list() # empty list
@@ -329,6 +313,7 @@ create_LowRegretSf <- function(solution_list, col_names, PUs) {
   return(low_regret)
 }
 
+# Create penalty scaling values for the "penalty" approach
 create_Scaling <- function(cost, climate_metric, metric) {
   
   percentage <- seq(from  = 20, to = 70, by = 10)
@@ -383,7 +368,7 @@ lowRegret_ClimateSummary <- function(df, approach_column) {
   return(df_ex)
 }
 
-
+# Compares statistics across approaches and metrics.
 plot_ComparisonStatistics <- function(summary, col_name, y_axis) {
   color_legend = c("uninformed" = "#1C2833", "feature" = "#E6BA7E", "percentile" = "#4D3B2A", "penalty" = "#6984BF")
   

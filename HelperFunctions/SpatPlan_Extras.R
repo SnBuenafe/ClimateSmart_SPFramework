@@ -1,25 +1,21 @@
 #install.packages("pacman")
+# devtools::install_github("JorGarMol/VoCC", dependencies = TRUE, build_vignettes = TRUE)
 
 pacman::p_load(sf, terra, tidyverse, rnaturalearth, prioritizr, stars, patchwork, proj4, magrittr, doParallel,
                BiocManager, ncdf4, PCICt, ncdf4.helpers, VoCC, RColorBrewer)
-# devtools::install_github("JorGarMol/VoCC", dependencies = TRUE, build_vignettes = TRUE)
-# pacman::p_load(VoCC)
 
 longlat <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
 
-source("fSpatPlan_Get_PlanningUnits.R")
-source("fSpatPlan_Get_Boundary.R")
-source("fSpatPlan_Get_AquaMaps.R")
-source("fSpatPlan_Match_AquaMapsFishBase.R")
-source("fSpatPlan_Get_MPAs.R")
-source("fSpatPlan_Get_Cost.R")
-source("fSpatPlan_Get_TargetsIA.R")
-source("fSpatPlan_Match_IUCNRedList.R")
-source("fSpatPlan_Get_MaskedPolygon.R")
-source("fSpatPlan_Get_ClimateLayer.R")
+source("HelperFunctions/fSpatPlan_Get_PlanningUnits.R")
+source("HelperFunctions/fSpatPlan_Get_Boundary.R")
+source("HelperFunctions/fSpatPlan_Get_AquaMaps.R")
+source("HelperFunctions/fSpatPlan_Match_AquaMapsFishBase.R")
+source("HelperFunctions/fSpatPlan_Get_Cost.R")
+source("HelperFunctions/fSpatPlan_Get_MaskedPolygon.R")
+source("HelperFunctions/fSpatPlan_Get_ClimateLayer.R")
+source("HelperFunctions/fSpatPlan_Convert2PacificRobinson.R")
 
-source("SpatPlan_Plotting.R")
-
+source("HelperFunctions/SpatPlan_Plotting.R")
 
 # A function to fix incorrect column types from fishbase and sealifebase
 fix_species_type <- function(df, server = "fishbase"){
@@ -112,54 +108,6 @@ fSpatPlan_ArrangeFeatures <- function(df){
   
   df <- df %>%
     mutate(cellID = row_number())
-  
-}
-
-# Convert a world Robinson sf object to a Pacific-centred one
-#
-# Written by Jason D. Everett
-# UQ/CSIRO/UNSW
-# Last edited 8th Sept 2021
-fSpatPlan_Convert2PacificRobinson <- function(df, buff = 0){
-  # Define a long & slim polygon that overlaps the meridian line & set its CRS to match 
-  # that of world
-  # Adapted from here:
-  # https://stackoverflow.com/questions/56146735/visual-bug-when-changing-robinson-projections-central-meridian-with-ggplot2
-  
-  library(magrittr)
-  rob_pacific <- "+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
-  longlat <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
-  
-  polygon <- st_polygon(x = list(rbind(c(-0.0001, 90),
-                                       c(0, 90),
-                                       c(0, -90),
-                                       c(-0.0001, -90),
-                                       c(-0.0001, 90)))) %>%
-    st_sfc() %>%
-    st_set_crs(longlat)
-  
-  # Modify world dataset to remove overlapping portions with world's polygons
-  df_robinson <- df %>% 
-    st_make_valid() %>% # Just in case....
-    st_difference(polygon) %>% 
-    st_transform(crs = rob_pacific) # Perform transformation on modified version of world dataset
-  rm(polygon)
-  
-  # # notice that there is a line in the middle of Antarctica. This is because we have
-  # # split the map after reprojection. We need to fix this:
-  bbox <-  st_bbox(df_robinson)
-  bbox[c(1,3)] <- c(-1e-5, 1e-5)
-  polygon_rob <- st_as_sfc(bbox)
-  
-  crosses <- df_robinson %>%
-    st_intersects(polygon_rob) %>%
-    sapply(length) %>%
-    as.logical %>%
-    which
-  
-  # # Adding buffer 0
-  df_robinson[crosses,] %<>%
-    st_buffer(buff)
   
 }
 

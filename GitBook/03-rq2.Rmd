@@ -115,6 +115,10 @@ for (i in 3:5) {
 
 # Summary
 # Check Normality
+check_normality(roc_tos_SSP585, "slpTrends")
+# Looks normal. I'll use mean.
+
+# Check Normality
 check_normality(roc_phos_SSP585, "slpTrends")
 # Looks Normal! So I'll use the mean for rate of ocean acidification.
 
@@ -169,21 +173,21 @@ summary <- get_ClimateSummary(solution_list, climate_layer = velocity_SSP585, me
 ## Comparisons across approaches
 ```{r include = FALSE}
 # Cost
-ggSummary_Cost <- plot_statistics(summary, col_name = "log10(total_cost)", y_axis = "log10(cost)")
+ggSummary_Cost <- plot_statistics(summary, col_name = "log10(total_cost)", y_axis = "log10(cost)", color = 1)
 # Area
-ggSummary_Area <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area")
+ggSummary_Area <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 1)
 # Climate Warming
-ggSummary_Warming <- plot_statistics(summary, col_name = "mean_climate_warming", y_axis = expression('Δ'^"o"*'C yr'^"-1"*''))
-ggSummary_log_Warming <- plot_statistics(summary, col_name = "mean_log_climate_warming", y_axis = expression('log Δ'^"o"*'C yr'^"-1"*'')) + scale_y_reverse()
+ggSummary_Warming <- plot_statistics(summary, col_name = "mean_climate_warming", y_axis = expression('Δ'^"o"*'C yr'^"-1"*''), color = 1)
+ggSummary_log_Warming <- plot_statistics(summary, col_name = "mean_log_climate_warming", y_axis = expression('log Δ'^"o"*'C yr'^"-1"*''), color = 1) + scale_y_reverse()
 # Ocean Acidification
-ggSummary_Ocean_Acidification <- plot_statistics(summary, col_name = "mean_ocean_acidification", y_axis = expression('Δ pH yr'^"-1"*'')) + scale_y_reverse()
-ggSummary_log_Ocean_Acidification <- plot_statistics(summary, col_name = "mean_log_ocean_acidification", y_axis = expression('log Δ pH yr'^"-1"*'')) + scale_y_reverse()
+ggSummary_Ocean_Acidification <- plot_statistics(summary, col_name = "mean_ocean_acidification", y_axis = expression('Δ pH yr'^"-1"*''), color = 1) + scale_y_reverse()
+ggSummary_log_Ocean_Acidification <- plot_statistics(summary, col_name = "mean_log_ocean_acidification", y_axis = expression('log Δ pH yr'^"-1"*''), color = 1) + scale_y_reverse()
 # Oxygen Decline
-ggSummary_Oxygen_Decline <- plot_statistics(summary, col_name = "mean_oxygen_decline", y_axis = expression('Δ mol m'^"-3"*' yr'^"-1"*'')) + scale_y_reverse()
-ggSummary_log_Oxygen_Decline <- plot_statistics(summary, col_name = "mean_log_oxygen_decline", y_axis = expression('Δ mol m'^"-3"*' yr'^"-1"*'')) + scale_y_reverse()
+ggSummary_Oxygen_Decline <- plot_statistics(summary, col_name = "mean_oxygen_decline", y_axis = expression('Δ mol m'^"-3"*' yr'^"-1"*''), color = 1) + scale_y_reverse()
+ggSummary_log_Oxygen_Decline <- plot_statistics(summary, col_name = "mean_log_oxygen_decline", y_axis = expression('Δ mol m'^"-3"*' yr'^"-1"*''), color = 1) + scale_y_reverse()
 # Climate Velocity
-ggSummary_Climate_Velocity <- plot_statistics(summary, col_name = "median_velocity", y_axis = expression('km yr'^"-1"*''))
-ggSummary_Log_Climate_Velocity <- plot_statistics(summary, col_name = "mean_log_velocity", y_axis = expression('log km yr'^"-1"*''))
+ggSummary_Climate_Velocity <- plot_statistics(summary, col_name = "median_velocity", y_axis = expression('km yr'^"-1"*''), color = 1)
+ggSummary_Log_Climate_Velocity <- plot_statistics(summary, col_name = "mean_log_velocity", y_axis = expression('log km yr'^"-1"*''), color = 1)
 ```
 
 Total cost and percent area selected for protection:

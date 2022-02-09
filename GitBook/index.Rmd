@@ -30,8 +30,8 @@ knitr::write_bib(c(
 ), 'packages.bib')
 
 # set working directory:
-setwd("/Users/tinbuenafe/GitHub/SpatialPlanning/")
+setwd("/Users/tinbuenafe/GitHub/ClimateSmart_WestPac/")
 # call helper functions
-source("SpatPlan_Extras.R") # Load the extras, including functions and libraries
-source("SpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
+source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functions and libraries
+source("HelperFunctionsSpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
 ```

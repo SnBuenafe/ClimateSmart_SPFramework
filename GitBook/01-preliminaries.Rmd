@@ -16,7 +16,7 @@ And, since we're creating _climate-smart_ designs, we also need:
 We chose the planning region to be the __Western Pacific__.
 ```{r include = FALSE}
 # set working directory:
-setwd("/Users/tinbuenafe/GitHub/SpatialPlanning/")
+setwd("/Users/tinbuenafe/GitHub/ClimateSmart_WestPac/")
 
 # setting save details
 Region <- "WestPacific"
@@ -25,7 +25,6 @@ PU_size = 669.9 # km2 (0.25 deg at equator)
 Shape <- "Hexagon" # "Shape of PUs
 
 PUs <- read_rds(file.path("Output", paste(save_name, "PU", paste0(PU_size,"km2"), "Output.rds", sep = "_")))
-source("fSpatPlan_Convert2PacificRobinson.R")
 land <- ne_countries(scale = 'large', returnclass = 'sf') %>% 
   fSpatPlan_Convert2PacificRobinson() 
 
@@ -40,7 +39,7 @@ We used $0.25^{\circ} x 0.25^{\circ}$ resolution ($~670 km^2$ per planning unit)
 ## Conservation Features {#conservation-features}
 ```{r include = FALSE}
 # set working directory:
-setwd("/Users/tinbuenafe/GitHub/SpatialPlanning/")
+setwd("/Users/tinbuenafe/GitHub/ClimateSmart_WestPac/")
 aqua_sf <- read_rds(file.path("Output", paste(save_name, "PU", paste0(PU_size,"km2"), "AquaMaps_Output.rds", sep = "_")))
 
 num_col <- ncol(aqua_sf)
@@ -61,7 +60,7 @@ To calculate the cost layer, we multiplied the cost per kg (in US$/kg) of each s
 
 ``` {r include = FALSE}
 # set working directory:
-setwd("/Users/tinbuenafe/GitHub/SpatialPlanning/")
+setwd("/Users/tinbuenafe/GitHub/ClimateSmart_WestPac/")
 cost <- read_rds(file.path("Output", paste(save_name, "PU", paste0(PU_size,"km2"), "CostLayer_Output.rds", sep = "_"))) %>% 
   mutate(Cost_squish = scales::oob_squish(Cost, quantile(Cost, c(0.01, 0.99))))
 ```
@@ -92,7 +91,7 @@ Rates of climate warming, ocean acidification and declining oxygen concentration
 
 ```{r include = FALSE}
 # set working directory:
-setwd("/Users/tinbuenafe/GitHub/SpatialPlanning/")
+setwd("/Users/tinbuenafe/GitHub/ClimateSmart_WestPac/")
 # Load files for all the metrics.
 
 ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/tos"
