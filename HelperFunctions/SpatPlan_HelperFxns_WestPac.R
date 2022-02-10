@@ -111,6 +111,7 @@ plot_statistics <- function(summary, col_name, y_axis, color) {
   return(plot)
 }
 
+# Plots statistics, comparing them across approaches
 plot_ComparisonStatistics <- function(summary, col_name, y_axis) {
     color_legend = c("uninformed" = "#1C2833", "feature" = "#E6BA7E", "percentile" = "#4D3B2A", "penalty" = "#6984BF")
 
@@ -126,6 +127,7 @@ plot_ComparisonStatistics <- function(summary, col_name, y_axis) {
     return(plot)
 }
 
+# Plots statistics of low-regret areas
 plot_LowRegretStatistics <- function(LowRegret_df, col_name, y_axis) {
   color_legend = c("feature" = "#E6BA7E", "percentile" = "#4D3B2A", "penalty" = "#6984BF")
   
@@ -336,6 +338,7 @@ create_Scaling <- function(cost, climate_metric, metric) {
 
 }
 
+# Creates the summaries of the climate metrics for low-regret areas
 lowRegret_ClimateSummary <- function(df, approach_column) {
   
   metric = c("tos", "phos", "o2os", "velocity")
@@ -384,6 +387,7 @@ plot_ComparisonStatistics <- function(summary, col_name, y_axis) {
   return(plot)
 }
 
+# Plots statistics of low-regret areas
 plot_LowRegretStatistics <- function(summary, col_name, y_axis) {
   color_legend = c("feature" = "#E6BA7E", "percentile" = "#4D3B2A", "penalty" = "#6984BF")
   
