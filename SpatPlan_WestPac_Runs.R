@@ -323,10 +323,10 @@ s5_plot <- s5 %>%
 #' ### Summary of all climate-smart designs
 #' 1. Feature Representation
 list <- c("percentile_phos_585", "percentile_o2os_585", "percentile_velocity_585")
-for (i in 3:5) {
-  p <- get(paste0("p",i))
-  s <- get(paste0("s", i))
-  tmp_df <- represent_feature(p, s, list[i-2])
+problem_list <- list(p3, p4, p5)
+solution_list <- list(s3, s4, s5)
+for (i in 1:length(list)) {
+  tmp_df <- represent_feature(problem_list[[i]], solution_list[[i]], list[i])
   feat_rep <- left_join(tmp_df, feat_rep)
 }
 
@@ -797,11 +797,10 @@ LowRegret_Penalty <- create_LowRegretSf(solution_list, col_names, PUs)
 (gg_LowRegret <- plot_lowregret(LowRegret_Penalty, land))
 
 #' Check low-regret summary
-LowRegret_SummaryPenalty <- compute_summary(low_regret, total_area, PU_size, "low_regret", Cost = "Cost_squish") %>% 
+LowRegret_SummaryPenalty <- compute_summary(LowRegret_Penalty, total_area, PU_size, "low_regret", Cost = "Cost_squish") %>% 
   mutate(approach = "penalty", scenario = "585")
 print(LowRegret_SummaryPenalty)
 
-#### RQ4 ####
 #' ## Research Question 4
 #' ### What are the pros and cons of the different climate-smart marine reserve design approaches explored here?
 
