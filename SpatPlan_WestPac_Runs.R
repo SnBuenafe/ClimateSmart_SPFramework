@@ -562,6 +562,9 @@ s9_plot <- s9 %>%
 (ggSol9 <- fSpatPlan_PlotSolution(s9_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Feature, SSP 5-8.5"))
 
 # Feature representation
+feat_rep %<>% 
+  add_row(feature = "climate_layer", percentile_velocity_585 = NA, percentile_o2os_585 = NA, percentile_phos_585 = NA,
+          percentile_tos_585 = NA, uninformed = NA)
 list <- c("feature_tos_585", "feature_phos_585", "feature_o2os_585", "feature_velocity_585")
 problem_list <- list(p6, p7, p8, p9)
 solution_list <- list(s6, s7, s8, s9)
