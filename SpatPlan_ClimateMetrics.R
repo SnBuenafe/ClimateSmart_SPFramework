@@ -1,6 +1,6 @@
 install.packages("pacman")
 
-pacman::p_load(BiocManager, ncdf4, PCICt, ncdf4.helpers, raster, tidyverse)
+pacman::p_load(BiocManager, ncdf4, PCICt, ncdf4.helpers, raster, tidyverse, terra, doParallel)
 
 # loading packages
 devtools::install_github("JorGarMol/VoCC", dependencies = TRUE, build_vignettes = TRUE)
@@ -274,3 +274,89 @@ generate_velocity(scenario = scenario_list[1]) # SSP 1-2.6
 generate_velocity(scenario = scenario_list[2]) # SSP 2-4.5
 generate_velocity(scenario = scenario_list[3]) # SSP 5-8.5
 
+#### Creating multi-model ensemble -- Jase's suggestion ####
+
+scenario = "SSP 5-8.5"
+variable = "o2os"
+
+# make this into a function with inputs: variable, scenario
+inpdir <- "Data/Climate/RasterStack/"
+outdir <- "Data/Climate/MultiModelEnsemble/"
+
+
+ncores <- detectCores() - 1 
+cl <- makeCluster(ncores)
+registerDoParallel(cl)
+
+file_list <- list.files(paste0(inpdir, variable, "/", scenario, "/"))
+
+parallelStructure <- foreach(i = 2:length(file_list), .packages = c('tidyverse', 'VoCC', 'raster')) %dopar% {
+  df <- readRDS(paste0(inpdir, variable, "/", scenario, "/", file_list[5]))
+  
+  yr_file <- sumSeries(df, p = "2015-01/2100-12", yr0 = "2015-01-01", l = nlayers(df),
+                       fun = function(x) colMeans(x, na.rm = TRUE), freqin = "months", freqout = "years")
+  save_name <- unlist(str_split(file_list[5], ".rds"))[1]
+  saveRDS(yr_file, paste0(outdir, variable, "/", scenario, "/", save_name, "_ensemble.rds"))
+  
+  rm(yr_file)
+}
+
+#### Create climate metrics for the MultiModelEnsemble ####
+variable = "tos"
+scenario = "SSP 5-8.5"
+metric = "roc"
+
+calculate_rate <- function(variable, scenario, metric) {
+  inpdir <- "Data/Climate/MultiModelEnsemble/"
+  outdir <- "Data/Climate/ClimateMetrics_Ensemble/"
+  
+  file_list <- list.files(paste0(inpdir, variable, "/", scenario, "/"))
+  
+  for(i in 2:length(file_list)) {
+    rs <- readRDS(paste0(inpdir, variable, "/", scenario, "/", file_list[i]))
+    
+    slp <- tempTrend(rs, th = 10)
+    
+    save_name <- unlist(str_split(file_list[i], pattern = "_"))[2]
+    
+    saveRDS(slp, paste0(outdir, variable, "/", scenario, "/", metric, "_", variable, "_", save_name, "_", scenario, "_ensemble.rds"))
+  }
+  
+}
+# rates of temp change
+calculate_rate(variable = "tos", scenario = "SSP 5-8.5", metric = "roc")
+
+# rates of ocean acidification
+calculate_rate(variable = "phos", scenario = "SSP 5-8.5", metric = "roc")
+
+# rates of declining oxygen concentration
+calculate_rate(variable = "o2os", scenario = "SSP 5-8.5", metric = "roc")
+
+# velocity
+
+scenario = "SSP 5-8.5"
+generate_velocity <- function(scenario) {
+  inpdir = paste0("Data/Climate/MultiModelEnsemble/tos/", scenario, "/")
+  file_list <- list.files(inpdir)
+  tempdir = paste0("Data/Climate/ClimateMetrics_Ensemble/tos/", scenario, "/")
+  temp_list <- list.files(tempdir)
+  
+  outdir = paste0("Data/Climate/ClimateMetrics_Ensemble/velocity/", scenario, "/")
+  
+  for (i in 3:length(file_list)) {
+      rs <- readRDS(paste0(inpdir, file_list[i]))
+      slp <- readRDS(paste0(tempdir, temp_list[i])) # temporal gradient
+      
+      grad <- spatGrad(rs, th = 0.0001, projected = FALSE) # spatial gradient
+      
+      # VoCC local gradient
+      vocc <- gVoCC(slp, grad)
+      vocc$voccMag[] <- ifelse(is.infinite(vocc$voccMag[]), NA, vocc$voccMag[]) # replace inf with NAs
+      
+      save_name <- unlist(str_split(temp_list[i], pattern = "_"))[3]
+      saveRDS(vocc, paste0(outdir, "velocity_", save_name, "_", scenario, "_ensemble.rds"))
+      
+      rm(rs, slp, grad, vocc)
+  }
+}
+generate_velocity(scenario = "SSP 5-8.5")
