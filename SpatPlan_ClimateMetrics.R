@@ -312,7 +312,7 @@ calculate_rate <- function(variable, scenario, metric) {
   
   file_list <- list.files(paste0(inpdir, variable, "/", scenario, "/"))
   
-  for(i in 2:length(file_list)) {
+  for(i in 1:length(file_list)) {
     rs <- readRDS(paste0(inpdir, variable, "/", scenario, "/", file_list[i]))
     
     slp <- tempTrend(rs, th = 10)
