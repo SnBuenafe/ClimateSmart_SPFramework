@@ -16,3 +16,13 @@ write.csv(feat_rep, paste0(summary_directory, "feature_representation.csv"))
 
 # Saving summaries
 write.csv(summary, paste0(summary_directory, "summary_statistics.csv"))
+
+# Saving more solutions
+output_solutions
+# list of solutions to be saved
+solution_list <- list(s14, s15, s16, s17, s18)
+fileLabel_list <- c("s14-percentile-tos-585-CanESM5-ensemble.rds", "s15-percentile-tos-585-CMCC-ESM2-ensemble.rds", "s16-percentile-tos-585-GFDL-ESM4-ensemble.rds", "s17-percentile-tos-585-IPSL-CM6A-LR-ensemble.rds", "s18-percentile-tos-585-NorESM2-MM-ensemble.rds")
+
+for(i in 1:length(solution_list)) {
+  saveRDS(solution_list[[i]], paste0(output_solutions, fileLabel_list[i]))
+}
