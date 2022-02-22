@@ -19,9 +19,33 @@ write.csv(summary, paste0(summary_directory, "summary_statistics.csv"))
 
 # Saving more solutions
 output_solutions
-# list of solutions to be saved
+# list of solutions to be saved (Ensemble: rate of climate warming)
 solution_list <- list(s14, s15, s16, s17, s18)
 fileLabel_list <- c("s14-percentile-tos-585-CanESM5-ensemble.rds", "s15-percentile-tos-585-CMCC-ESM2-ensemble.rds", "s16-percentile-tos-585-GFDL-ESM4-ensemble.rds", "s17-percentile-tos-585-IPSL-CM6A-LR-ensemble.rds", "s18-percentile-tos-585-NorESM2-MM-ensemble.rds")
+
+for(i in 1:length(solution_list)) {
+  saveRDS(solution_list[[i]], paste0(output_solutions, fileLabel_list[i]))
+}
+
+# Ensemble: rate of ocean acidification
+solution_list <- list(s19, s20, s21, s22, s23)
+fileLabel_list <- c("s19-percentile-phos-585-CanESM5-ensemble.rds", "s20-percentile-phos-585-CMCC-ESM2-ensemble.rds", "s21-percentile-phos-585-GFDL-ESM4-ensemble.rds", "s22-percentile-phos-585-IPSL-CM6A-LR-ensemble.rds", "s23-percentile-phos-585-NorESM2-MM-ensemble.rds")
+
+for(i in 1:length(solution_list)) {
+  saveRDS(solution_list[[i]], paste0(output_solutions, fileLabel_list[i]))
+}
+
+# Ensemble: rate of declining oxygen concentration
+solution_list <- list(s24, s25, s26, s27, s28)
+fileLabel_list <- c("s24-percentile-o2os-585-CanESM5-ensemble.rds", "s25-percentile-o2os-585-CMCC-ESM2-ensemble.rds", "s26-percentile-o2os-585-GFDL-ESM4-ensemble.rds", "s27-percentile-o2os-585-IPSL-CM6A-LR-ensemble.rds", "s28-percentile-o2os-585-NorESM2-MM-ensemble.rds")
+
+for(i in 1:length(solution_list)) {
+  saveRDS(solution_list[[i]], paste0(output_solutions, fileLabel_list[i]))
+}
+
+# Ensemble: velocity
+solution_list <- list(s29, s30, s31, s32, s33)
+fileLabel_list <- c("s29-percentile-velocity-585-CanESM5-ensemble.rds", "s30-percentile-velocity-585-CMCC-ESM2-ensemble.rds", "s31-percentile-velocity-585-GFDL-ESM4-ensemble.rds", "s32-percentile-velocity-585-IPSL-CM6A-LR-ensemble.rds", "s33-percentile-velocity-585-NorESM2-MM-ensemble.rds")
 
 for(i in 1:length(solution_list)) {
   saveRDS(solution_list[[i]], paste0(output_solutions, fileLabel_list[i]))

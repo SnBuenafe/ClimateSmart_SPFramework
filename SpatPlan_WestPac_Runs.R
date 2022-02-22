@@ -1119,9 +1119,9 @@ s18_plot <- s18 %>%
 #' Create selection frequency of these
 solution_list <- list(s14, s15, s16, s17, s18)
 col_names <- c("tos_CanESM5", "tos_CMCC-ESM2", "tos_GFDL-ESM4", "tos_IPSL-CM6A-LR", "tos_NorESM2-MM")
-Selection_Ensemble_Frequency <- create_LowRegretSf(solution_list, col_names, PUs)
+Selection_tosEnsemble_Frequency <- create_LowRegretSf(solution_list, col_names, PUs)
 
-(gg_Selection_Ensemble_Frequency <- plot_SelectionFrequency(Selection_Ensemble_Frequency, land) + theme(axis.text = element_text(size = 25)))
+(gg_Selection_tosEnsemble_Frequency <- plot_SelectionFrequency(Selection_tosEnsemble_Frequency, land) + theme(axis.text = element_text(size = 25)))
 
 
 # Kappa
@@ -1136,7 +1136,7 @@ for (i in 1:length(list)) {
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
 
-## ph
+## ph (Rate of ocean acidification)
 
 #' Call climate layers to be used here (different for each model)
 inpdir <- "Data/Climate/ClimateMetrics_Ensemble/phos/SSP 5-8.5/"
@@ -1172,6 +1172,568 @@ phos_CanESM5 <- readRDS("Output/WestPacific_PU_669.9km2_roc_phos_SSP 5-8.5_CanES
 `phos_IPSL-CM6A-LR` <- readRDS("Output/WestPacific_PU_669.9km2_roc_phos_SSP 5-8.5_IPSL-CM6A-LR_ensemble.rds")
 `phos_NorESM2-MM` <- readRDS("Output/WestPacific_PU_669.9km2_roc_phos_SSP 5-8.5_NorESM2-MM_ensemble.rds")
 
+#' ### CanESM5
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those >= 65th percentile). 
+ensemble <- list(`phos_CanESM5`, `phos_CMCC-ESM2`, `phos_GFDL-ESM4`, `phos_IPSL-CM6A-LR`, `phos_NorESM2-MM`)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[1]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, phos_CanESM5, UniformCost)
+p19 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s19 <- prioritizr::solve(p19)
+
+#' 5. Plot the spatial design
+s19_plot <- s19 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol19 <- fSpatPlan_PlotSolution(s19_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5 (GCM: CanESM5)"))
+
+#' ### CMCC-ESM2
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those >= 65th percentile). 
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[2]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, `phos_CMCC-ESM2`, UniformCost)
+p20 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s20 <- prioritizr::solve(p20)
+
+#' 5. Plot the spatial design
+s20_plot <- s20 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol20 <- fSpatPlan_PlotSolution(s20_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5 (GCM: CMCC-ESM2)"))
+
+#' ### GFDL-ESM4
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those >= 65th percentile). 
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[3]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, `phos_GFDL-ESM4`, UniformCost)
+p21 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s21 <- prioritizr::solve(p21)
+
+#' 5. Plot the spatial design
+s21_plot <- s21 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol21 <- fSpatPlan_PlotSolution(s21_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5 (GCM: GFDL-ESM4)"))
+
+#' ### IPSL-CM6A-LR
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those >= 65th percentile). 
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[4]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, `phos_IPSL-CM6A-LR`, UniformCost)
+p22 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s22 <- prioritizr::solve(p22)
+
+#' 5. Plot the spatial design
+s22_plot <- s22 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol22 <- fSpatPlan_PlotSolution(s22_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5 (GCM: IPSL-CM6A-LR)"))
+
+#' ### NorESM2-MM
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those >= 65th percentile). 
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[5]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, `phos_NorESM2-MM`, UniformCost)
+p23 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s23 <- prioritizr::solve(p23)
+
+#' 5. Plot the spatial design
+s23_plot <- s23 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol23 <- fSpatPlan_PlotSolution(s23_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5 (GCM: NorESM2-MM)"))
+
+#' Create selection frequency of these
+solution_list <- list(s19, s20, s21, s22, s23)
+col_names <- c("phos_CanESM5", "phos_CMCC-ESM2", "phos_GFDL-ESM4", "phos_IPSL-CM6A-LR", "phos_NorESM2-MM")
+Selection_phosEnsemble_Frequency <- create_LowRegretSf(solution_list, col_names, PUs)
+
+(gg_Selection_phosEnsemble_Frequency <- plot_SelectionFrequency(Selection_phosEnsemble_Frequency, land) + theme(axis.text = element_text(size = 25)))
+
+# Kappa
+list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+object_list <- list() # empty list
+solution_list <- list(s19, s20, s21, s22, s23)
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], list[i])
+  object_list[[i]] <- obj
+}
+
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
+## o2 (Rate of Declining Oxygen Concentration)
+
+#' Call climate layers to be used here (different for each model)
+inpdir <- "Data/Climate/ClimateMetrics_Ensemble/o2os/SSP 5-8.5/"
+file_list <- list.files(inpdir)
+
+for (i in 1:length(file_list)) {
+  cCRS <- "+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+  
+  save_name <- unlist(str_split(file_list[i], pattern = "_"))[3]
+  
+  file <- readRDS(paste0(inpdir, file_list[i]))
+  climate_layer <- fSpatPlan_Get_ClimateLayer(ClimateLayer = file, PUs, cCRS, metric = "roc_o2os_ensemble")
+  
+  assign(x = paste0("o2os_", save_name), value = climate_layer)
+}
+
+#' Save all of them as climate layers
+list <- list(o2os_CanESM5, `o2os_CMCC-ESM2`, `o2os_GFDL-ESM4`, `o2os_IPSL-CM6A-LR`, `o2os_NorESM2-MM`)
+name_list <- c("roc_o2os_SSP 5-8.5_CanESM5_ensemble.rds", "roc_o2os_SSP 5-8.5_CMCC-ESM2_ensemble.rds",
+               "roc_o2os_SSP 5-8.5_GFDL-ESM4_ensemble.rds", "roc_o2os_SSP 5-8.5_IPSL-CM6A-LR_ensemble.rds",
+               "roc_o2os_SSP 5-8.5_NorESM2-MM_ensemble.rds")
+
+for (i in 1:length(list)){
+  save_name = "WestPacific"
+  saveRDS(list[[i]], file.path("Output",
+                               paste(save_name, "PU", paste0(PU_size, "km2"),
+                                     name_list[i], sep = "_")))
+}
+
+#' If already done the saving above, just call the files
+o2os_CanESM5 <- readRDS("Output/WestPacific_PU_669.9km2_roc_o2os_SSP 5-8.5_CanESM5_ensemble.rds")
+`o2os_CMCC-ESM2`<- readRDS("Output/WestPacific_PU_669.9km2_roc_o2os_SSP 5-8.5_CMCC-ESM2_ensemble.rds")
+`o2os_GFDL-ESM4` <- readRDS("Output/WestPacific_PU_669.9km2_roc_o2os_SSP 5-8.5_GFDL-ESM4_ensemble.rds")
+`o2os_IPSL-CM6A-LR` <- readRDS("Output/WestPacific_PU_669.9km2_roc_o2os_SSP 5-8.5_IPSL-CM6A-LR_ensemble.rds")
+`o2os_NorESM2-MM` <- readRDS("Output/WestPacific_PU_669.9km2_roc_o2os_SSP 5-8.5_NorESM2-MM_ensemble.rds")
+
+#' ### CanESM5
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those >= 65th percentile). 
+ensemble <- list(`o2os_CanESM5`, `o2os_CMCC-ESM2`, `o2os_GFDL-ESM4`, `o2os_IPSL-CM6A-LR`, `o2os_NorESM2-MM`)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[1]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, o2os_CanESM5, UniformCost)
+p24 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s24 <- prioritizr::solve(p24)
+
+#' 5. Plot the spatial design
+s24_plot <- s24 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol24 <- fSpatPlan_PlotSolution(s24_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Percentile, SSP 5-8.5 (GCM: CanESM5)"))
+
+#' ### CMCC-ESM2
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those >= 65th percentile). 
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[2]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, `o2os_CMCC-ESM2`, UniformCost)
+p25 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s25 <- prioritizr::solve(p25)
+
+#' 5. Plot the spatial design
+s25_plot <- s25 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol25 <- fSpatPlan_PlotSolution(s25_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Percentile, SSP 5-8.5 (GCM: CMCC-ESM2)"))
+
+#' ### GFDL-ESM4
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those >= 65th percentile). 
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[3]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, `o2os_GFDL-ESM4`, UniformCost)
+p26 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s26 <- prioritizr::solve(p26)
+
+#' 5. Plot the spatial design
+s26_plot <- s26 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol26 <- fSpatPlan_PlotSolution(s26_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Percentile, SSP 5-8.5 (GCM: GFDL-ESM4)"))
+
+#' ### IPSL-CM6A-LR
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those >= 65th percentile). 
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[4]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, `o2os_IPSL-CM6A-LR`, UniformCost)
+p27 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s27 <- prioritizr::solve(p27)
+
+#' 5. Plot the spatial design
+s27_plot <- s27 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol27 <- fSpatPlan_PlotSolution(s27_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Percentile, SSP 5-8.5 (GCM: IPSL-CM6A-LR)"))
+
+#' ### NorESM2-MM
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those >= 65th percentile). 
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[5]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, `o2os_NorESM2-MM`, UniformCost)
+p28 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s28 <- prioritizr::solve(p28)
+
+#' 5. Plot the spatial design
+s28_plot <- s28 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol28 <- fSpatPlan_PlotSolution(s28_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Percentile, SSP 5-8.5 (GCM: NorESM2-MM)"))
+
+#' Create selection frequency of these
+solution_list <- list(s24, s25, s6, s27, s28)
+col_names <- c("o2os_CanESM5", "o2os_CMCC-ESM2", "o2os_GFDL-ESM4", "o2os_IPSL-CM6A-LR", "o2os_NorESM2-MM")
+Selection_o2osEnsemble_Frequency <- create_LowRegretSf(solution_list, col_names, PUs)
+
+(gg_Selection_o2osEnsemble_Frequency <- plot_SelectionFrequency(Selection_o2osEnsemble_Frequency, land) + theme(axis.text = element_text(size = 25)))
+
+# Kappa
+list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+object_list <- list() # empty list
+solution_list <- list(s24, s25, s26, s27, s28)
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], list[i])
+  object_list[[i]] <- obj
+}
+
+## velocity
+
+#' Call climate layers to be used here (different for each model)
+inpdir <- "Data/Climate/ClimateMetrics_Ensemble/velocity/SSP 5-8.5/"
+file_list <- list.files(inpdir)
+
+for (i in 1:length(file_list)) {
+  cCRS <- "+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+  
+  save_name <- unlist(str_split(file_list[i], pattern = "_"))[2]
+  
+  file <- readRDS(paste0(inpdir, file_list[i]))
+  climate_layer <- fSpatPlan_Get_ClimateLayer(ClimateLayer = file, PUs, cCRS, metric = "velocity_ensemble")
+  
+  assign(x = paste0("velocity_", save_name), value = climate_layer)
+}
+
+#' Save all of them as climate layers
+list <- list(velocity_CanESM5, `velocity_CMCC-ESM2`, `velocity_GFDL-ESM4`, `velocity_IPSL-CM6A-LR`, `velocity_NorESM2-MM`)
+name_list <- c("velocity_SSP 5-8.5_CanESM5_ensemble.rds", "velocity_SSP 5-8.5_CMCC-ESM2_ensemble.rds",
+               "velocity_SSP 5-8.5_GFDL-ESM4_ensemble.rds", "velocity_SSP 5-8.5_IPSL-CM6A-LR_ensemble.rds",
+               "velocity_SSP 5-8.5_NorESM2-MM_ensemble.rds")
+
+for (i in 1:length(list)){
+  saveRDS(list[[i]], file.path("Output",
+                               paste(save_name, "PU", paste0(PU_size, "km2"),
+                                     name_list[i], sep = "_")))
+}
+
+#' If already done the saving above, just call the files
+velocity_CanESM5 <- readRDS("Output/WestPacific_PU_669.9km2_velocity_SSP 5-8.5_CanESM5_ensemble.rds")
+`velocity_CMCC-ESM2`<- readRDS("Output/WestPacific_PU_669.9km2_velocity_SSP 5-8.5_CMCC-ESM2_ensemble.rds")
+`velocity_GFDL-ESM4` <- readRDS("Output/WestPacific_PU_669.9km2_velocity_SSP 5-8.5_GFDL-ESM4_ensemble.rds")
+`velocity_IPSL-CM6A-LR` <- readRDS("Output/WestPacific_PU_669.9km2_velocity_SSP 5-8.5_IPSL-CM6A-LR_ensemble.rds")
+`velocity_NorESM2-MM` <- readRDS("Output/WestPacific_PU_669.9km2_velocity_SSP 5-8.5_NorESM2-MM_ensemble.rds")
+
+
+#' ### CanESM5
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those >= 65th percentile). 
+ensemble <- list(`velocity_CanESM5`, `velocity_CMCC-ESM2`, `velocity_GFDL-ESM4`, `velocity_IPSL-CM6A-LR`, `velocity_NorESM2-MM`)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[1]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, velocity_CanESM5, UniformCost)
+p29 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s29 <- prioritizr::solve(p29)
+
+#' 5. Plot the spatial design
+s29_plot <- s29 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol29 <- fSpatPlan_PlotSolution(s29_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Percentile, SSP 5-8.5 (GCM: CanESM5)"))
+
+#' ### CMCC-ESM2
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those >= 65th percentile). 
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[2]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, `velocity_CMCC-ESM2`, UniformCost)
+p30 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s30 <- prioritizr::solve(p30)
+
+#' 5. Plot the spatial design
+s30_plot <- s30 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol30 <- fSpatPlan_PlotSolution(s30_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Percentile, SSP 5-8.5 (GCM: CMCC-ESM2)"))
+
+#' ### GFDL-ESM4
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those >= 65th percentile). 
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[3]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, `velocity_GFDL-ESM4`, UniformCost)
+p31 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s31 <- prioritizr::solve(p31)
+
+#' 5. Plot the spatial design
+s31_plot <- s31 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol31 <- fSpatPlan_PlotSolution(s31_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Percentile, SSP 5-8.5 (GCM: GFDL-ESM4)"))
+
+#' ### IPSL-CM6A-LR
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those <= 35th percentile). 
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[4]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, `velocity_IPSL-CM6A-LR`, UniformCost)
+p32 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s32 <- prioritizr::solve(p32)
+
+#' 5. Plot the spatial design
+s32_plot <- s32 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol32 <- fSpatPlan_PlotSolution(s32_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Percentile, SSP 5-8.5 (GCM: IPSL-CM6A-LR)"))
+
+#' ### NorESM2-MM
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those <= 35th percentile). 
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[5]], PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, `velocity_NorESM2-MM`, UniformCost)
+p33 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s33 <- prioritizr::solve(p33)
+
+#' 5. Plot the spatial design
+s33_plot <- s33 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol33 <- fSpatPlan_PlotSolution(s33_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Percentile, SSP 5-8.5 (GCM: NorESM2-MM)"))
+
+#' Create selection frequency of these
+solution_list <- list(s29, s30, s31, s32, s33)
+col_names <- c("velocity_CanESM5", "velocity_CMCC-ESM2", "velocity_GFDL-ESM4", "velocity_IPSL-CM6A-LR", "velocity_NorESM2-MM")
+Selection_velocityEnsemble_Frequency <- create_LowRegretSf(solution_list, col_names, PUs)
+
+(gg_Selection_velocityEnsemble_Frequency <- plot_SelectionFrequency(Selection_velocityEnsemble_Frequency, land) + theme(axis.text = element_text(size = 25)))
+
+# Kappa
+list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+object_list <- list() # empty list
+solution_list <- list(s29, s30, s31, s32, s33)
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], list[i])
+  object_list[[i]] <- obj
+}
 
 #### Creating some plots explaining the different approaches ####
 aqm_subset1 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[1]) %>% 

@@ -20,7 +20,7 @@ fSpatPlan_Get_ClimateLayer <- function(PlanUnits,
     ClimateLayer_sf <- temp_ClimateLayer %>% 
       st_interpolate_aw(PUs, extensive = FALSE) 
     
-    if (metric == "velocity") {
+    if (metric %in% c("velocity", "velocity_ensemble")) {
       ClimateLayer_sf <- ClimateLayer_sf %>% 
         dplyr::mutate(voccMag = ifelse(is.na(voccMag), median(filter(ClimateLayer_sf, ClimateLayer_sf$voccMag!=0)$voccMag), voccMag)) %>% # replacing NAs with the median
         dplyr::mutate(voccAng = ifelse(is.na(voccAng), median(filter(ClimateLayer_sf, ClimateLayer_sf$voccAng!=0)$voccAng), voccAng)) 
