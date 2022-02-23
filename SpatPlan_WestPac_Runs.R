@@ -10,6 +10,7 @@
 knitr::opts_chunk$set(warning=FALSE, cache=FALSE, message=FALSE, error=FALSE)
 # knitr::opts_chunk$set(collapse = TRUE, comment = "", warning = "off")
 
+#### Preliminaries ####
 #' ## Description
 #' This code creates and analyzes spatial designs using the features and the planning region generated from `SpatPlan_Master_WestPac.R`
 
@@ -417,9 +418,9 @@ ggSummary_Log_Climate_Velocity <- plot_statistics(summary, col_name = "mean_log_
 ggSummary_Climate_Velocity + ggSummary_Log_Climate_Velocity + plot_layout(guides = "collect")
 
 #' Get Kappa Correlation Matrix
-list <- c("uninformed", "percentile_tos_585", "percentile_phos_585", "percentile_o2os_585", "percentile_velocity_585")
+list <- c("percentile_tos_585", "percentile_phos_585", "percentile_o2os_585", "percentile_velocity_585")
 object_list <- list() # empty list
-solution_list <- list(s1, s2, s3, s4, s5)
+solution_list <- list(s2, s3, s4, s5)
 for (i in 1:length(list)) {
   obj <- select_solution(solution_list[[i]], list[i])
   object_list[[i]] <- obj
@@ -1521,7 +1522,7 @@ s28_plot <- s28 %>%
 (ggSol28 <- fSpatPlan_PlotSolution(s28_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Percentile, SSP 5-8.5 (GCM: NorESM2-MM)"))
 
 #' Create selection frequency of these
-solution_list <- list(s24, s25, s6, s27, s28)
+solution_list <- list(s24, s25, s26, s27, s28)
 col_names <- c("o2os_CanESM5", "o2os_CMCC-ESM2", "o2os_GFDL-ESM4", "o2os_IPSL-CM6A-LR", "o2os_NorESM2-MM")
 Selection_o2osEnsemble_Frequency <- create_LowRegretSf(solution_list, col_names, PUs)
 
@@ -1736,37 +1737,27 @@ for (i in 1:length(list)) {
 }
 
 #### Creating some plots explaining the different approaches ####
-aqm_subset1 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[1]) %>% 
-  dplyr::mutate(Abalistes_filamentosus = as.logical(Abalistes_filamentosus))
+aqm_subset1 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[4289]) %>% 
+  dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
 
-aqm1_Plot <- plot_AQMFeatures(aqm_subset1, PUs, land, column = "Abalistes_filamentosus") + ggtitle("Species Distribution #1", subtitle = "Abalistes filamentosus") + theme(axis.text = element_text(size = 25))
+aqm1_Plot <- plot_AQMFeatures(aqm_subset1, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
 
 aqm1_percentile <- create_PercentileLayer(aqua_sf = aqm_subset1, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
-  dplyr::mutate(Abalistes_filamentosus = as.logical(Abalistes_filamentosus))
+  dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
 
-aqm1_PercentilePlot <- plot_AQMFeatures(aqm1_percentile, PUs, land, column = "Abalistes_filamentosus") + ggtitle("Species Distribution #1", subtitle = "Abalistes filamentosus") + theme(axis.text = element_text(size = 25))
+aqm1_PercentilePlot <- plot_AQMFeatures(aqm1_percentile, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
 
 
-aqm_subset2 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[4000]) %>% 
-  dplyr::mutate(Hime_japonica = as.logical(Hime_japonica)) 
+aqm_subset2 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[8199]) %>% 
+  dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis)) 
 
-aqm2_Plot <- plot_AQMFeatures(aqm_subset2, PUs, land, column = "Hime_japonica") + ggtitle("Species Distribution #1", subtitle = "Hime japonica") + theme(axis.text = element_text(size = 25))
+aqm2_Plot <- plot_AQMFeatures(aqm_subset2, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #1", subtitle = "Thunnus orientalis") + theme(axis.text = element_text(size = 25))
 
 aqm2_percentile <- create_PercentileLayer(aqua_sf = aqm_subset2, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
-  dplyr::mutate(Hime_japonica = as.logical(Hime_japonica))
+  dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
 
-aqm2_PercentilePlot <- plot_AQMFeatures(aqm2_percentile, PUs, land, column = "Hime_japonica") + ggtitle("Species Distribution #1", subtitle = "Hime_japonica") + theme(axis.text = element_text(size = 25))
+aqm2_PercentilePlot <- plot_AQMFeatures(aqm2_percentile, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #1", subtitle = "Thunnus_orientalis") + theme(axis.text = element_text(size = 25))
 
-
-aqm_subset3 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[8711]) %>% 
-  dplyr::mutate(Zyzzya_fuliginosa = as.logical(Zyzzya_fuliginosa))
-
-aqm3_Plot <- plot_AQMFeatures(aqm_subset3, PUs, land, column = "Zyzzya_fuliginosa") + ggtitle("Species Distribution #1", subtitle = "Zyzzya fuliginosa") + theme(axis.text = element_text(size = 25))
-
-aqm3_percentile <- create_PercentileLayer(aqua_sf = aqm_subset3, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
-  dplyr::mutate(Zyzzya_fuliginosa = as.logical(Zyzzya_fuliginosa))
-
-aqm3_PercentilePlot <- plot_AQMFeatures(aqm3_percentile, PUs, land, column = "Zyzzya_fuliginosa") + ggtitle("Species Distribution #1", subtitle = "Zyzzya_fuliginosa") + theme(axis.text = element_text(size = 25))
 
 ### Features
 gg_roc_tos_SSP585 <- fSpatPlan_PlotClimate(roc_tos_SSP585, land, metric = "roc_tos", from = 0.02, to = 0.05) + theme(axis.text = element_text(size = 25))

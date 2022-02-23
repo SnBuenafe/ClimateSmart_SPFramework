@@ -52,56 +52,76 @@ for(i in 1:length(solution_list)) {
 }
 
 ## Saving plots
-# Multi Model Ensemble Selection Frequency
-ggsave(filename = 'MultiModelEnsemble_Frequency.png',
-       plot = gg_Selection_Ensemble_Frequency, width = 21, height = 29.7, dpi = 300,
+# Multi Model Ensemble Selection Frequency (Percentile)
+ggsave(filename = 'MultiModelEnsemble_Percentile_tos_585.png',
+       plot = gg_Selection_tosEnsemble_Frequency, width = 21, height = 29.7, dpi = 300,
        path = 'Figures/')
-# Climate warming using ensemble mean (percentile)
-ggsave(filename = "EnsembleMean_Solution.png",
+ggsave(filename = 'MultiModelEnsemble_Percentile_phos_585.png',
+       plot = gg_Selection_phosEnsemble_Frequency, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = 'MultiModelEnsemble_Percentile_o2os_585.png',
+       plot = gg_Selection_o2osEnsemble_Frequency, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = 'MultiModelEnsemble_Percentile_velocity_585.png',
+       plot = gg_Selection_velocityEnsemble_Frequency, width = 21, height = 29.7, dpi = 300,
+       path = 'Figures/')
+# Percentile approach
+ggsave(filename = "EnsembleMean_Percentile_tos_585.png",
        plot = ggSol2, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
-# Ocean acidification using ensemble mean (percentile)
-ggsave(filename = "Percentile_ph_585.png",
+ggsave(filename = "EnsembleMean_Percentile_phos_585.png",
        plot = ggSol3, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
-# Declining oxygen rate (percentile)
-ggsave(filename = "Percentile_o2_585.png",
+ggsave(filename = "EnsembleMean_Percentile_o2os_585.png",
        plot = ggSol4, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
-# Velocity (percentile)
-ggsave(filename = "Percentile_velocity_585.png",
+ggsave(filename = "EnsembleMean_Percentile_velocity_585.png",
        plot = ggSol5, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
-# Cost of Percentile approaches
-ggsave(filename = "PercentileCost_585.png",
-       plot = ggSummary_Cost, width = 7, height = 5, dpi = 300,
-       path = "Figures/")
-# Area of Percentile approaches
 ggsave(filename = "PercentileArea_585.png",
        plot = ggSummary_Area, width = 7, height = 5, dpi = 300,
        path = "Figures/")
-# Kappa
 png("Figures/PercentileKappa_585.png", width = 8, height = 8)
-
-
-# Low-regret areas
-ggsave(filename = "PercentileLowRegret_585.png",
+ggsave(filename = "LowRegret_Percentile_585.png",
        plot = gg_LowRegretPercentile, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
-ggsave(filename = "FeatureLowRegret_585.png",
+# Feature approach
+ggsave(filename = "EnsembleMean_Feature_tos_585.png",
+       plot = ggSol6, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "EnsembleMean_Feature_phos_585.png",
+       plot = ggSol7, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "EnsembleMean_Feature_o2os_585.png",
+       plot = ggSol8, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "EnsembleMean_Feature_velocity_585.png",
+       plot = ggSol9, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "LowRegret_Feature_585.png",
        plot = gg_LowRegretFeature, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
-ggsave(filename = "PenaltyLowRegret_585.png",
+# Penalty approach
+ggsave(filename = "EnsembleMean_Penalty_tos_585.png",
+       plot = ggSol10, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "EnsembleMean_Penalty_phos_585.png",
+       plot = ggSol11, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "EnsembleMean_Penalty_o2os_585.png",
+       plot = ggSol12, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "EnsembleMean_Penalty_velocity_585.png",
+       plot = ggSol13, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "LowRegret_Penalty_585.png",
        plot = gg_LowRegretPenalty, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
-ggsave(filename = "LowRegretCost_585.png",
-       plot = ggComparison_Cost_LowRegret, width = 7, height = 5, dpi = 300,
-       path = "Figures/")
+png("Figures/LowRegretKappa_585.png", width = 8, height = 8)
+
+# Low-regret areas
 ggsave(filename = "LowRegretArea_585.png",
        plot = ggComparison_Area_LowRegret, width = 7, height = 5, dpi = 300,
-       path = "Figures/")
-ggsave(filename = "LowRegretAll_585.png",
-       plot = ggLowRegret_All, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
 # Percentile workflow figures
@@ -116,12 +136,6 @@ ggsave(filename = "02a_Percentile_AquaMapsSubset.png",
        path = "Figures/")
 ggsave(filename = "02b_Percentile_AquaMapsSubset.png",
        plot = aqm2_PercentilePlot, width = 21, height = 29.7, dpi = 300,
-       path = "Figures/")
-ggsave(filename = "03a_Percentile_AquaMapsSubset.png",
-       plot = aqm3_Plot, width = 21, height = 29.7, dpi = 300,
-       path = "Figures/")
-ggsave(filename = "03b_Percentile_AquaMapsSubset.png",
-       plot = aqm3_PercentilePlot, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
 # Feature workflow figures
