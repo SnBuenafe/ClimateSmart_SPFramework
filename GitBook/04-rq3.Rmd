@@ -14,6 +14,7 @@ In this section, we focus on creating the actual climate-smart spatial designs f
 
 ### Climate-smart spatial design (Rate of Climate Warming; "Feature" Approach)
 ```{r include = FALSE}
+setwd("/Users/tinbuenafe/GitHub/ClimateSmart_WestPac/")
 # Create the climate layer.
 ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585)
 
@@ -25,6 +26,8 @@ features <- aqua_percentile %>%
 features <- append(features, "climate_layer") # add "climate_layer" to features
 
 out_sf <- cbind(aqua_sf, ClimateFeature, cost)
+
+s6 <- readRDS("Output/solutions/s6-feature-tos-585.rds")
 ```
 We first create the spatial planning problem:
 ```{r}
@@ -41,7 +44,7 @@ p6 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 ```
 We then solve this problem:
-```{r}
+```{r eval = FALSE}
 s6 <- prioritizr::solve(p6)
 ```
 ```{r echo = FALSE}
@@ -52,6 +55,8 @@ s6_plot <- s6 %>%
 
 ### Climate-smart spatial design (Rate of Ocean Acidification; "Feature" Approach)
 ```{r include = FALSE}
+# set working directory:
+setwd("/Users/tinbuenafe/GitHub/ClimateSmart_WestPac/")
 # Create climate layer
 ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = roc_phos_SSP585)
 
@@ -60,6 +65,8 @@ ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "phos", colname = "
 out_sf <- cbind(aqua_sf, ClimateFeature, cost)
 
 # targets should also be the same as above as well
+
+s7 <- readRDS("Output/solutions/s7-feature-phos-585.rds")
 ```
 We create the spatial planning problem:
 ```{r}
@@ -70,7 +77,7 @@ p7 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 ```
 We solve the problem:
-```{r}
+```{r eval = FALSE}
 s7 <- prioritizr::solve(p7)
 ```
 ```{r echo = FALSE}
@@ -81,12 +88,16 @@ s7_plot <- s7 %>%
 
 ### Climate-smart spatial design (Rate of Declining Oxygen Concentration; "Feature" Approach)
 ```{r include = FALSE}
+# set working directory:
+setwd("/Users/tinbuenafe/GitHub/ClimateSmart_WestPac/")
 # Create climate layer
 ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = roc_o2os_SSP585)
 
 # list of features as well as the targets should be the same as above
 
 out_sf <- cbind(aqua_sf, ClimateFeature, cost)
+
+s8 <- readRDS("Output/solutions/s8-feature-o2os-585.rds")
 ```
 We create the spatial planning problem:
 ```{r}
@@ -97,7 +108,7 @@ p8 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 ```
 Then we solve it:
-```{r}
+```{r eval = FALSE}
 s8 <- prioritizr::solve(p8)
 ```
 ```{r echo = FALSE}
@@ -108,11 +119,15 @@ s8_plot <- s8 %>%
 
 ### Climate-smart spatial design (Climate Velocity; "Feature" Approach)
 ```{r include = FALSE}
+# set working directory:
+setwd("/Users/tinbuenafe/GitHub/ClimateSmart_WestPac/")
 # Create climate layer
 ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = velocity_SSP585)
 
 # list of features and targets should still be the same.
 out_sf <- cbind(aqua_sf, ClimateFeature, cost)
+
+s9 <- readRDS("Output/solutions/s9-feature-velocity-585.rds")
 ```
 We then create the spatial planning problem:
 ```{r}
@@ -123,7 +138,7 @@ p9 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 ```
 Then solve it:
-``` {r}
+``` {r eval = FALSE}
 s9 <- prioritizr::solve(p9)
 ```
 ```{r echo = FALSE}
@@ -204,6 +219,9 @@ $scaling_{ClimateMetric}$ $= \frac{(Cost_{Max} - Cost_{Min})}{(ClimateMetric_{Ma
 
 ### Climate-smart spatial design (Rate of Climate Warming; "Penalty" Approach)
 ``` {r include = FALSE}
+# set working directory:
+setwd("/Users/tinbuenafe/GitHub/ClimateSmart_WestPac/")
+
 # Create climate layer
 scaling_PenaltyWarming <- create_Scaling(cost$Cost_squish, roc_tos_SSP585$slpTrends, "tos")
 
@@ -215,6 +233,8 @@ features <- aqua_sf %>%
 
 out_sf <- cbind(aqua_sf, roc_tos_SSP585, cost)
 scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+
+s10 <- readRDS("s10-penalty-tos-585.rds")
 ```
 Set up the spatial planning problem:
 ```{r}
@@ -226,7 +246,7 @@ p10 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
   add_linear_penalties(scaling, data = "slpTrends")
 ```
 Solve problem:
-```{r}
+```{r eval = FALSE}
 s10 <- prioritizr::solve(p10)
 ```
 ```{r echo = FALSE}
@@ -237,6 +257,8 @@ s10_plot <- s10 %>%
 
 ### Climate-smart spatial design (Rate of Ocean Acidification; "Penalty" Approach)
 ```{r include = FALSE}
+# set working directory:
+setwd("/Users/tinbuenafe/GitHub/ClimateSmart_WestPac/")
 # Create climate layer
 scaling_PenaltyAcidification <- create_Scaling(cost$Cost_squish, roc_phos_SSP585$slpTrends, "phos")
 
@@ -244,6 +266,7 @@ scaling_PenaltyAcidification <- create_Scaling(cost$Cost_squish, roc_phos_SSP585
 
 out_sf <- cbind(aqua_sf, roc_phos_SSP585, cost)
 scaling <- scaling_PenaltyAcidification %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+s11 <- readRDS("s11-penalty-phos-585.rds")
 ```
 We create the problem:
 ```{r}
@@ -255,7 +278,7 @@ p11 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
   add_linear_penalties(scaling, data = "slpTrends")
 ```
 Then solve it:
-```{r}
+```{r eval = FALSE}
 s11 <- prioritizr::solve(p11)
 ```
 ```{r echo = FALSE}
@@ -266,6 +289,8 @@ s11_plot <- s11 %>%
 
 ### Climate-smart spatial design (Rate of Declining Oxygen Concentration; "Penalty" Approach)
 ```{r include = FALSE}
+# set working directory:
+setwd("/Users/tinbuenafe/GitHub/ClimateSmart_WestPac/")
 # Create climate layer
 scaling_PenaltyOxygen <- create_Scaling(cost$Cost_squish, roc_o2os_SSP585$slpTrends, "o2os")
 
@@ -273,6 +298,7 @@ scaling_PenaltyOxygen <- create_Scaling(cost$Cost_squish, roc_o2os_SSP585$slpTre
 
 out_sf <- cbind(aqua_sf, roc_o2os_SSP585, cost)
 scaling <- scaling_PenaltyOxygen %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+s12 <- readRDS("s12-penalty-o2os-585.rds")
 ```
 We create the problem:
 ```{r}
@@ -284,7 +310,7 @@ p12 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
   add_linear_penalties(scaling, data = "slpTrends")
 ```
 We solve it:
-```{r}
+```{r eval = FALSE}
 s12 <- prioritizr::solve(p12)
 ```
 ```{r include = FALSE}
@@ -295,6 +321,8 @@ s12_plot <- s12 %>%
 
 ### Cliamte-smart spatial design (Climate velocity; "Penalty" Approach)
 ```{r include = FALSE}
+# set working directory:
+setwd("/Users/tinbuenafe/GitHub/ClimateSmart_WestPac/")
 # Create climate layer
 scaling_PenaltyVelocity <- create_Scaling(cost$Cost_squish, velocity_SSP585$voccMag, "velocity")
 
@@ -302,6 +330,7 @@ scaling_PenaltyVelocity <- create_Scaling(cost$Cost_squish, velocity_SSP585$vocc
 
 out_sf <- cbind(aqua_sf, velocity_SSP585, cost)
 scaling <- scaling_PenaltyVelocity %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+s13 <- readRDS("s13-penalty-velocity-585.rds")
 ```
 Create the spatial planning problem:
 ```{r}
@@ -313,7 +342,7 @@ p13 <- prioritizr::problem(out_sf, features, "Cost_squish") %>%
   add_linear_penalties(scaling, data = "voccMag")
 ```
 Solve it:
-```{r}
+```{r eval = FALSE}
 s13 <- prioritizr::solve(p13)
 ```
 ```{r echo = FALSE}

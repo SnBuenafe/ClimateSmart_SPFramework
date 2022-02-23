@@ -1,13 +1,13 @@
 
 fSpatPlan_PlotSolution <- function(s1, PlanUnits, world){
   gg <- ggplot() + 
-    geom_sf(data = s1, aes(fill = solution_1), colour = NA, size = 0.1, show.legend = FALSE) +
-    geom_sf(data = PlanUnits, colour = "lightblue", fill = NA, size = 0.1, show.legend = FALSE) +
+    geom_sf(data = s1, aes(fill = solution_1), colour = NA, size = 0.1, show.legend = TRUE) +
+#    geom_sf(data = PlanUnits, colour = "lightblue", fill = NA, size = 0.1, show.legend = FALSE) +
     geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
     coord_sf(xlim = st_bbox(PlanUnits)$xlim, ylim = st_bbox(PlanUnits)$ylim) +
     scale_colour_manual(values = c("TRUE" = "steelblue4",
                                    "FALSE" = "lightsteelblue2"),
-                        aesthetics = c("colour", "fill")) + 
+                        aesthetics = "fill") + 
     theme_bw() +
     labs(subtitle = "Solution")
   

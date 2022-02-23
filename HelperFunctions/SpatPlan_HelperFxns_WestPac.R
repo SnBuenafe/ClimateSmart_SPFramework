@@ -86,10 +86,9 @@ plot_corrplot <- function(matrix, num) {
 # Plot statistics
 plot_statistics <- function(summary, col_name, y_axis, color) {
   if (color == 1) { # For plotting related to RQ2
-    color_legend <- c("uninformed" = "#a6611a", "tos" = "#dfc27d", "phos" = "#80cdc1", "o2os" = "#018571", "velocity" = "#ffffbf")
+    color_legend <- c("tos" = "#289E3D", "phos" = "#E6C173", "o2os" = "#81B0CC", "velocity" = "#855600")
     
-    summary %<>% dplyr::mutate(approach = case_when(str_detect(run, pattern = "uninformed") ~ "uninformed",
-                                                    str_detect(run, pattern = "tos") ~ "tos",
+    summary %<>% dplyr::mutate(approach = case_when(str_detect(run, pattern = "tos") ~ "tos",
                                                     str_detect(run, pattern = "phos") ~ "phos",
                                                     str_detect(run, pattern = "o2os") ~ "o2os",
                                                     str_detect(run, pattern = "velocity") ~ "velocity"))
@@ -176,15 +175,21 @@ create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs
       left_join(., metric_df, by = "cellID") %>% 
       dplyr::select(-cellID)
     
-    # Get 50th percentile of climate metric under the range of the species
-    quantile <- df %>% 
-      dplyr::filter(!!sym(spp[i]) == 1) %>%  # filter out those that have biodiversity values
-      summarize(quantile = quantile(.data[[ colname ]], 0.5)) %>%  # get 50th percentile of climate metric
-      pull()
-    
     if (metric_name %in% c("tos", "velocity")) {
+      # Get 35th percentile of climate metric under the range of the species
+      quantile <- df %>% 
+        dplyr::filter(!!sym(spp[i]) == 1) %>%  # filter out those that have biodiversity values
+        summarize(quantile = quantile(.data[[ colname ]], 0.35)) %>%  # get 35th percentile of climate metric
+        pull()
+      
       df %<>% dplyr::mutate(!!sym(spp[i]) := case_when(((!!sym(colname) <= quantile) & !!sym(spp[i]) == 1) ~ 1, TRUE ~ 0))
     } else if (metric_name %in% c("phos", "o2os")) {
+      # Get 65th percentile of climate metric under range of the species
+      quantile <- df %>% 
+        dplyr::filter(!!sym(spp[i]) == 1) %>%  # filter out those that have biodiversity values
+        summarize(quantile = quantile(.data[[ colname ]], 0.65)) %>%  # get 65th percentile of climate metric
+        pull()
+      
       df %<>% dplyr::mutate(!!sym(spp[i]) := case_when(((!!sym(colname) >= quantile) & !!sym(spp[i]) == 1) ~ 1, TRUE ~ 0))
     }
     
@@ -210,16 +215,21 @@ create_FeatureLayer <- function(aqua_sf, metric_name, colname, metric_df) {
   # colname = slpTrends / voccMag
   # metric_df = roc_tos_SSP585, ...
   
-  quantile <- metric_df %>% as_tibble() %>% 
-    dplyr::select(!!sym(colname)) %>% 
-    dplyr::summarize(quantile = quantile(.data[[ colname ]], 0.5)) %>% 
-    pull()
-  
   if (metric_name %in% c("tos", "velocity")) {
+    quantile <- metric_df %>% as_tibble() %>% 
+      dplyr::select(!!sym(colname)) %>% 
+      dplyr::summarize(quantile = quantile(.data[[ colname ]], 0.35)) %>% 
+      pull()
+    
     filtered <- metric_df %>% as_tibble() %>% 
       mutate(climate_layer = case_when(!!sym(colname) <= quantile ~ 1,
                                        TRUE ~ 0))   
   } else if (metric_name %in% c("phos", "o2os")) {
+    quantile <- metric_df %>% as_tibble() %>% 
+      dplyr::select(!!sym(colname)) %>% 
+      dplyr::summarize(quantile = quantile(.data[[ colname ]], 0.65)) %>% 
+      pull()
+    
     filtered <- metric_df %>% as_tibble() %>% 
       mutate(climate_layer = case_when(!!sym(colname) >= quantile ~ 1,
                                        TRUE ~ 0))   
@@ -284,6 +294,16 @@ plot_lowregret <- function(data, land) {
     labs(subtitle = "Low-Regret Areas")
 }
 
+plot_SelectionFrequency <- function(data, land) {
+  gg <- ggplot() + geom_sf(data = data, aes(fill = as.factor(selection)), color = NA, size = 0.01) +
+    geom_sf(data = land, color = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
+    coord_sf(xlim = st_bbox(data)$xlim, ylim = st_bbox(data)$ylim) +
+    scale_fill_brewer(name = "Selection Frequency",
+                      palette = "PuBu", aesthetics = "fill") +
+    theme_bw() +
+    labs(subtitle = "Variability in GCMs")
+}
+
 # Create low regret areas for specific approach
 create_LowRegretSf <- function(solution_list, col_names, PUs) {
    
@@ -310,7 +330,7 @@ create_LowRegretSf <- function(solution_list, col_names, PUs) {
   # Create the low-regret sf object
   low_regret <- full_join(tmp, PUs_temp, by = "cellID") %>% 
     st_as_sf(sf_column_name = "geometry") %>% 
-    left_join(., cost %>% as_tibble(), by = "geometry") %>% 
+    left_join(., UniformCost %>% as_tibble(), by = "geometry") %>% 
     st_as_sf(sf_column_name = "geometry") %>% 
     dplyr::mutate(solution_1 = ifelse(selection == 4, 1, 0))
   
@@ -322,7 +342,7 @@ create_Scaling <- function(cost, climate_metric, metric) {
   
   percentage <- seq(from  = 20, to = 70, by = 10)
   
-  x = (max(cost) - min(cost)) / (max(climate_metric) - min(climate_metric))
+  x = (max(cost)) / (max(climate_metric) - min(climate_metric)) #  Used max cost instead of range of cost because we're using a uniform cost layer
   
   scaling <- tibble(scaling = numeric(), penalty_value = numeric())
   
@@ -403,4 +423,19 @@ plot_LowRegretStatistics <- function(summary, col_name, y_axis) {
     theme_classic()
   
   return(plot)
+}
+
+# Plot features
+
+plot_AQMFeatures <- function(s1, PlanUnits, world, column){
+  gg <- ggplot() + 
+    geom_sf(data = s1, aes_string(fill = column), colour = NA, size = 0.1, show.legend = TRUE) +
+    #    geom_sf(data = PlanUnits, colour = "lightblue", fill = NA, size = 0.1, show.legend = FALSE) +
+    geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
+    coord_sf(xlim = st_bbox(PlanUnits)$xlim, ylim = st_bbox(PlanUnits)$ylim) +
+    scale_colour_manual(values = c("TRUE" = "#8856a7",
+                                   "FALSE" = "#e0ecf4"),
+                        aesthetics = "fill") + 
+    theme_bw()
+  
 }
