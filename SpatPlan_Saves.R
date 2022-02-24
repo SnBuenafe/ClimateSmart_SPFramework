@@ -110,6 +110,9 @@ ggsave(filename = "EnsembleMean_Feature_velocity_585.png",
 ggsave(filename = "LowRegret_Feature_585.png",
        plot = gg_LowRegretFeature, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
+ggsave(filename = "FeatureArea_585.png",
+       plot = ggSummary_Area, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
 # Penalty approach
 ggsave(filename = "EnsembleMean_Penalty_tos_585.png",
        plot = ggSol10, width = 21, height = 29.7, dpi = 300,
@@ -125,6 +128,9 @@ ggsave(filename = "EnsembleMean_Penalty_velocity_585.png",
        path = "Figures/")
 ggsave(filename = "LowRegret_Penalty_585.png",
        plot = gg_LowRegretPenalty, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "PenaltyArea_585.png",
+       plot = ggSummary_Area, width = 7, height = 5, dpi = 300,
        path = "Figures/")
 # Important feature approach
 ggsave(filename = "EnsembleMean_ImptFeature_tos_585.png",
@@ -142,7 +148,9 @@ ggsave(filename = "EnsembleMean_ImptFeature_velocity_585.png",
 ggsave(filename = "LowRegret_ImptFeature_585.png",
        plot = gg_LowRegretImptFeature, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
-
+ggsave(filename = "ImportantFeatureArea_585.png",
+       plot = ggSummary_Area, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
 # Low-regret areas
 ggsave(filename = "LowRegretArea_585.png",
        plot = ggComparison_Area_LowRegret, width = 7, height = 5, dpi = 300,
