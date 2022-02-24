@@ -1758,7 +1758,6 @@ aqm2_percentile <- create_PercentileLayer(aqua_sf = aqm_subset2, metric_name = "
 
 aqm2_PercentilePlot <- plot_AQMFeatures(aqm2_percentile, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #1", subtitle = "Thunnus_orientalis") + theme(axis.text = element_text(size = 25))
 
-
 ### Features
 gg_roc_tos_SSP585 <- fSpatPlan_PlotClimate(roc_tos_SSP585, land, metric = "roc_tos", from = 0.02, to = 0.05) + theme(axis.text = element_text(size = 25))
 
@@ -1767,6 +1766,23 @@ ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "tos", colname = "s
   dplyr::mutate(climate_layer = as.logical(climate_layer))
 
 featsub <- plot_AQMFeatures(ClimateFeature, PUs, land, column = "climate_layer") + ggtitle("Low Exposure Areas") + theme(axis.text = element_text(size = 25))
+
+### Important Features
+ImptFeat <- create_ImportantFeatureLayer(aqm_subset1, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585) %>% 
+  dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
+aqm1_5thPercentile <- plot_AQMFeatures(ImptFeat, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
+
+RepFeat <- create_RepresentationFeature(ImptFeat, aqm_subset1) %>% 
+  dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
+aqm1_95thPercentile <- plot_AQMFeatures(RepFeat, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
+
+ImptFeat <- create_ImportantFeatureLayer(aqm_subset2, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585) %>% 
+  dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
+aqm2_5thPercentile <- plot_AQMFeatures(ImptFeat, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #1", subtitle = "Thunnus orientalis") + theme(axis.text = element_text(size = 25))
+
+RepFeat <- create_RepresentationFeature(ImptFeat, aqm_subset2) %>% 
+  dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
+aqm2_95thPercentile <- plot_AQMFeatures(RepFeat, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #1", subtitle = "Thunnus orientalis") + theme(axis.text = element_text(size = 25))
 
 #### "Important feature" approach ####
 
@@ -1787,7 +1803,7 @@ features <- Features %>%
 targets <- features %>% as_tibble() %>% 
   setNames(., "Species") %>% 
   add_column(target = 1) %>% 
-  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 0.25, 1))
+  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
 
 #' 3. Set up the spatial planning problem
 out_sf <- cbind(Features, roc_tos_SSP585, UniformCost)
@@ -1816,13 +1832,13 @@ Features <- cbind(ImptFeat, RepFeat) %>%
 #' 2. Get list of features
 features <- Features %>% 
   as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+  dplyr::select(-geometry) %>%
   names()
 
 targets <- features %>% as_tibble() %>% 
   setNames(., "Species") %>% 
   add_column(target = 1) %>% 
-  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 0.25, 1))
+  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
 
 #' 3. Set up the spatial planning problem
 out_sf <- cbind(Features, roc_phos_SSP585, UniformCost)
@@ -1857,7 +1873,7 @@ features <- Features %>%
 targets <- features %>% as_tibble() %>% 
   setNames(., "Species") %>% 
   add_column(target = 1) %>% 
-  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 0.25, 1))
+  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
 
 #' 3. Set up the spatial planning problem
 out_sf <- cbind(Features, roc_o2os_SSP585, UniformCost)
@@ -1892,7 +1908,7 @@ features <- Features %>%
 targets <- features %>% as_tibble() %>% 
   setNames(., "Species") %>% 
   add_column(target = 1) %>% 
-  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 0.25, 1))
+  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
 
 #' 3. Set up the spatial planning problem
 out_sf <- cbind(Features, velocity_SSP585, UniformCost)
@@ -1919,7 +1935,7 @@ for (i in 1:length(list)) {
   feat_rep <- left_join(tmp_df, feat_rep)
 }
 
-# Computing summaries for all "penalty" approach designs
+# Computing summaries for all "Important Feature" approach designs
 run_list <- c("imptfeature_tos_585", "imptfeature_phos_585", "imptfeature_o2os_585",
               "imptfeature_velocity_585")
 solution_list <- list(s34, s35, s36, s37)
@@ -1972,18 +1988,6 @@ LowRegret_ImptFeature <- create_LowRegretSf(solution_list, col_names, PUs)
 LowRegret_SummaryImptFeature <- compute_summary(LowRegret_ImptFeature, total_area, PU_size, "low_regret", Cost = "cost") %>% 
   mutate(approach = "imptfeature", scenario = "585")
 print(LowRegret_SummaryImptFeature)
-
-# Kappa
-list <- c("LowRegret_Feature_585", "LowRegret_Percentile_585", "LowRegret_Penalty_585", "LowRegret_ImptFeature_585")
-object_list <- list() # empty list
-solution_list <- list(LowRegret_Feature, LowRegret_Percentile, LowRegret_Penalty, LowRegret_SummaryImptFeature)
-for (i in 1:length(list)) {
-  obj <- select_solution(solution_list[[i]], list[i])
-  object_list[[i]] <- obj
-}
-
-(matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list)))
 
 #' ### Compare Low Regret Areas
 gg_LowRegretFeature + gg_LowRegretPercentile + gg_LowRegretPenalty + gg_LowRegretImptFeature + plot_layout(guides = "collect")

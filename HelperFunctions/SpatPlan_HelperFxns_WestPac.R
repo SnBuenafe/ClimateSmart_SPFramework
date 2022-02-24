@@ -515,7 +515,7 @@ plot_ComparisonStatistics <- function(summary, col_name, y_axis) {
 
 # Plots statistics of low-regret areas
 plot_LowRegretStatistics <- function(summary, col_name, y_axis) {
-  color_legend = c("feature" = "#E6BA7E", "percentile" = "#4D3B2A", "penalty" = "#6984BF")
+  color_legend = c("feature" = "#E6BA7E", "percentile" = "#4D3B2A", "penalty" = "#6984BF", "imptfeature" = "#2B8142")
   
   plot <- ggplot(data = summary, aes(x = as.factor(approach))) +
     geom_bar(aes_string(y = col_name, fill = "as.factor(approach)"), stat = 'identity', position = position_dodge()) +

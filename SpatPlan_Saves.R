@@ -56,9 +56,9 @@ for(i in 1:length(solution_list)) {
 solution_list <- list(s34, s35, s36, s37)
 fileLabel_list <- c("s34-imptfeature-tos-585.rds", "s35-imptfeature-phos-585.rds", "s36-imptfeature-o2os-585.rds", "s37-imptfeature-velocity-585.rds")
 
-for(i in 1:length(solution_list)) {
+for(i in 1:length(solution_list)) { 
   saveRDS(solution_list[[i]], paste0(output_solutions, fileLabel_list[i]))
-}
+ }
 
 ## Saving plots
 # Multi Model Ensemble Selection Frequency (Percentile)
@@ -143,7 +143,6 @@ ggsave(filename = "LowRegret_ImptFeature_585.png",
        plot = gg_LowRegretImptFeature, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-
 # Low-regret areas
 ggsave(filename = "LowRegretArea_585.png",
        plot = ggComparison_Area_LowRegret, width = 7, height = 5, dpi = 300,
@@ -169,4 +168,18 @@ ggsave(filename = "01_Feature_Climate.png",
        path = "Figures/")
 ggsave(filename = "02_Feature_Climate.png",
        plot = featsub, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+# Important Feature figures
+ggsave(filename = "01a_ImportantFeature_5thPercentile.png",
+       plot = aqm1_5thPercentile, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "01b_ImportantFeature_95thPercentile.png",
+       plot = aqm1_95thPercentile, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "02a_ImportantFeature_5thPercentile.png",
+       plot = aqm2_5thPercentile, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "02b_ImportantFeature_95thPercentile.png",
+       plot = aqm2_95thPercentile, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
