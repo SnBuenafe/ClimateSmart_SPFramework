@@ -16,6 +16,7 @@ write.csv(feat_rep, paste0(summary_directory, "feature_representation.csv"))
 
 # Saving summaries
 write.csv(summary, paste0(summary_directory, "summary_statistics.csv"))
+write.csv(LowRegret_SummaryAll, paste0(summary_directory, "LowRegret_summary_statistics.csv"))
 
 # Saving more solutions
 output_solutions
@@ -46,6 +47,14 @@ for(i in 1:length(solution_list)) {
 # Ensemble: velocity
 solution_list <- list(s29, s30, s31, s32, s33)
 fileLabel_list <- c("s29-percentile-velocity-585-CanESM5-ensemble.rds", "s30-percentile-velocity-585-CMCC-ESM2-ensemble.rds", "s31-percentile-velocity-585-GFDL-ESM4-ensemble.rds", "s32-percentile-velocity-585-IPSL-CM6A-LR-ensemble.rds", "s33-percentile-velocity-585-NorESM2-MM-ensemble.rds")
+
+for(i in 1:length(solution_list)) {
+  saveRDS(solution_list[[i]], paste0(output_solutions, fileLabel_list[i]))
+}
+
+# Important feature approach
+solution_list <- list(s34, s35, s36, s37)
+fileLabel_list <- c("s34-imptfeature-tos-585.rds", "s35-imptfeature-phos-585.rds", "s36-imptfeature-o2os-585.rds", "s37-imptfeature-velocity-585.rds")
 
 for(i in 1:length(solution_list)) {
   saveRDS(solution_list[[i]], paste0(output_solutions, fileLabel_list[i]))
@@ -117,7 +126,23 @@ ggsave(filename = "EnsembleMean_Penalty_velocity_585.png",
 ggsave(filename = "LowRegret_Penalty_585.png",
        plot = gg_LowRegretPenalty, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
-png("Figures/LowRegretKappa_585.png", width = 8, height = 8)
+# Important feature approach
+ggsave(filename = "EnsembleMean_ImptFeature_tos_585.png",
+      plot = ggSol34, width = 21, height = 29.7, dpi = 300,
+      path = "Figures/")
+ggsave(filename = "EnsembleMean_ImptFeature_phos_585.png",
+       plot = ggSol35, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "EnsembleMean_ImptFeature_o2os_585.png",
+       plot = ggSol36, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "EnsembleMean_ImptFeature_velocity_585.png",
+       plot = ggSol37, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "LowRegret_ImptFeature_585.png",
+       plot = gg_LowRegretImptFeature, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 
 # Low-regret areas
 ggsave(filename = "LowRegretArea_585.png",

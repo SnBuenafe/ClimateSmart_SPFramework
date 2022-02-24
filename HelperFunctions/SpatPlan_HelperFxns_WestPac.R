@@ -240,6 +240,110 @@ create_FeatureLayer <- function(aqua_sf, metric_name, colname, metric_df) {
   return(filtered)
 }
 
+create_ImportantFeatureLayer <- function(aqua_sf, metric_name, colname, metric_df) {
+  
+  spp <- aqua_sf %>% as_tibble() %>% 
+    dplyr::select(-geometry) %>% 
+    names()
+  
+  metric_df <- metric_df %>% 
+    dplyr::mutate(cellID = row_number()) %>% 
+    as_tibble() %>% 
+    dplyr::select(-geometry)
+  
+  # Commence Parallel Loop.
+  
+  ncores <- detectCores() - 1 
+  cl <- makeCluster(ncores)
+  registerDoParallel(cl)
+  
+  list <- vector("list", length = length(spp)) # create empty list
+  
+  aq_tmp <- foreach(i = 1:length(spp), .packages = c('tidyverse', 'sf', 'magrittr')) %dopar% {
+    
+    # Select 1 species at a time
+    df <- aqua_sf %>% 
+      as_tibble() %>% 
+      dplyr::select(!!sym(spp[i])) %>% 
+      dplyr::mutate(cellID = row_number()) %>% 
+      left_join(., metric_df, by = "cellID") %>% 
+      dplyr::select(-cellID)
+    
+    if (metric_name %in% c("tos", "velocity")) {
+      # Get 5th percentile of climate metric under the range of the species
+      quantile <- df %>% 
+        dplyr::filter(!!sym(spp[i]) == 1) %>%  # filter out those that have biodiversity values
+        summarize(quantile = quantile(.data[[ colname ]], 0.05)) %>%  # get 35th percentile of climate metric
+        pull()
+      
+      df %<>% dplyr::mutate(!!sym(spp[i]) := case_when(((!!sym(colname) <= quantile) & !!sym(spp[i]) == 1) ~ 1, TRUE ~ 0))
+    } else if (metric_name %in% c("phos", "o2os")) {
+      # Get 95th percentile of climate metric under range of the species
+      quantile <- df %>% 
+        dplyr::filter(!!sym(spp[i]) == 1) %>%  # filter out those that have biodiversity values
+        summarize(quantile = quantile(.data[[ colname ]], 0.95)) %>%  # get 65th percentile of climate metric
+        pull()
+      
+      df %<>% dplyr::mutate(!!sym(spp[i]) := case_when(((!!sym(colname) >= quantile) & !!sym(spp[i]) == 1) ~ 1, TRUE ~ 0))
+    }
+    
+    if (metric_name %in% c("tos", "phos", "o2os")) {
+      list[[i]] <- df %>% dplyr::select(-slpTrends, -seTrends, -sigTrends)
+    } else if (metric_name == "velocity") {
+      list[[i]] <- df %>% dplyr::select(-voccMag, -voccAng)
+    }
+    
+  }
+  stopCluster(cl)
+  
+  aqua_df <- do.call(cbind, aq_tmp) %>% 
+    cbind(., PUs) %>% st_as_sf(sf_column_name = "geometry")
+  
+  return(aqua_df)
+  
+  
+}
+create_RepresentationFeature <- function(df, aqua_sf) {
+  
+  spp <- aqua_sf %>% as_tibble() %>% 
+    dplyr::select(-geometry) %>% 
+    names()
+  
+  impt_df <- df %>% 
+    dplyr::mutate(cellID = row_number()) %>% 
+    as_tibble() %>% 
+    dplyr::select(-geometry)
+  
+  # Commence Parallel Loop.
+  
+  ncores <- detectCores() - 1 
+  cl <- makeCluster(ncores)
+  registerDoParallel(cl)
+  
+  list <- vector("list", length = length(spp)) # create empty list
+  
+  aq_tmp <- foreach(i = 1:length(spp), .packages = c('tidyverse', 'sf', 'magrittr')) %dopar% {
+    
+    # Select 1 species at a time
+    df <- aqua_sf %>% 
+      as_tibble() %>% 
+      dplyr::select(!!sym(spp[i])) %>% 
+      dplyr::mutate(cellID = row_number())
+    
+    df2 <- impt_df %>% 
+      dplyr::select(!!sym(spp[i]), cellID) %>% 
+      dplyr::rename(V1 := !!sym(spp[i]))
+    
+    CombinedDf <- left_join(df, df2, by = "cellID") %>% 
+      dplyr::mutate(!!sym(spp[i]) := ifelse(V1 == 1, yes = 0, no = .data[[ spp[i] ]])) %>% 
+      dplyr::select(-V1, -cellID)
+  }
+  stopCluster(cl)
+  
+  aqua_df <- do.call(cbind, aq_tmp) %>% 
+    cbind(., PUs) %>% st_as_sf(sf_column_name = "geometry")
+}
+
 # Streamlines calculating the summaries of the climate metrics of the spatial designs
 get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenario, col_approach, col_run) {
   
