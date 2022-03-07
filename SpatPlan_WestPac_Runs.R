@@ -1,236 +1,104 @@
-#' ---
-#' title: "Running Analyses for Climate-Smart Method Paper on the Western Pacific"
-#' author: "Tin Buenafe"
-#' affiliation: "UQ"
-#' date: "Last compiled on `r format(Sys.time(), '%A %d %B %Y')`"
-#' output: html_document
-#'---
-
-##+ setup, include=FALSE
-knitr::opts_chunk$set(warning=FALSE, cache=FALSE, message=FALSE, error=FALSE)
-# knitr::opts_chunk$set(collapse = TRUE, comment = "", warning = "off")
+# title: "Climate-smart methods paper runs"
+# author: "Tin Buenafe"
 
 #### Preliminaries ####
-#' ## Description
-#' This code creates and analyzes spatial designs using the features and the planning region generated from `SpatPlan_Master_WestPac.R`
+# Description
+# This code creates and analyzes spatial designs using the features and the planning region generated from `SpatPlan_Master_WestPac.R`
 
-#' ## Preliminaries
 source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functions and libraries
 source("HelperFunctions/SpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
+output_solutions <- "Output/solutions/"
+output_summary <- "Output/summary/"
 
-#' ## Load files
-save_name <- "WestPacific"
-PU_size = 669.9 # km2 (0.25 deg at equator)
-Shape <- "Hexagon" # "Shape of PUs
+# Load files
+source("SpatPlan_Master_Preliminaries.R")
 
-#' ### Planning Region
-PUs <- read_rds(file.path("Output", paste(save_name, "PU", paste0(PU_size,"km2"), "Output.rds", sep = "_")))
-land <- ne_countries(scale = 'large', returnclass = 'sf') %>% 
-  fSpatPlan_Convert2PacificRobinson() # Land masses; needed for plotting
-
-#' ### Climate Metrics
-#' 1. Rates of Climate Warming
-ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/tos/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
-
-roc_tos_SSP126 <- readRDS(file.path("Output", 
-                                    paste(save_name, "PU", paste0(PU_size, "km2"),
-                                          ClimateLayer_files[1], sep = "_")))
-roc_tos_SSP245 <- readRDS(file.path("Output", 
-                                    paste(save_name, "PU", paste0(PU_size, "km2"),
-                                          ClimateLayer_files[2], sep = "_")))
-roc_tos_SSP585 <- readRDS(file.path("Output", 
-                                    paste(save_name, "PU", paste0(PU_size, "km2"),
-                                          ClimateLayer_files[3], sep = "_")))
-#' 2. Rates of Ocean Acidification
-ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/phos/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
-
-roc_phos_SSP126 <- readRDS(file.path("Output", 
-                                     paste(save_name, "PU", paste0(PU_size, "km2"),
-                                           ClimateLayer_files[1], sep = "_")))
-roc_phos_SSP245 <- readRDS(file.path("Output", 
-                                     paste(save_name, "PU", paste0(PU_size, "km2"),
-                                           ClimateLayer_files[2], sep = "_")))
-roc_phos_SSP585 <- readRDS(file.path("Output", 
-                                     paste(save_name, "PU", paste0(PU_size, "km2"),
-                                           ClimateLayer_files[3], sep = "_")))
-#' 3. Rates of Declining Oxygen Concentration
-ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/o2os/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
-
-roc_o2os_SSP126 <- readRDS(file.path("Output", 
-                                     paste(save_name, "PU", paste0(PU_size, "km2"),
-                                           ClimateLayer_files[1], sep = "_")))
-roc_o2os_SSP245 <- readRDS(file.path("Output", 
-                                     paste(save_name, "PU", paste0(PU_size, "km2"),
-                                           ClimateLayer_files[2], sep = "_")))
-roc_o2os_SSP585 <- readRDS(file.path("Output", 
-                                     paste(save_name, "PU", paste0(PU_size, "km2"),
-                                           ClimateLayer_files[3], sep = "_")))
-#' 4. Climate Velocity
-ClimateLayer_path <- "Data/Climate/ClimateMetrics/ClimateVelocity/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
-
-velocity_SSP126 <- readRDS(file.path("Output", 
-                                     paste(save_name, "PU", paste0(PU_size, "km2"),
-                                           ClimateLayer_files[1], sep = "_")))
-velocity_SSP245 <- readRDS(file.path("Output", 
-                                     paste(save_name, "PU", paste0(PU_size, "km2"),
-                                           ClimateLayer_files[2], sep = "_")))
-velocity_SSP585 <- readRDS(file.path("Output", 
-                                     paste(save_name, "PU", paste0(PU_size, "km2"),
-                                           ClimateLayer_files[3], sep = "_")))
-#' 5. Annual marine heatwave intensity
-# Conservation Features
-aqua_sf <- read_rds(file.path("Output", 
-                              paste(save_name, "PU", paste0(PU_size,"km2"), 
-                                    "AquaMaps_Output.rds", sep = "_")))
-# Changing to 1s and 0s
-CutOff = 0.5
-subset_aqua_sf <- aqua_sf %>% 
-  as_tibble() %>% 
-  dplyr::select(Doryrhamphus_excisus.excisus, Padina_sanctae.crucis, Platybelone_argalus.platyura,
-                Tylosurus_acus.acus, Tylosurus_acus.melanotus)
-aqua_sf <- aqua_sf %>% 
-  mutate_at(vars(colnames(subset_aqua_sf)), 
-            funs(case_when(. >= CutOff ~ 1,
-                           . <= CutOff ~ 0,
-                           is.na(.) ~ 0)))
-# Cost Layer, Squished
-cost <- read_rds(file.path("Output", 
-                           paste(save_name, "PU", paste0(PU_size,"km2"), 
-                                 "CostLayer_Output.rds", sep = "_"))) %>% 
-  mutate(Cost_squish = scales::oob_squish(Cost, quantile(Cost, c(0.01, 0.99))))
-
-# Uniform Cost (Using the Area)
-UniformCost <- PUs %>% 
-  dplyr::mutate(cost = PU_size)
-
-#### Research Question 1 ####
-#' ## Research Question 1
-#' ### How much more would a climate-smart spatial design cost, compared to a climate-uninformed spatial design?
-
-#' ### Climate-uninformed spatial design
-#' #' To answer this, we first create the climate-uninformed design.
-#' 1. Get the list of features
+#### Climate-uninformed design ####
+# 1. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
   dplyr::select(-geometry) %>% 
   names()
-#' 2. Set up the spatial planning problem
+# 2. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, UniformCost)
 p1 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(0.3) %>% # using 40% as the target percentage of protection
+  add_relative_targets(0.3) %>% # using 30% as the target percentage of protection
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
-#' 3. Solve the planning problem 
+# 3. Solve the planning problem 
 s1 <- prioritizr::solve(p1)
-#' 4. Plot the spatial design
+saveRDS(s1, paste0(output_solutions, "s1-uninformed.rds")) # save solution
+# 4. Plot the spatial design
 s1_plot <- s1 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol1 <- fSpatPlan_PlotSolution(s1_plot, PUs, land) + ggtitle("Uninformed"))
-#' 5. Check summary statistics
+(ggSol1 <- fSpatPlan_PlotSolution(s1_plot, PUs, land) + ggtitle("Climate-uninformed") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "Climate_Uninformed.png",
+       plot = ggSol1, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+# 5. Check summary statistics
 # Feature Representation
 feat_rep <- represent_feature(p1, s1, "uninformed")
 head(feat_rep)
 total_area = nrow(PUs) * PU_size
 print(total_area)
+write.csv(feat_rep, paste0(summary_directory, "Uninformed_FeatureRepresentation.csv")) # save
 # Summary
 summary <- compute_summary(s1, total_area, PU_size, "uninformed", Cost = "cost")
 print(summary)
+write.csv(summary, paste0(summary_directory, "Uninformed_Summary.csv")) # save
 
-#' ### Climate-smart design (Rate of Climate Warming, SSP 5-8.5)
-#' Then, we create the climate-smart design with the following parameters:
-#' 1. Climate metric used: rate of climate warming forced under the highest climate scenario (SSP 5-8.5)
-#' 2. Climate-smart approach used: "percentile" approach
-
-#' 1. Prepare climate layer
+#### "Ensemble" theme
+# Parameters:
+# Ensemble: Ensemble mean
+# Climate metric: Rate of Climate Warming (SSP 5-8.5)
+# Approach: "PErcentile"
+# 1. Prepare climate layer
 # Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (<= 35th percentile)
 aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs)
-
-#' 2. Get list of features
+# 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
   dplyr::select(-geometry) %>% 
   names()
-
-#' 3. Set up the spatial planning problem
+# 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_percentile, roc_tos_SSP585, UniformCost)
 p2 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(30/35) %>% # using Effective 30% Protection. Since we only retained planning units that intersect with both biodiversity features and areas <= 35th percentile (0.35), by multiplying this by ~0.875 target, we effectively protect only 30%.
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
-
-#' 4. Solve the planning problem 
+# 4. Solve the planning problem 
 s2 <- prioritizr::solve(p2)
-
-#' 5. Plot the spatial design
+saveRDS(s2, paste0(output_solutions, "s2-EM-Percentile-tos-585.rds")) # save solution
+# 5. Plot the spatial design
 s2_plot <- s2 %>% 
   mutate(solution_1 = as.logical(solution_1))
 (ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-
-#' 6. Check summary statistics
+ggsave(filename = "EM-Percentile-tos-585.png",
+       plot = ggSol2, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+# 6. Check summary statistics
 # Feature Representation
-temp <- represent_feature(p2, s2, "percentile_tos_585")
-feat_rep <- left_join(temp, feat_rep)
+feat_rep <- represent_feature(p2, s2, "EM_Percentile_tos_585")
 head(feat_rep)
 
 # Summary
-temp <- compute_summary(s2, total_area, PU_size, "percentile_tos_585", Cost = "cost")
-summary <- rbind(temp, summary)
+summary <- compute_summary(s2, total_area, PU_size, "EM_Percentile_tos_585", Cost = "cost")
 print(summary)
-
-# Intersect climate-uninformed spatial plan with the climate layer to get its mean rate of climate warming
-# Getting the mean becaus rate of climate warming seems... normal?
-# tmp <- roc_tos_SSP585 %>% as_tibble()
-#  dplyr::select(slpTrends)
-# qqnorm(tmp$slpTrends)
-# qqline(tmp$slpTrends)
-
-df <- s1 %>% as_tibble() %>% 
-  dplyr::select(solution_1, geometry) %>% 
-  left_join(., roc_tos_SSP585) %>% 
-  filter(solution_1 == 1) %>% 
-  summarize(mean_climate_warming = mean(slpTrends),
-            mean_log_climate_warming = mean(log(slpTrends))) %>% 
-  dplyr::mutate(run = "uninformed")
-
-# Get the mean rate of climate warming for climate-smart design
-df1 <- s2 %>% as_tibble() %>% 
+# Looking for mean rate of climate warming
+df <- s2 %>% as_tibble() %>% 
   dplyr::select(solution_1, geometry, slpTrends) %>% 
   filter(solution_1 == 1) %>% 
   summarize(mean_climate_warming = mean(slpTrends),
             mean_log_climate_warming = mean(log(slpTrends))) %>% 
-  dplyr::mutate(run = "percentile_tos_585") %>% 
-  add_row(df, .)
+  dplyr::mutate(run = "EM_Percentile_tos_585")
 
-summary <- summary %>% left_join(., df1, by = c("run"))
+summary %<>% left_join(., df, by = c("run"))
 
-# Cost
-(ggSummary_Cost <- plot_statistics(summary, col_name = "log10(total_cost)", y_axis = "log10(cost)", color = 2))
-# Area
-(ggSummary_Area <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 2))
-# Mean Climate Warming
-(ggSummary_Warming <- plot_statistics(summary, col_name = "mean_climate_warming", y_axis = expression('Δ'^"o"*'C yr'^"-1"*''), color = 2))
-(ggSummary_LogWarming <- plot_statistics(summary, col_name = "mean_log_climate_warming", y_axis = expression('log Δ'^"o"*'C yr'^"-1"*''), color = 2) + scale_y_reverse())
+# INSERT MULTIMODEL ENSEMBLE HERE #
 
-#' 7. Comparing Spatial Plans
-(gg <- fSpatPlan_PlotComparison(s1_plot, s2_plot, land))
 
-## Create Kappa Correlation Matrix
-list <- c("uninformed", "percentile_tos_585")
-object_list <- list() # empty list
-solution_list <- list(s1, s2)
-for (i in 1:length(list)) {
-  obj <- select_solution(solution_list[[i]], list[i])
-  object_list[[i]] <- obj
-}
-
-(matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list)))
 
 #### Research Question 2 ####
 #' ## Research Question 2
