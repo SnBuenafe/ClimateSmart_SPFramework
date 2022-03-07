@@ -2085,3 +2085,110 @@ LowRegret_sf <- LowRegretAll_sf %>%
 df <- cbind(LowRegret_sf, UniformCost)
 summary_lr <- compute_summary(df, total_area, PU_size, run_name = "LowRegret_All", Cost = "cost")
 print(summary_lr)
+
+#### Exploring Different climate scenarios ####
+
+#' SSP 1-2.6; Percentile (Climate Warming)
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those <= 35th percentile.
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP126, PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, roc_tos_SSP126, UniformCost)
+p38 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s38 <- prioritizr::solve(p38)
+
+#' 5. Plot the spatial design
+s38_plot <- s38 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol38 <- fSpatPlan_PlotSolution(s38_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+
+#' SSP 2-4.5; Percentile (Climate Warming)
+#' 1. Prepare climate layer
+# Intersect this with climate layer, select only those <= 35th percentile.
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP245, PUs = PUs)
+
+#' 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+#' 3. Set up the spatial planning problem
+# targets should be the same as the last climate-smart run
+# print(targets)
+out_sf <- cbind(aqua_percentile, roc_tos_SSP245, UniformCost)
+p39 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+#' 4. Solve the planning problem 
+s39 <- prioritizr::solve(p39)
+
+#' 5. Plot the spatial design
+s39_plot <- s39 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol39 <- fSpatPlan_PlotSolution(s39_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 2-4.5") + theme(axis.text = element_text(size = 25)))
+
+# Feature representation
+list <- c("percentile_tos_126", "percentile_tos_245")
+problem_list <- list(p38, p39)
+solution_list <- list(s38, s39)
+for (i in 1:length(list)) {
+  tmp_df <- represent_feature(problem_list[[i]], solution_list[[i]], list[i])
+  feat_rep <- left_join(tmp_df, feat_rep)
+}
+
+df <- compute_summary(solution_list[[1]], total_area, PU_size, run_name = list[1], Cost = "cost") %>% 
+  rbind(., compute_summary(solution_list[[2]], total_area, PU_size, run_name = list[2], Cost = "cost"))
+
+summary %<>% add_row(df)
+
+#' Get Kappa Correlation Matrix
+list <- c("percentile_tos_126", "percentile_tos_245", "percentile_tos_585")
+object_list <- list() # empty list
+solution_list <- list(s38, s39, s2)
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], list[i])
+  object_list[[i]] <- obj
+}
+
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
+#' ### Low-regret Areas
+#' To create low-regret climate-smart design, we should only select areas that have been selected for all climate-smart designs utilizing different climate scenarios
+# Select solutions for all climate-smart designs
+solution_list <- list(s38, s39, s2)
+col_names <- c("penalty_tos_126", "penalty_tos_245", "penalty_tos_585")
+LowRegret_ClimateScenario <- create_LowRegretSf(solution_list, col_names, PUs)
+
+(gg_LowRegretClimateScenario <- plot_lowregret(LowRegret_ClimateScenario, land) + theme(axis.text = element_text(size = 25)))
+
+#' Check low-regret summary
+LowRegret_SummaryClimateScenario <- compute_summary(LowRegret_ClimateScenario, total_area, PU_size, "low_regret", Cost = "cost") %>% 
+  mutate(approach = "percentile", scenario = 126245585)
+print(LowRegret_SummaryClimateScenario)
+
+LowRegretSummary <- read_csv("Output/summary/LowRegret_summary_statistics.csv") %>% 
+  dplyr::select(-X1) 
+LowRegretSummary %<>% 
+  add_row(., LowRegret_SummaryClimateScenario)
+
+ggSummary_Area <- plot_statistics(summary %>% filter(run %in% c("percentile_tos_126", "percentile_tos_245", "percentile_tos_585") ), col_name = "percent_area", y_axis = "% area", color = 3) + theme(axis.text = element_text(size = 25))

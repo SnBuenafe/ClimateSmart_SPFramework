@@ -98,7 +98,13 @@ plot_statistics <- function(summary, col_name, y_axis, color) {
     
     summary %<>% dplyr::mutate(approach = case_when(str_detect(run, pattern = "uninformed") ~ "uninformed",
                                                     str_detect(run, pattern = "tos") ~ "tos"))
-  }
+  } else if (color == 3) { # For plotting vs scenarios
+    summary %<>% dplyr::mutate(approach = case_when(run == "percentile_tos_585" ~ "SSP 5-8.5",
+                                                    run == "percentile_tos_126" ~ "SSP 1-2.6",
+                                                    run == "percentile_tos_245" ~ "SSP 2-4.5"))
+    
+    color_legend <- c("SSP 1-2.6" = "#289E3D", "SSP 2-4.5" = "#E6C173", "SSP 5-8.5" = "#855600")
+    }
   
   plot <- ggplot(data = summary, aes(x = as.factor(approach))) + # TODO: add in aes (later on) group = scenario
     geom_bar(aes_string(y = col_name, fill = "as.factor(approach)"), stat = 'identity', position = position_dodge()) +

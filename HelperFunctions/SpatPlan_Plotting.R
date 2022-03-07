@@ -16,7 +16,7 @@ fSpatPlan_PlotSolution <- function(s1, PlanUnits, world){
 
 fSpatPlan_PlotPUs <- function(PlanUnits, world){
   gg <- ggplot() +
-    geom_sf(data = PlanUnits, colour = "lightblue", fill = NA, size = 0.1, show.legend = FALSE) +
+    geom_sf(data = PlanUnits, fill = "lightsteelblue2", color = "grey64", size = 0.05, show.legend = FALSE) +
     geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
     coord_sf(xlim = st_bbox(PlanUnits)$xlim, ylim = st_bbox(PlanUnits)$ylim) +
     theme_bw() +
@@ -57,10 +57,10 @@ fSpatPlan_PlotCost <- function(Cost, world){
   
 }
 
-fSpatPlan_PlotClimate <- function(ClimateLayer, world, metric, from, to){
+fSpatPlan_PlotClimate <- function(ClimateLayer, world, metric){
   if (metric == "velocity") {
     fill = "voccMag"
-    palette = rev(brewer.pal(5, "RdYlBu"))
+    palette = rev(brewer.pal(11, "RdYlBu"))
     quantile = ClimateLayer$voccMag
     expression = expression('km yr'^"-1"*'')
     subtitle = "Climate Velocity"
@@ -86,9 +86,10 @@ fSpatPlan_PlotClimate <- function(ClimateLayer, world, metric, from, to){
       geom_sf(data = ClimateLayer, aes(fill = !!sym(fill)), color = NA, size = 0.1, show.legend = TRUE) +
       geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) + 
       coord_sf(xlim = st_bbox(ClimateLayer)$xlim, ylim = st_bbox(ClimateLayer)$ylim) +
-      scale_fill_gradientn(colors = palette, aesthetics = c("colour", "fill"),
-                             limits = c(from, to),
-                             oob = scales::squish) +
+    scale_fill_gradientn(name = expression,
+                         colors = palette,
+                         limits = c(as.numeric(quantile(quantile, 0.05)), as.numeric(quantile(quantile, 0.95))),
+                         oob = scales::squish)+
       labs(fill = expression,
            subtitle = subtitle) +
       theme_bw()

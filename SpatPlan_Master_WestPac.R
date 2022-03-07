@@ -69,7 +69,7 @@ saveRDS(PUs, file.path("Output", paste(save_name, "PU", paste0(PU_size,"km2"), "
 land <- ne_countries(scale = 'large', returnclass = 'sf') %>% 
   fSpatPlan_Convert2PacificRobinson() 
 #' ### Plotting the planning region
-(ggPU <- fSpatPlan_PlotPUs(PUs, land))
+(ggPU <- fSpatPlan_PlotPUs(PUs, land) + theme(axis.text = element_text(size = 25)))
 
 #' ## AquaMaps Conservation Features
 # If using Pacific-centered projection, define western and eastern limits
@@ -87,7 +87,7 @@ if(reprocess){
                                       "AquaMaps_Output.rds", sep = "_")))
 }
 #' ### Plotting the # of features in AquaMaps
-(ggFeatureNo <- fSpatPlan_FeatureNo(aqua_sf, land))
+(ggFeatureNo <- fSpatPlan_FeatureNo(aqua_sf, land) + theme(axis.text = element_text(size = 25)))
 
 #' ## Cost Layer
 
@@ -224,23 +224,22 @@ if(reprocess) {
 }
 
 #' ### Plot the climate layers
-# from and to represent the range of values across the scenarios
-#' Rates of Change in Temperature
-(gg_roc_tos_SSP126 <- fSpatPlan_PlotClimate(roc_tos_SSP126, land, metric = "roc_tos", from = 0, to = 0.05))
-(gg_roc_tos_SSP245 <- fSpatPlan_PlotClimate(roc_tos_SSP245, land, metric = "roc_tos", from = 0, to = 0.05))
-(gg_roc_tos_SSP585 <- fSpatPlan_PlotClimate(roc_tos_SSP585, land, metric = "roc_tos", from = 0, to = 0.05))
+# Rates of Change in Temperature
+gg_roc_tos_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = roc_tos_SSP126, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25))
+gg_roc_tos_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = roc_tos_SSP245, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25))
+gg_roc_tos_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = roc_tos_SSP585, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25))
 
-#' Rates of Change in pH
-(gg_roc_phos_SSP126 <- fSpatPlan_PlotClimate(roc_phos_SSP126, land, metric = "roc_phos", from = -0.005, to = 0))
-(gg_roc_phos_SSP245 <- fSpatPlan_PlotClimate(roc_phos_SSP245, land, metric = "roc_phos", from = -0.005, to = 0))
-(gg_roc_phos_SSP585 <- fSpatPlan_PlotClimate(roc_phos_SSP585, land, metric = "roc_phos", from = -0.005, to = 0))
+# Rates of Change in pH
+gg_roc_phos_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = roc_phos_SSP126, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+gg_roc_phos_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = roc_phos_SSP245, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+gg_roc_phos_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = roc_phos_SSP585, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
 
-#' Rates of Change in Oxygen
-(gg_roc_o2os_SSP126 <- fSpatPlan_PlotClimate(roc_o2os_SSP126, land, metric = "roc_o2os", from = -0.0002, to = 9.08e-05))
-(gg_roc_o2os_SSP245 <- fSpatPlan_PlotClimate(roc_o2os_SSP245, land, metric = "roc_o2os", from = -0.0002, to = 9.08e-05))
-(gg_roc_o2os_SSP585 <- fSpatPlan_PlotClimate(roc_o2os_SSP585, land, metric = "roc_o2os", from = -0.0002, to = 9.08e-05))
+# Rates of Declining Oxygen Concentration
+gg_roc_o2os_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = roc_o2os_SSP126, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+gg_roc_o2os_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = roc_o2os_SSP245, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+gg_roc_o2os_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = roc_o2os_SSP585, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
 
-#' Climate velocity
-(gg_velocity_SSP126 <- fSpatPlan_PlotClimate(velocity_SSP126, land, metric = "velocity", from = 0, to = 200))
-(gg_velocity_SSP245 <- fSpatPlan_PlotClimate(velocity_SSP245, land, metric = "velocity", from = 0, to = 200))
-(gg_velocity_SSP585 <- fSpatPlan_PlotClimate(velocity_SSP585, land, metric = "velocity", from = 0, to = 200))
+# Climate velocity
+gg_velocity_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = velocity_SSP126, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25))
+gg_velocity_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = velocity_SSP245, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25))
+gg_velocity_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = velocity_SSP585, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25))

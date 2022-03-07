@@ -1,5 +1,4 @@
-# Saving files.
-
+#### Saving solutions ####
 # Saving solutions
 output_solutions <- "Output/solutions/"
 # list of solutions to be saved
@@ -58,10 +57,17 @@ fileLabel_list <- c("s34-imptfeature-tos-585.rds", "s35-imptfeature-phos-585.rds
 
 for(i in 1:length(solution_list)) { 
   saveRDS(solution_list[[i]], paste0(output_solutions, fileLabel_list[i]))
- }
+}
 
-## Saving plots
-# Multi Model Ensemble Selection Frequency (Percentile)
+# Different scenarios
+solution_list <- list(s38, s39)
+fileLabel_list <- c("s38-percentile-tos-126.rds", "s39-percentile-tos-245.rds")
+
+for(i in 1:length(solution_list)) { 
+  saveRDS(solution_list[[i]], paste0(output_solutions, fileLabel_list[i]))
+}
+
+#### Multi Model Ensemble Selection Frequency (Percentile) ####
 ggsave(filename = 'MultiModelEnsemble_Percentile_tos_585.png',
        plot = gg_Selection_tosEnsemble_Frequency, width = 21, height = 29.7, dpi = 300,
        path = 'Figures/')
@@ -74,7 +80,7 @@ ggsave(filename = 'MultiModelEnsemble_Percentile_o2os_585.png',
 ggsave(filename = 'MultiModelEnsemble_Percentile_velocity_585.png',
        plot = gg_Selection_velocityEnsemble_Frequency, width = 21, height = 29.7, dpi = 300,
        path = 'Figures/')
-# Percentile approach
+#### Percentile approach ####
 ggsave(filename = "EnsembleMean_Percentile_tos_585.png",
        plot = ggSol2, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -94,7 +100,15 @@ png("Figures/PercentileKappa_585.png", width = 8, height = 8)
 ggsave(filename = "LowRegret_Percentile_585.png",
        plot = gg_LowRegretPercentile, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
-# Feature approach
+# Save Low-regret areas and summaries for multiple cliamte scenarios
+ggsave(filename = "LowRegret_ClimateScenario.png",
+       plot = gg_LowRegretClimateScenario, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "LowRegret_ClimateScenario_Area.png",
+       plot = ggSummary_Area, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+
+#### Feature approach ####
 ggsave(filename = "EnsembleMean_Feature_tos_585.png",
        plot = ggSol6, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -113,7 +127,7 @@ ggsave(filename = "LowRegret_Feature_585.png",
 ggsave(filename = "FeatureArea_585.png",
        plot = ggSummary_Area, width = 7, height = 5, dpi = 300,
        path = "Figures/")
-# Penalty approach
+#### Penalty approach ####
 ggsave(filename = "EnsembleMean_Penalty_tos_585.png",
        plot = ggSol10, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -132,7 +146,7 @@ ggsave(filename = "LowRegret_Penalty_585.png",
 ggsave(filename = "PenaltyArea_585.png",
        plot = ggSummary_Area, width = 7, height = 5, dpi = 300,
        path = "Figures/")
-# Important feature approach
+#### Important feature approach ####
 ggsave(filename = "EnsembleMean_ImptFeature_tos_585.png",
       plot = ggSol34, width = 21, height = 29.7, dpi = 300,
       path = "Figures/")
@@ -151,12 +165,18 @@ ggsave(filename = "LowRegret_ImptFeature_585.png",
 ggsave(filename = "ImportantFeatureArea_585.png",
        plot = ggSummary_Area, width = 7, height = 5, dpi = 300,
        path = "Figures/")
-# Low-regret areas
+#### Low-regret areas ####
 ggsave(filename = "LowRegretArea_585.png",
        plot = ggComparison_Area_LowRegret, width = 7, height = 5, dpi = 300,
        path = "Figures/")
-
-# Percentile workflow figures
+#### Different climate scenarios ####
+ggsave(filename = "EnsembleMean_Percentile_tos_126.png",
+       plot = ggSol38, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+ggsave(filename = "EnsembleMean_Percentile_tos_245.png",
+       plot = ggSol39, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+#### Percentile workflow figures ####
 ggsave(filename = "01a_Percentile_AquaMapsSubset.png",
        plot = aqm1_Plot, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -170,7 +190,7 @@ ggsave(filename = "02b_Percentile_AquaMapsSubset.png",
        plot = aqm2_PercentilePlot, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-# Feature workflow figures
+#### Feature workflow figures ####
 ggsave(filename = "01_Feature_Climate.png",
        plot = gg_roc_tos_SSP585, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -178,7 +198,7 @@ ggsave(filename = "02_Feature_Climate.png",
        plot = featsub, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-# Important Feature figures
+#### Important Feature figures ####
 ggsave(filename = "01a_ImportantFeature_5thPercentile.png",
        plot = aqm1_5thPercentile, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -190,4 +210,48 @@ ggsave(filename = "02a_ImportantFeature_5thPercentile.png",
        path = "Figures/")
 ggsave(filename = "02b_ImportantFeature_95thPercentile.png",
        plot = aqm2_95thPercentile, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+#### Prioritizr layers ####
+ggsave("Layer_PlanningRegion.png",
+       plot = ggPU, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+ggsave("Layer_AquaMaps.png",
+       plot = ggFeatureNo, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+ggsave("Layer_RateOfClimateWarming_SSP126.png",
+       plot = gg_roc_tos_SSP126, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+ggsave("Layer_RateOfClimateWarming_SSP245.png",
+       plot = gg_roc_tos_SSP245, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+ggsave("Layer_RateOfClimateWarming_SSP585.png",
+       plot = gg_roc_tos_SSP585, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+ggsave("Layer_RateOfOceanAcidification_SSP126.png",
+       plot = gg_roc_phos_SSP126, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+ggsave("Layer_RateOfOceanAcidification_SSP245.png",
+       plot = gg_roc_phos_SSP245, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+ggsave("Layer_RateOfOceanAcidification_SSP585.png",
+       plot = gg_roc_phos_SSP585, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+ggsave("Layer_RateOfDecliningOxygen_SSP126.png",
+       plot = gg_roc_o2os_SSP126, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+ggsave("Layer_RateOfDecliningOxygen_SSP245.png",
+       plot = gg_roc_o2os_SSP245, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+ggsave("Layer_RateOfDecliningOxygen_SSP585.png",
+       plot = gg_roc_o2os_SSP585, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+ggsave("Layer_ClimateVelocity_SSP126.png",
+       plot = gg_velocity_SSP126, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+ggsave("Layer_ClimateVelocity_SSP245.png",
+       plot = gg_velocity_SSP245, width = 7, height = 5, dpi = 300,
+       path = "Figures/")
+ggsave("Layer_ClimateVelocity_SSP585.png",
+       plot = gg_velocity_SSP585, width = 7, height = 5, dpi = 300,
        path = "Figures/")
