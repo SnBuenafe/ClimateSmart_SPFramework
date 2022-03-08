@@ -360,3 +360,41 @@ generate_velocity <- function(scenario) {
   }
 }
 generate_velocity(scenario = "SSP 5-8.5")
+
+
+### TODO: Adding save as outputs as well
+
+# Temperature
+#' Call climate layers to be used here (different for each model)
+inpdir <- "Data/Climate/ClimateMetrics_Ensemble/tos/SSP 5-8.5/"
+file_list <- list.files(inpdir)
+
+for (i in 1:length(file_list)) {
+  cCRS <- "+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+  
+  save_name <- unlist(str_split(file_list[i], pattern = "_"))[3]
+  
+  file <- readRDS(paste0(inpdir, file_list[i]))
+  climate_layer <- fSpatPlan_Get_ClimateLayer(ClimateLayer = file, PUs, cCRS, metric = "roc_tos_ensemble")
+  
+  assign(x = paste0("tos_", save_name), value = climate_layer)
+}
+
+#' Save all of them as climate layers
+list <- list(tos_CanESM5, `tos_CMCC-ESM2`, `tos_GFDL-ESM4`, `tos_IPSL-CM6A-LR`, `tos_NorESM2-MM`)
+name_list <- c("roc_tos_SSP 5-8.5_CanESM5_ensemble.rds", "roc_tos_SSP 5-8.5_CMCC-ESM2_ensemble.rds",
+               "roc_tos_SSP 5-8.5_GFDL-ESM4_ensemble.rds", "roc_tos_SSP 5-8.5_IPSL-CM6A-LR_ensemble.rds",
+               "roc_tos_SSP 5-8.5_NorESM2-MM_ensemble.rds")
+
+for (i in 1:length(list)){
+  saveRDS(list[[i]], file.path("Output",
+                           paste(save_name, "PU", paste0(PU_size, "km2"),
+                                 name_list[i], sep = "_")))
+}
+
+#' If already done the saving above, just call the files
+tos_CanESM5 <- readRDS("Output/WestPacific_PU_669.9km2_roc_tos_SSP 5-8.5_CanESM5_ensemble.rds")
+`tos_CMCC-ESM2`<- readRDS("Output/WestPacific_PU_669.9km2_roc_tos_SSP 5-8.5_CMCC-ESM2_ensemble.rds")
+`tos_GFDL-ESM4` <- readRDS("Output/WestPacific_PU_669.9km2_roc_tos_SSP 5-8.5_GFDL-ESM4_ensemble.rds")
+`tos_IPSL-CM6A-LR` <- readRDS("Output/WestPacific_PU_669.9km2_roc_tos_SSP 5-8.5_IPSL-CM6A-LR_ensemble.rds")
+`tos_NorESM2-MM` <- readRDS("Output/WestPacific_PU_669.9km2_roc_tos_SSP 5-8.5_NorESM2-MM_ensemble.rds")

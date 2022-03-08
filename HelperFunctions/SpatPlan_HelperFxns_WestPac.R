@@ -7,9 +7,9 @@ represent_feature <- function(p, s, col_name) {
     mutate(relative_held = relative_held*100) %>% 
     rename(!!sym(col_name) := relative_held)
   
-  if(col_name %in% c("percentile_tos_585", "percentile_phos_585", "percentile_o2os_585", "percentile_velocity_585")) {
+  if(str_detect(col_name, regex("percentile", ignore_case = TRUE))) {
     feat_rep %<>% mutate(!!sym(col_name) := .data[[ col_name ]]*0.5) # calculating the effective protection allotted for the climate layer (40%)
-  } else if(col_name %in% c("penalty_tos_585", "penalty_phos_585", "penalty_o2os_585", "penalty_velocity_585")) {
+  } else if(str_detect(col_name, regex("penalty", ignore_case = TRUE))) {
     feat_rep %<>% add_row(feature = "climate_layer", !!sym(col_name) := NA)
   }
 
