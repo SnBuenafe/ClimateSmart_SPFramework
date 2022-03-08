@@ -24,6 +24,25 @@ roc_tos_SSP245 <- readRDS(file.path("Output",
 roc_tos_SSP585 <- readRDS(file.path("Output", 
                                     paste(save_name, "PU", paste0(PU_size, "km2"),
                                           ClimateLayer_files[3], sep = "_")))
+ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/tos/SSP 5-8.5/"
+ClimateLayer_files <- list.files(ClimateLayer_path)
+
+tos_CanESM5 <- readRDS(file.path("Output",
+                                 paste(save_name, "PU", paste0(PU_size, "km2"),
+                                      ClimateLayer_files[1], sep = "_")))
+`tos_CMCC-ESM2` <- readRDS(file.path("Output",
+                                     paste(save_name, "PU", paste0(PU_size, "km2"),
+                                           ClimateLayer_files[2], sep = "_")))
+`tos_GFDL-ESM4` <- readRDS(file.path("Output",
+                                     paste(save_name, "PU", paste0(PU_size, "km2"),
+                                           ClimateLayer_files[3], sep = "_")))
+`tos_IPSL-CM6A-LR` <- readRDS(file.path("Output",
+                                        paste(save_name, "PU", paste0(PU_size, "km2"),
+                                              ClimateLayer_files[4], sep = "_")))
+`tos_NorESM2-MM` <- readRDS(file.path("Output",
+                                      paste(save_name, "PU", paste0(PU_size, "km2"),
+                                            ClimateLayer_files[5], sep = "_")))
+
 # 2. Rates of Ocean Acidification
 ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/phos/"
 ClimateLayer_files <- list.files(ClimateLayer_path)

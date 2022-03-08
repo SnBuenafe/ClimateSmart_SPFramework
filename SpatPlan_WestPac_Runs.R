@@ -9,9 +9,11 @@ source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functio
 source("HelperFunctions/SpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
 output_solutions <- "Output/solutions/"
 output_summary <- "Output/summary/"
+output_lowregret <- "Output/lowregret/"
 
 # Load files
 source("SpatPlan_Master_Preliminaries.R")
+total_area = nrow(PUs) * PU_size
 
 #### Climate-uninformed design ####
 # 1. Get list of features
@@ -40,8 +42,6 @@ ggsave(filename = "Climate_Uninformed.png",
 # Feature Representation
 feat_rep <- represent_feature(p1, s1, "uninformed")
 head(feat_rep)
-total_area = nrow(PUs) * PU_size
-print(total_area)
 write.csv(feat_rep, paste0(output_summary, "Uninformed_FeatureRepresentation.csv")) # save
 # Summary
 summary <- compute_summary(s1, total_area, PU_size, "uninformed", Cost = "cost")
@@ -88,14 +88,9 @@ head(feat_rep)
 summary <- compute_summary(s2, total_area, PU_size, "EM_Percentile_tos_585", Cost = "cost")
 print(summary)
 # Looking for mean rate of climate warming
-df <- s2 %>% as_tibble() %>% 
-  dplyr::select(solution_1, geometry, slpTrends) %>% 
-  filter(solution_1 == 1) %>% 
-  summarize(mean_climate_warming = mean(slpTrends),
-            mean_log_climate_warming = mean(log(slpTrends))) %>% 
-  dplyr::mutate(run = "EM_Percentile_tos_585")
+climate <- get_ClimateSummary(list(s2), `tos_CanESM5`, "tos", "585", "percentile", "EM_Percentile_tos_585")
 
-summary %<>% left_join(., df, by = c("run"))
+summary %<>% left_join(., climate, by = c("run"))
 
 #### "Multi-model ensemble" approach ####
 # Parameters:
@@ -224,27 +219,32 @@ ggsave(filename = "MM-NorESM2_MM-Percentile-tos-585.png",
 problem_list <- list(p14, p15, p16, p17, p18)
 solution_list <- list(s14, s15, s16, s17, s18)
 names <- c("MM-CanESM5_Percentile_tos_585", "MM-CMCC-ESM2_Percentile_tos_585", "MM-GFDL-ESM4_Percentile_tos_585", "MM-IPSL-CM6A-LR_Percentile_tos_585", "MM-NorESM2-MM_Percentile_tos_585")
-empty_list <- list() # empty list
+empty_list <- tibble(feature = character()) # empty tibble
 for(i in 1:length(names)) {
-  empty_list[[i]] <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
+  df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
+  empty_list <- left_join(df, empty_list, by = "feature")
 }
-feat_rep %<>% lapply(empty_list, left_join)
+feat_rep %<>% left_join(., empty_list)
 write.csv(feat_rep, paste0(output_summary, "EnsembleTheme_tos_FeatureRepresentation.csv")) # save
 
 # Summary
 climateLayer_list <- list(`tos_CanESM5`, `tos_CMCC-ESM2`, `tos_GFDL-ESM4`, `tos_IPSL-CM6A-LR`, `tos_NorESM2-MM`)
-df <- list() # empty list
+df <- tibble(run = character()) # empty tibble
 for(i in 1:length(names)) {
   statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
-  climate <- get_ClimateSummary(solution_list[[i]], climateLayer_list[[i]], "tos", col_scenario = "585", col_approach = "percentile", col_run = names[i])
-  df[[i]] <- left_join(statistics, climate, by = "run")
+  df <- rbind(statistics, df)
 }
-summary %<>% lapply(df, left_join)
+climate <- get_ClimateSummary(solution_list, climateLayer_list[[i]], "tos", col_scenario = "585", col_approach = "percentile", col_run = names)
+
+summary <- left_join(climate, df, by = "run") %>% 
+  rbind(., summary)
+
 write.csv(summary, paste0(output_summary, "EnsembleTheme_tos_Summary.csv")) # save
 
 # Create selection frequency plot
 col_names <- c("tos_CanESM5", "tos_CMCC-ESM2", "tos_GFDL-ESM4", "tos_IPSL-CM6A-LR", "tos_NorESM2-MM")
 s1_MMplot <- create_LowRegretSf(solution_list, col_names, PUs)
+saveRDS(s1_MMplot, paste0(output_lowregret, "s1-MM-SelectionFrequency-Percentile-tos-585.rds")) # save solution
 
 (ggSelFreq1 <- plot_SelectionFrequency(s1_MMplot, land) + ggtitle("Selection Frequency: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
 ggsave(filename = "MM-SelectionFrequency-tos-585.png",
