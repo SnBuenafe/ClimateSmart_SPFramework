@@ -56,6 +56,24 @@ roc_phos_SSP245 <- readRDS(file.path("Output",
 roc_phos_SSP585 <- readRDS(file.path("Output", 
                                      paste(save_name, "PU", paste0(PU_size, "km2"),
                                            ClimateLayer_files[3], sep = "_")))
+ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/phos/SSP 5-8.5/"
+ClimateLayer_files <- list.files(ClimateLayer_path)
+
+phos_CanESM5 <- readRDS(file.path("Output",
+                                 paste(save_name, "PU", paste0(PU_size, "km2"),
+                                      ClimateLayer_files[1], sep = "_")))
+`phos_CMCC-ESM2` <- readRDS(file.path("Output",
+                                     paste(save_name, "PU", paste0(PU_size, "km2"),
+                                           ClimateLayer_files[2], sep = "_")))
+`phos_GFDL-ESM4` <- readRDS(file.path("Output",
+                                     paste(save_name, "PU", paste0(PU_size, "km2"),
+                                           ClimateLayer_files[3], sep = "_")))
+`phos_IPSL-CM6A-LR` <- readRDS(file.path("Output",
+                                        paste(save_name, "PU", paste0(PU_size, "km2"),
+                                              ClimateLayer_files[4], sep = "_")))
+`phos_NorESM2-MM` <- readRDS(file.path("Output",
+                                      paste(save_name, "PU", paste0(PU_size, "km2"),
+                                            ClimateLayer_files[5], sep = "_")))
 # 3. Rates of Declining Oxygen Concentration
 ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/o2os/"
 ClimateLayer_files <- list.files(ClimateLayer_path)
