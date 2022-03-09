@@ -364,14 +364,11 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
   for(i in 1:length(solution_list)) {
     df[[i]] <-  get_mean(solution_list[[i]], climate_layer)
     if (metric == "tos") {
-      df[[i]] %<>% summarize(mean_climate_warming = mean(slpTrends),
-                             mean_log_climate_warming = mean(log(slpTrends)))
+      df[[i]] %<>% summarize(mean_climate_warming = mean(slpTrends))
     } else if (metric == "phos") {
-      df[[i]] %<>% summarize(mean_ocean_acidification = mean(slpTrends),
-                             mean_log_ocean_acidification = mean(log(slpTrends + 0.006)))
+      df[[i]] %<>% summarize(mean_ocean_acidification = mean(slpTrends))
     } else if (metric == "o2os") {
-      df[[i]] %<>% summarize(mean_oxygen_decline = mean(slpTrends),
-                             mean_log_oxygen_decline = mean(log(slpTrends + 0.0002)))
+      df[[i]] %<>% summarize(mean_oxygen_decline = mean(slpTrends))
     } else if (metric == "velocity") {
       df[[i]] %<>% summarize(median_velocity = median(voccMag),
                              mean_log_velocity = mean(log(voccMag)))

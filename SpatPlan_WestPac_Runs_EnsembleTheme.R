@@ -290,7 +290,7 @@ p19 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 # 4. Solve the planning problem 
 s19 <- prioritizr::solve(p19)
-saveRDS(s19, paste0(output_solutions, "s18-MM-CanESM5-Percentile-phos-585.rds")) # save solution
+saveRDS(s19, paste0(output_solutions, "s19-MM-CanESM5-Percentile-phos-585.rds")) # save solution
 #' 5. Plot the spatial design
 s19_plot <- s19 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
@@ -422,24 +422,22 @@ for(i in 1:length(names)) {
   statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
   df <- rbind(statistics, df)
 }
-climate <- get_ClimateSummary(solution_list, climateLayer_list[[i]], "tos", col_scenario = "585", col_approach = "percentile", col_run = names)
+climate <- get_ClimateSummary(solution_list, climateLayer_list[[i]], "phos", col_scenario = "585", col_approach = "percentile", col_run = names)
 
 summary <- left_join(climate, df, by = "run")
 
 write.csv(summary, paste0(output_summary, "EnsembleTheme_phos_Summary.csv")) # save
 
 # Create selection frequency plot
-solution_list <- list(s19, s20, s21, s22, s23)
 col_names <- c("phos_CanESM5", "phos_CMCC-ESM2", "phos_GFDL-ESM4", "phos_IPSL-CM6A-LR", "phos_NorESM2-MM")
 s2_MMplot <- create_LowRegretSf(solution_list, col_names, PUs)
 saveRDS(s2_MMplot, paste0(output_lowregret, "s2-MM-SelectionFrequency-Percentile-phos-585.rds")) # save solution
 
 (ggSelFreq2 <- plot_SelectionFrequency(s2_MMplot, land) + ggtitle("Selection Frequency: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
 ggsave(filename = "MM-SelectionFrequency-phos-585.png",
-       plot = ggSelFreq1, width = 21, height = 29.7, dpi = 300,
+       plot = ggSelFreq2, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
-#### Supplementary Information: Multi-Model Ensemble Approach #### 
 #### Multi-Model Ensemble Approach: Rate of Declining Oxygen Concentration ####
 
 # Parameters:
@@ -598,7 +596,7 @@ for(i in 1:length(names)) {
   statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
   df <- rbind(statistics, df)
 }
-climate <- get_ClimateSummary(solution_list, climateLayer_list[[i]], "tos", col_scenario = "585", col_approach = "percentile", col_run = names)
+climate <- get_ClimateSummary(solution_list, climateLayer_list[[i]], "o2os", col_scenario = "585", col_approach = "percentile", col_run = names)
 
 summary <- left_join(climate, df, by = "run")
 
@@ -615,7 +613,6 @@ ggsave(filename = "MM-SelectionFrequency-o2os-585.png",
        plot = ggSelFreq3, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
-#### Supplementary Information: Multi-Model Ensemble Approach #### 
 #### Multi-Model Ensemble Approach: Climate Velocity ####
 
 # Parameters:
@@ -773,7 +770,7 @@ for(i in 1:length(names)) {
   statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
   df <- rbind(statistics, df)
 }
-climate <- get_ClimateSummary(solution_list, climateLayer_list[[i]], "tos", col_scenario = "585", col_approach = "percentile", col_run = names)
+climate <- get_ClimateSummary(solution_list, climateLayer_list[[i]], "velocity", col_scenario = "585", col_approach = "percentile", col_run = names)
 
 summary <- left_join(climate, df, by = "run")
 
