@@ -373,9 +373,16 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
       df[[i]] %<>% summarize(median_velocity = median(voccMag),
                              mean_log_velocity = mean(log(voccMag)))
     }
-    df[[i]] %<>% dplyr::mutate(run = col_run[[i]],
-                               scenario = col_scenario,
-                               approach = col_approach)
+    if (is.list(col_scenario)) {
+      df[[i]] %<>% dplyr::mutate(run = col_run[[i]],
+                            scenario = col_scenario[i],
+                            approach = col_approach)
+    } else {
+      df[[i]] %<>% dplyr::mutate(run = col_run[[i]],
+                            scenario = col_scenario,
+                            approach = col_approach)
+    }
+
   }
   tmp <- do.call(rbind, df)
   

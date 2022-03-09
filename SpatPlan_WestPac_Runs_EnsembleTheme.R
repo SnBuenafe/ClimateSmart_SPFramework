@@ -92,6 +92,11 @@ climate <- get_ClimateSummary(list(s2), `tos_CanESM5`, "tos", "585", "percentile
 
 summary %<>% left_join(., climate, by = c("run"))
 
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 3) + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-EM-Percentile-tos-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
 #### "Multi-model ensemble" approach ####
 # Parameters:
 # Ensemble: Multi-model ensemble
@@ -241,6 +246,11 @@ summary <- left_join(climate, df, by = "run") %>%
 
 write.csv(summary, paste0(output_summary, "EnsembleTheme_tos_Summary.csv")) # save
 
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 3) + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-MM-Percentile-tos-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
 # Create selection frequency plot
 col_names <- c("tos_CanESM5", "tos_CMCC-ESM2", "tos_GFDL-ESM4", "tos_IPSL-CM6A-LR", "tos_NorESM2-MM")
 s1_MMplot <- create_LowRegretSf(solution_list, col_names, PUs)
@@ -317,7 +327,7 @@ p20 <- prioritizr::problem(out_sf, features, "cost") %>%
 # 4. Solve the planning problem 
 s20 <- prioritizr::solve(p20)
 saveRDS(s20, paste0(output_solutions, "s20-MM-CMCC_ESM2-Percentile-phos-585.rds")) # save solution
-#' 5. Plot the spatial design
+# 5. Plot the spatial design
 s20_plot <- s20 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
 (ggSol20 <- fSpatPlan_PlotSolution(s20_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5 (GCM: CMCC-ESM2)") + theme(axis.text = element_text(size = 25)))
@@ -428,6 +438,11 @@ summary <- left_join(climate, df, by = "run")
 
 write.csv(summary, paste0(output_summary, "EnsembleTheme_phos_Summary.csv")) # save
 
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 3) + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-MM-Percentile-tos-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
 # Create selection frequency plot
 col_names <- c("phos_CanESM5", "phos_CMCC-ESM2", "phos_GFDL-ESM4", "phos_IPSL-CM6A-LR", "phos_NorESM2-MM")
 s2_MMplot <- create_LowRegretSf(solution_list, col_names, PUs)
@@ -517,7 +532,7 @@ p26 <- prioritizr::problem(out_sf, features, "cost") %>%
 # 4. Solve the planning problem 
 s26 <- prioritizr::solve(p26)
 saveRDS(s26, paste0(output_solutions, "s26-MM-GFDL_ESM4-Percentile-o2os-585.rds")) # save solution
-#' 5. Plot the spatial design
+# 5. Plot the spatial design
 s26_plot <- s26 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
 (ggSol26 <- fSpatPlan_PlotSolution(s26_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Percentile, SSP 5-8.5 (GCM: GFDL-ESM4)") + theme(axis.text = element_text(size = 25)))
@@ -601,6 +616,11 @@ climate <- get_ClimateSummary(solution_list, climateLayer_list[[i]], "o2os", col
 summary <- left_join(climate, df, by = "run")
 
 write.csv(summary, paste0(output_summary, "EnsembleTheme_o2os_Summary.csv")) # save
+
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 3) + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-MM-Percentile-tos-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
 
 # Create selection frequency plot
 solution_list <- list(s24, s25, s26, s27, s28)
@@ -775,6 +795,11 @@ climate <- get_ClimateSummary(solution_list, climateLayer_list[[i]], "velocity",
 summary <- left_join(climate, df, by = "run")
 
 write.csv(summary, paste0(output_summary, "EnsembleTheme_velocity_Summary.csv")) # save
+
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 3) + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-MM-Percentile-tos-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
 
 # Create selection frequency plot
 solution_list <- list(s29, s30, s31, s32, s33)
