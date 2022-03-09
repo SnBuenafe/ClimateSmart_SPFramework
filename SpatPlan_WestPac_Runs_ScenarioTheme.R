@@ -113,7 +113,7 @@ problem_list <- list(p38, p39, p2)
 solution_list <- list(s38, s39, s2)
 names <- c("EM-Percentile-tos-126", "EM-Percentile-tos-245", "EM-Percentile-tos-585")
 feat_rep <- tibble(feature = character()) # empty tibble
-for (i in 1:length(list)) {
+for (i in 1:length(names)) {
   df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
   feat_rep <- left_join(df, feat_rep, by = "feature")
 }
@@ -127,13 +127,13 @@ for(i in 1:length(names)) {
   df <- rbind(statistics, df)
 }
 scenario_list <- c("126", "245", "585")
-climate <- get_ClimateSummary(solution_list, climateLayer_list[[i]], "tos", col_scenario = scenario_list, col_approach = "percentile", col_run = names)
+climate <- get_ClimateSummary(solution_list, climateLayer_list, "tos", col_scenario = scenario_list, col_approach = "percentile", col_run = names)
 
 summary <- left_join(climate, df, by = "run")
 
 write.csv(summary, paste0(output_summary, "ScenarioTheme_tos_Summary.csv")) # save
 
-ggLowRegret_Area <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 3) + theme(axis.text = element_text(size = 25))
+ggLowRegret_Area <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "scenario") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "Area-LR-Percentile-tos.png",
        plot = ggLowRegret_Area, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
@@ -154,13 +154,55 @@ for (i in 1:length(list)) {
 #### Create low-regret areas ####
 solution_list <- list(s38, s39, s2)
 col_names <- c("penalty_tos_126", "penalty_tos_245", "penalty_tos_585")
-s1_LRplot <- create_LowRegretSf(solution_list, col_names, PUs)
+s1_LRplot <- create_LowRegretSf(solution_list, col_names, PUs, scenario = TRUE)
 
 (ggLowRegret1 <- plot_lowregret(s1_LRplot, land) + ggtitle("Low-Regret Areas: Different Scenarios", subtitle = "Rate of Climate Warming, Percentile") + theme(axis.text = element_text(size = 25)))
 ggsave(filename = "LR-Scenario-tos.png",
-       plot = s1_LRplot, width = 21, height = 29.7, dpi = 300,
+       plot = ggLowRegret1, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
 #### Summary: low-regret areas ####
 summary <- compute_summary(s1_LRplot, total_area, PU_size, "LR-Percentile-tos", Cost = "cost")
 write.csv(summary, paste0(output_summary, "ScenarioTheme_tos_LowRegretSummary.csv")) # save
+
+#### Extras ####
+x <- read_csv("Output/summary/ScenarioTheme_tos_FeatureRepresentation.csv") %>% 
+  dplyr::select(-1)
+plot <- ggplot(data = x) +
+  geom_line(aes(x = row_number(feature), y = `EM-Percentile-tos-585`), color = "#855600", size = 0.03) +
+  geom_line(aes(x = row_number(feature), y = `EM-Percentile-tos-245`), color = "#E6C173", size = 0.03) +
+  geom_line(aes(x = row_number(feature), y = `EM-Percentile-tos-126`), color = "#289E3D", size = 1) +
+  ylim(40, 50) +
+  xlab("feature") +
+  ylab("% target") +
+  ggtitle("SSP 1-2.6") +
+  theme_classic()
+ggsave("Figures/extras/SscenarioTheme_Targets_126.png",
+      width = 7, height = 5, dpi = 300,
+       plot = plot)
+
+plot <- ggplot(data = x) +
+  geom_line(aes(x = row_number(feature), y = `EM-Percentile-tos-585`), color = "#855600", size = 0.03) +
+  geom_line(aes(x = row_number(feature), y = `EM-Percentile-tos-126`), color = "#289E3D", size = 0.03) +
+  geom_line(aes(x = row_number(feature), y = `EM-Percentile-tos-245`), color = "#E6C173", size = 1) +
+  ylim(40, 50) +
+  xlab("feature") +
+  ylab("% target") +
+  ggtitle("SSP 2-4.5") +
+  theme_classic()
+ggsave("Figures/extras/SscenarioTheme_Targets_245.png",
+       width = 7, height = 5, dpi = 300,
+       plot = plot)
+
+plot <- ggplot(data = x) +
+  geom_line(aes(x = row_number(feature), y = `EM-Percentile-tos-245`), color = "#E6C173", size = 0.03) +
+  geom_line(aes(x = row_number(feature), y = `EM-Percentile-tos-126`), color = "#289E3D", size = 0.03) +
+  geom_line(aes(x = row_number(feature), y = `EM-Percentile-tos-585`), color = "#855600", size = 1) +
+  ylim(40, 50) +
+  xlab("feature") +
+  ylab("% target") +
+  ggtitle("SSP 5-8.5") +
+  theme_classic()
+ggsave("Figures/extras/SscenarioTheme_Targets_585.png",
+       width = 7, height = 5, dpi = 300,
+       plot = plot)

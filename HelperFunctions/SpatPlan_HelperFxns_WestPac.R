@@ -88,7 +88,10 @@ plot_statistics <- function(summary, col_name, y_axis, theme) {
   if (theme == "ensemble"){
     color_legend <- c("#289E3D", "#E6C173", "#855600", "#5075BA", "#81B0CC", "#5A9E67")
     string <- "as.factor(run)"
-  } 
+  } else if (theme == "scenario"){
+    color_legend <- c("126" = "#289E3D", "245" = "#E6C173", "585" = "#855600")
+    string <- "as.factor(scenario)"
+  }
   
   plot <- ggplot(data = summary, aes_string(x = string)) + # TODO: add in aes (later on) group = scenario
     geom_bar(aes_string(y = col_name, fill = string), stat = 'identity', position = position_dodge()) +
@@ -379,7 +382,12 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
   
   df <- list() # create empty list
   for(i in 1:length(solution_list)) {
-    df[[i]] <-  get_mean(solution_list[[i]], climate_layer)
+    if (is.list(climate_layer)) {
+      df[[i]] <-  get_mean(solution_list[[i]], climate_layer[[i]])
+    } else {
+      df[[i]] <-  get_mean(solution_list[[i]], climate_layer)
+    }
+    
     if (metric == "tos") {
       df[[i]] %<>% summarize(mean_climate_warming = mean(slpTrends))
     } else if (metric == "phos") {
@@ -390,7 +398,8 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
       df[[i]] %<>% summarize(median_velocity = median(voccMag),
                              mean_log_velocity = mean(log(voccMag)))
     }
-    if (is.list(col_scenario)) {
+    
+    if (is.vector(col_scenario)) {
       df[[i]] %<>% dplyr::mutate(run = col_run[[i]],
                             scenario = col_scenario[i],
                             approach = col_approach)
@@ -436,7 +445,7 @@ plot_SelectionFrequency <- function(data, land) {
 }
 
 # Create low regret areas for specific approach
-create_LowRegretSf <- function(solution_list, col_names, PUs) {
+create_LowRegretSf <- function(solution_list, col_names, PUs, scenario = FALSE) {
    
   df <- list() # empty list
   for (i in 1:length(col_names)) {
@@ -462,9 +471,16 @@ create_LowRegretSf <- function(solution_list, col_names, PUs) {
   low_regret <- full_join(tmp, PUs_temp, by = "cellID") %>% 
     st_as_sf(sf_column_name = "geometry") %>% 
     left_join(., UniformCost %>% as_tibble(), by = "geometry") %>% 
-    st_as_sf(sf_column_name = "geometry") %>% 
-    dplyr::mutate(solution_1 = ifelse(selection == 4, 1, 0))
+    st_as_sf(sf_column_name = "geometry") 
   
+  if (isTRUE(scenario)) {
+    low_regret %<>% 
+      dplyr::mutate(solution_1 = ifelse(selection == 3, 1, 0))
+  } else {
+    low_regret %<>% 
+      dplyr::mutate(solution_1 = ifelse(selection == 4, 1, 0))    
+  }
+
   return(low_regret)
 }
 
