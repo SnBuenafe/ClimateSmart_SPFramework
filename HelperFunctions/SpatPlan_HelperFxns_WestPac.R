@@ -374,7 +374,7 @@ create_RepresentationFeature <- function(df, aqua_sf) {
 }
 
 # Streamlines calculating the summaries of the climate metrics of the spatial designs
-get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenario, col_approach, col_run) {
+get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenario, col_approach, col_run, climateLayer = "multiple") {
   
   get_mean <- function(s, metric) {
     df <- s %>% as_tibble() %>% 
@@ -385,15 +385,16 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
 
   df <- list() # create empty list
   for(i in 1:length(solution_list)) {
-    if (is.list(climate_layer)) {
-      df[[i]] <-  get_mean(solution_list[[i]], climate_layer[[i]])
-    } else {
+    
+    if(climateLayer == "single") {
       df[[i]] <-  get_mean(solution_list[[i]], climate_layer)
+    } else {
+      df[[i]] <-  get_mean(solution_list[[i]], climate_layer[[i]])
     }
     
-    if (is.vector(metric)) {
+    if (length(metric) > 1) {
     metric = metric[i]
-    }
+    } 
     
     if (metric == "tos") {
       df[[i]] %<>% summarize(mean_climate_warming = mean(slpTrends))
@@ -406,15 +407,15 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
                              mean_log_velocity = mean(log(voccMag)))
     }
     
-    if (is.vector(col_scenario)) {
-      df[[i]] %<>% dplyr::mutate(run = col_run[[i]],
+    if (length(col_scenario) > 1) {
+      df[[i]] %<>% dplyr::mutate(run = col_run[i],
                             scenario = col_scenario[i])
     } else {
-      df[[i]] %<>% dplyr::mutate(run = col_run[[i]],
+      df[[i]] %<>% dplyr::mutate(run = col_run[i],
                             scenario = col_scenario)
     }
 
-    if (is.vector(col_approach)) {
+    if (length(col_approach) > 1) {
       df[[i]] %<>% dplyr::mutate(approach = col_approach[i])
     } else {
       df[[i]] %<>% dplyr::mutate(approach = col_approach)

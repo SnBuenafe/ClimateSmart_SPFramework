@@ -141,7 +141,7 @@ ggsave(filename = "EM-Percentile-velocity-585.png",
 # Feature representation
 problem_list <- list(p2, p3, p4, p5)
 solution_list <- list(s2, s3, s4, s5)
-names <- ("EM_Percentile_tos_585", "EM_Percentile_phos_585", "EM_Percentile_o2os_585", "EM_Percentile_velocity_585")
+names <- c("EM_Percentile_tos_585", "EM_Percentile_phos_585", "EM_Percentile_o2os_585", "EM_Percentile_velocity_585")
 feat_rep <- tibble(feature = character()) # empty tibble
 for(i in 1:length(names)) {
   df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
@@ -157,11 +157,12 @@ for(i in 1:length(names)) {
   statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
   df <- rbind(statistics, df)
 }
-climate <- tibble(run = character()) # empty tibble
-for(i in 1:length(names)) {
-  tmp <- get_ClimateSummary(solution_list, climateLayer_list, metric_list[i], col_scenario = "585", col_approach = "percentile", col_run = names)
-  climate <- left_join(tmp, climate)
+
+climate <- list() # empty list
+for (i in 1:length(names)) {
+  climate[[i]] <- get_ClimateSummary(solution_list, climateLayer_list[[i]], metric_list[i], col_scenario = "585", col_approach = "percentile", col_run = names, climateLayer = "single")
 }
+climate <- plyr::join_all(climate, by=c("run", "scenario", "approach"), type='left')
 
 summary <- left_join(climate, df, by = "run")
 

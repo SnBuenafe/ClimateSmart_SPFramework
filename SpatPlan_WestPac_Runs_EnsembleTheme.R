@@ -88,7 +88,7 @@ head(feat_rep)
 summary <- compute_summary(s2, total_area, PU_size, "EM_Percentile_tos_585", Cost = "cost")
 print(summary)
 # Looking for mean rate of climate warming
-climate <- get_ClimateSummary(list(s2), `tos_CanESM5`, "tos", "585", "percentile", "EM_Percentile_tos_585")
+climate <- get_ClimateSummary(list(s2), list(roc_tos_SSP585), "tos", "585", "percentile", "EM_Percentile_tos_585")
 
 summary %<>% left_join(., climate, by = c("run"))
 
@@ -234,7 +234,7 @@ for(i in 1:length(names)) {
   statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
   df <- rbind(statistics, df)
 }
-climate <- get_ClimateSummary(solution_list, climateLayer_list, "tos", col_scenario = "585", col_approach = "percentile", col_run = names)
+climate <- get_ClimateSummary(solution_list, climateLayer_list, metric = "tos", col_scenario = "585", col_approach = "percentile", col_run = names)
 
 summary <- left_join(climate, df, by = "run") %>% 
   rbind(., summary)
@@ -427,7 +427,7 @@ for(i in 1:length(names)) {
   statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
   df <- rbind(statistics, df)
 }
-climate <- get_ClimateSummary(solution_list, climateLayer_list[[i]], "phos", col_scenario = "585", col_approach = "percentile", col_run = names)
+climate <- get_ClimateSummary(solution_list, climateLayer_list, "phos", col_scenario = "585", col_approach = "percentile", col_run = names)
 
 summary <- left_join(climate, df, by = "run")
 
@@ -606,7 +606,7 @@ for(i in 1:length(names)) {
   statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
   df <- rbind(statistics, df)
 }
-climate <- get_ClimateSummary(solution_list, climateLayer_list[[i]], "o2os", col_scenario = "585", col_approach = "percentile", col_run = names)
+climate <- get_ClimateSummary(solution_list, climateLayer_list, "o2os", col_scenario = "585", col_approach = "percentile", col_run = names)
 
 summary <- left_join(climate, df, by = "run")
 
@@ -785,7 +785,7 @@ for(i in 1:length(names)) {
   statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
   df <- rbind(statistics, df)
 }
-climate <- get_ClimateSummary(solution_list, climateLayer_list[[i]], "velocity", col_scenario = "585", col_approach = "percentile", col_run = names)
+climate <- get_ClimateSummary(solution_list, climateLayer_list, "velocity", col_scenario = "585", col_approach = "percentile", col_run = names)
 
 summary <- left_join(climate, df, by = "run")
 
