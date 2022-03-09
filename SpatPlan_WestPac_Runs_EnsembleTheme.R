@@ -92,11 +92,6 @@ climate <- get_ClimateSummary(list(s2), `tos_CanESM5`, "tos", "585", "percentile
 
 summary %<>% left_join(., climate, by = c("run"))
 
-ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 3) + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Area-EM-Percentile-tos-585.png",
-       plot = ggArea, width = 7, height = 5, dpi = 300,
-       path = "Figures/") # save plot
-
 #### "Multi-model ensemble" approach ####
 # Parameters:
 # Ensemble: Multi-model ensemble
@@ -246,8 +241,8 @@ summary <- left_join(climate, df, by = "run") %>%
 
 write.csv(summary, paste0(output_summary, "EnsembleTheme_tos_Summary.csv")) # save
 
-ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 3) + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Area-MM-Percentile-tos-585.png",
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "ensemble") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-EnsembleTheme-Percentile-tos-585.png",
        plot = ggArea, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
 
@@ -438,8 +433,8 @@ summary <- left_join(climate, df, by = "run")
 
 write.csv(summary, paste0(output_summary, "EnsembleTheme_phos_Summary.csv")) # save
 
-ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 3) + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Area-MM-Percentile-tos-585.png",
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "ensemble") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-MM-Percentile-phos-585.png",
        plot = ggArea, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
 
@@ -617,8 +612,8 @@ summary <- left_join(climate, df, by = "run")
 
 write.csv(summary, paste0(output_summary, "EnsembleTheme_o2os_Summary.csv")) # save
 
-ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 3) + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Area-MM-Percentile-tos-585.png",
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "ensemble") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-MM-Percentile-o2os-585.png",
        plot = ggArea, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
 
@@ -796,8 +791,8 @@ summary <- left_join(climate, df, by = "run")
 
 write.csv(summary, paste0(output_summary, "EnsembleTheme_velocity_Summary.csv")) # save
 
-ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", color = 3) + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Area-MM-Percentile-tos-585.png",
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "ensemble") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-MM-Percentile-velocity-585.png",
        plot = ggArea, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
 

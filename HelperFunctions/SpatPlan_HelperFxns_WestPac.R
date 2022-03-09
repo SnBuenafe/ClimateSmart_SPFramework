@@ -84,38 +84,55 @@ plot_corrplot <- function(matrix, num) {
 }
 
 # Plot statistics
-plot_statistics <- function(summary, col_name, y_axis, color) {
-  if (color == 1) { # For plotting related to RQ2
-    color_legend <- c("tos" = "#289E3D", "phos" = "#E6C173", "o2os" = "#81B0CC", "velocity" = "#855600")
-    
-    summary %<>% dplyr::mutate(approach = case_when(str_detect(run, pattern = "tos") ~ "tos",
-                                                    str_detect(run, pattern = "phos") ~ "phos",
-                                                    str_detect(run, pattern = "o2os") ~ "o2os",
-                                                    str_detect(run, pattern = "velocity") ~ "velocity"))
-    
-  } else if (color == 2) { # For plotting related to RQ1
-    color_legend <- c("uninformed" = "#a6611a", "tos" = "#dfc27d")
-    
-    summary %<>% dplyr::mutate(approach = case_when(str_detect(run, pattern = "uninformed") ~ "uninformed",
-                                                    str_detect(run, pattern = "tos") ~ "tos"))
-  } else if (color == 3) { # For plotting vs scenarios
-    summary %<>% dplyr::mutate(approach = case_when(run == "percentile_tos_585" ~ "SSP 5-8.5",
-                                                    run == "percentile_tos_126" ~ "SSP 1-2.6",
-                                                    run == "percentile_tos_245" ~ "SSP 2-4.5"))
-    
-    color_legend <- c("SSP 1-2.6" = "#289E3D", "SSP 2-4.5" = "#E6C173", "SSP 5-8.5" = "#855600")
-    }
+plot_statistics <- function(summary, col_name, y_axis, theme) {
+  if (theme == "ensemble"){
+    color_legend <- c("#289E3D", "#E6C173", "#855600", "#5075BA", "#81B0CC", "#5A9E67")
+    string <- "as.factor(run)"
+  } 
   
-  plot <- ggplot(data = summary, aes(x = as.factor(approach))) + # TODO: add in aes (later on) group = scenario
-    geom_bar(aes_string(y = col_name, fill = "as.factor(approach)"), stat = 'identity', position = position_dodge()) +
+  plot <- ggplot(data = summary, aes_string(x = string)) + # TODO: add in aes (later on) group = scenario
+    geom_bar(aes_string(y = col_name, fill = string), stat = 'identity', position = position_dodge()) +
     scale_fill_manual(name = 'Run',
                       values = color_legend) +
     xlab("Run") +
     ylab(y_axis) +
     theme(legend.position = "bottom") +
     theme_classic()
-    
+  
   return(plot)
+  
+#  if (color == 1) { # For plotting related to RQ2
+#    color_legend <- c("tos" = "#289E3D", "phos" = "#E6C173", "o2os" = "#81B0CC", "velocity" = "#855600")
+    
+#    summary %<>% dplyr::mutate(approach = case_when(str_detect(run, pattern = "tos") ~ "tos",
+#                                                    str_detect(run, pattern = "phos") ~ "phos",
+#                                                    str_detect(run, pattern = "o2os") ~ "o2os",
+#                                                    str_detect(run, pattern = "velocity") ~ "velocity"))
+    
+#  } else if (color == 2) { # For plotting related to RQ1
+#    color_legend <- c("uninformed" = "#a6611a", "tos" = "#dfc27d")
+    
+#    summary %<>% dplyr::mutate(approach = case_when(str_detect(run, pattern = "uninformed") ~ "uninformed",
+                              #                      str_detect(run, pattern = "tos") ~ "tos"))
+#  } else if (color == 3) { # For plotting vs scenarios
+#    summary %<>% dplyr::mutate(approach = case_when(run == "percentile_tos_585" ~ "SSP 5-8.5",
+#                                                    run == "percentile_tos_126" ~ "SSP 1-2.6",
+ #                                                   run == "percentile_tos_245" ~ "SSP 2-4.5"))
+  #  
+   # color_legend <- c("SSP 1-2.6" = "#289E3D", "SSP 2-4.5" = "#E6C173", "SSP 5-8.5" = "#855600")
+#  } else {
+ #   color_legend <- c("#289E3D", "#E6C173", "#81B0CC", "#855600", "#5075BA")
+  #  }
+  
+  #plot <- ggplot(data = summary, aes(x = as.factor(approach))) + # TODO: add in aes (later on) group = scenario
+   # geom_bar(aes_string(y = col_name, fill = "as.factor(approach)"), stat = 'identity', position = position_dodge()) +
+  #  scale_fill_manual(name = 'Run',
+   #                   values = color_legend) +
+    #xlab("Run") +
+    #ylab(y_axis) +
+    #theme(legend.position = "bottom") +
+    #theme_classic()
+  
 }
 
 # Plots statistics, comparing them across approaches

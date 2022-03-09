@@ -6,7 +6,7 @@ Shape <- "Hexagon" # "Shape of PUs
 
 #### Planning region ####
 
-PUs <- read_rds(file.path("Output", paste(save_name, "PU", paste0(PU_size,"km2"), "Output.rds", sep = "_")))
+PUs <- read_rds(file.path("Output", paste(save_name, paste0("PlanningRegion.rds"), sep = "_")))
 land <- ne_countries(scale = 'large', returnclass = 'sf') %>% 
   fSpatPlan_Convert2PacificRobinson() # Land masses; needed for plotting
 
@@ -103,9 +103,7 @@ velocity_SSP585 <- readRDS(file.path("Output",
 # 5. Annual marine heatwave intensity
 
 #### Conservation Features ####
-aqua_sf <- read_rds(file.path("Output", 
-                              paste(save_name, "PU", paste0(PU_size,"km2"), 
-                                    "AquaMaps_Output.rds", sep = "_")))
+aqua_sf <- read_rds(file.path("Output", paste(save_name, paste0("AquaMaps.rds"), sep = "_")))
 # Changing to 1s and 0s
 CutOff = 0.5
 subset_aqua_sf <- aqua_sf %>% 
@@ -120,9 +118,7 @@ aqua_sf <- aqua_sf %>%
 
 #### Cost layer ####
 # Cost Layer, Squished
-cost <- read_rds(file.path("Output", 
-                           paste(save_name, "PU", paste0(PU_size,"km2"), 
-                                 "CostLayer_Output.rds", sep = "_"))) %>% 
+cost <- read_rds(file.path("Output", paste(save_name, paste0("Cost.rds"), sep = "_"))) %>% 
   mutate(Cost_squish = scales::oob_squish(Cost, quantile(Cost, c(0.01, 0.99))))
 
 # Uniform Cost (Using the Area)
