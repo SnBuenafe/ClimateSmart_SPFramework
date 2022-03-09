@@ -127,7 +127,7 @@ fSpatPlan_FeatureNo <- function(df, world){
     dplyr::select(FeatureSum)
   
   gg <- ggplot() + 
-    geom_sf(data = df, aes(fill = FeatureSum), colour = "grey80", size = 0.1, show.legend = TRUE) +
+    geom_sf(data = df, aes(fill = FeatureSum), colour = "grey64", size = 0.05, show.legend = TRUE) +
     geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
     coord_sf(xlim = st_bbox(df)$xlim, ylim = st_bbox(df)$ylim) +
     cmocean::scale_fill_cmocean(name = "deep", 

@@ -51,15 +51,18 @@ Bndry <- fSpatPlan_Get_Boundary(Limits, cCRS)
 # Create the planning units
 if(reprocess){
 PUs <- fSpatPlan_Get_PlanningUnits(Bndry, world, PU_size, Shape, inverse)
-saveRDS(PUs, file.path("Output", paste(save_name, "PU", paste0(PU_size,"km2"), "Output.rds", sep = "_")))
+saveRDS(PUs, file.path("Output", paste(save_name, paste0("PlanningRegion.rds"), sep = "_")))
 } else {
-  PUs <- read_rds(file.path("Output", paste(save_name, "PU", paste0(PU_size,"km2"), "Output.rds", sep = "_")))
+  PUs <- read_rds(file.path("Output", paste(save_name, paste0("PlanningRegion.rds"), sep = "_")))
 }
 
 land <- ne_countries(scale = 'large', returnclass = 'sf') %>% 
   fSpatPlan_Convert2PacificRobinson() 
 # Plotting the planning region
 (ggPU <- fSpatPlan_PlotPUs(PUs, land) + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_PlanningRegion.png",
+       plot = ggPU, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
 
 #### Creating AquaMaps Layers (Conservation Features) ####
 # AquaMaps Conservation Features
@@ -69,28 +72,23 @@ east_limit = 130 # use positive numbers for eastern limit
 if(reprocess){
   aqua_sf <- fSpatPlan_Get_AquaMaps(PUs, cCRS, MinDepth, MaxDepth, CutOff = CO, limits = c(west_limit, east_limit))
   
-  saveRDS(aqua_sf, file.path("Output", 
-                             paste(save_name, "PU", paste0(PU_size,"km2"), 
-                                   "AquaMaps_Output.rds", sep = "_"))) # Save rds so you don't have to reprocess everytime.
+  saveRDS(aqua_sf, file.path("Output", paste(save_name, paste0("AquaMaps.rds"), sep = "_"))) # Save rds so you don't have to reprocess everytime.
 } else {
-  aqua_sf <- read_rds(file.path("Output", 
-                                paste(save_name, "PU", paste0(PU_size,"km2"), 
-                                      "AquaMaps_Output.rds", sep = "_")))
+  aqua_sf <- read_rds(file.path("Output", paste(save_name, paste0("AquaMaps.rds"), sep = "_")))
 }
 
 # Plotting the # of features in AquaMaps
 (ggFeatureNo <- fSpatPlan_FeatureNo(aqua_sf, land) + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_AquaMaps.png",
+       plot = ggFeatureNo, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
 
 #### Creating Cost Layer ####
 if(reprocess){
   Cost <- fSpatPlan_Get_Cost(PUs, cCRS, group = "all") # set group = all, if including all functional groups
-  saveRDS(Cost, file.path("Output",
-                          paste(save_name, "PU", paste0(PU_size, "km2"),
-                                "CostLayer_Output.rds", sep = "_"))) # Save rds so you don't have to reprocess everytime
+  saveRDS(Cost, file.path("Output", paste(save_name, paste0("Cost.rds"), sep = "_"))) # Save rds so you don't have to reprocess everytime
 } else {
-  Cost <- read_rds(file.path("Output", 
-                                paste(save_name, "PU", paste0(PU_size,"km2"), 
-                                      "CostLayer_Output.rds", sep = "_")))
+  Cost <- read_rds(file.path("Output", paste(save_name, paste0("Cost.rds"), sep = "_")))
 }
 
 # Squish the cost layers
@@ -98,7 +96,7 @@ Cost_squish <- Cost %>%
   mutate(Cost_squish = scales::oob_squish(Cost, quantile(Cost, c(0.01, 0.99))))
 
 # Plotting the cost layer
-(ggCost <- fSpatPlan_PlotCost(Cost, land))
+ggCost <- fSpatPlan_PlotCost(Cost, land)
 
 #### Creating climate layers ####
 # Climate models considered here are: 1) CanESM5, 2) CMCC-ESM2, 3) GFDL-ESM4, 4) IPSL-CM6A-LR, and 5) NorESM2-MM
@@ -142,9 +140,7 @@ if(reprocess) {
 #### Multi-Model Ensemble: Rate of Change of Temperature ####
 if(reprocess) {
   print("Open SpatPlan_ClimateMetrics.R")
-  }
-
-} else {
+  } else {
   ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/tos/SSP 5-8.5/"
   ClimateLayer_files <- list.files(ClimateLayer_path)
   
