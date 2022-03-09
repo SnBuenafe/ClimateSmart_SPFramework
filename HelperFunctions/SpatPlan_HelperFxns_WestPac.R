@@ -91,6 +91,9 @@ plot_statistics <- function(summary, col_name, y_axis, theme) {
   } else if (theme == "scenario"){
     color_legend <- c("126" = "#289E3D", "245" = "#E6C173", "585" = "#855600")
     string <- "as.factor(scenario)"
+  } else if (theme == "metric") {
+    color_legend <- c("#289E3D", "#E6C173", "#81B0CC", "#855600")
+    string <- "as.factor(run)"
   }
   
   plot <- ggplot(data = summary, aes_string(x = string)) + # TODO: add in aes (later on) group = scenario
@@ -379,13 +382,17 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
       left_join(., metric) %>% 
       filter(solution_1 == 1)
   }
-  
+
   df <- list() # create empty list
   for(i in 1:length(solution_list)) {
     if (is.list(climate_layer)) {
       df[[i]] <-  get_mean(solution_list[[i]], climate_layer[[i]])
     } else {
       df[[i]] <-  get_mean(solution_list[[i]], climate_layer)
+    }
+    
+    if (is.vector(metric)) {
+    metric = metric[i]
     }
     
     if (metric == "tos") {
@@ -401,12 +408,16 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
     
     if (is.vector(col_scenario)) {
       df[[i]] %<>% dplyr::mutate(run = col_run[[i]],
-                            scenario = col_scenario[i],
-                            approach = col_approach)
+                            scenario = col_scenario[i])
     } else {
       df[[i]] %<>% dplyr::mutate(run = col_run[[i]],
-                            scenario = col_scenario,
-                            approach = col_approach)
+                            scenario = col_scenario)
+    }
+
+    if (is.vector(col_approach)) {
+      df[[i]] %<>% dplyr::mutate(approach = col_approach[i])
+    } else {
+      df[[i]] %<>% dplyr::mutate(approach = col_approach)
     }
 
   }
