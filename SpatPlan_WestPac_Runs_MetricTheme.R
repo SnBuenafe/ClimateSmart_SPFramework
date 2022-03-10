@@ -203,7 +203,7 @@ write.csv(summary, paste0(output_summary, "MetricTheme_Percentile_LowRegretSumma
 # Ensemble: Ensemble mean
 # Climate metric: Rate of Climate Warming (SSP 5-8.5)
 # Approach: "Feature"
-#' 1. Prepare climate layer
+# 1. Prepare climate layer
 # Climate layer is treated as a feature with its own target.
 ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585)
 # 2. Get list of features
@@ -283,7 +283,7 @@ p8 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 # 4. Solve the planning problem 
 s8 <- prioritizr::solve(p8)
-saveRDS(s8, paste0(output_solutions, "s8-EM_Feature-o2os-585.rds")) # save solution
+saveRDS(s8, paste0(output_solutions, "s8-EM-Feature-o2os-585.rds")) # save solution
 # 5. Plot the spatial design
 s8_plot <- s8 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
@@ -353,14 +353,14 @@ climate <- plyr::join_all(climate, by=c("run", "scenario", "approach"), type='le
 
 summary <- left_join(climate, df, by = "run")
 
-write.csv(summary, paste0(output_summary, "MetricTheme_Feature_Summary.csv")) # sav
+write.csv(summary, paste0(output_summary, "MetricTheme_Feature_Summary.csv")) # save
 
 ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "metric") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "Area-MetricTheme-Feature-585.png",
        plot = ggArea, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
 
-#' Get Kappa Correlation Matrix
+# Get Kappa Correlation Matrix
 list <- c("tos", "phos", "o2os", "velocity")
 object_list <- list() # empty list
 solution_list <- list(s6, s7, s8, s9)
@@ -384,157 +384,175 @@ ggsave(filename = "LR-Metric-Feature.png",
 summary <- compute_summary(s3_LRplot, total_area, PU_size, "LR-Feature-585", Cost = "cost")
 write.csv(summary, paste0(output_summary, "MetricTheme_Feature_LowRegretSummary.csv")) # save
 
-#' ### "Penalty" approach
-#' 
-#' ### Climate-smart spatial design (Rate of Climate Warming)
-#' 
-#' 1. Prepare climate layer
-#' First, we should get the scaling. Scaling would be different for each of the climate metrics.
-#' To get the scaling, we need to know at what percentage do we want to scale the climate metric compared to the cost.
-#' In this scenario, I'm going to look into scaling from 20-70% (increments of 10%), but will report 30% (for now).
-#' I calculated scaling using this equation:
-#' scaling$_ClimateMetric$ $= \frac{(Cost_{Max} - Cost_{Min})}{(ClimateMetric_{Max} - ClimateMetric_{Min})} \cdot (Scaling_{percent})$
-
+#### Supplementary: Penalty ####
+#### Climate Warming ####
+# Parameters:
+# Ensemble: Ensemble mean
+# Climate metric: Rate of Climate Warming (SSP 5-8.5)
+# Approach: "Penalty"
+# 1. Prepare climate layer
+# Get scaling
 scaling_PenaltyWarming <- create_Scaling(UniformCost$cost, roc_tos_SSP585$slpTrends, "tos")
-
-#' 2. Get list of features
+# 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
   dplyr::select(-geometry) %>% 
   names()
-
-#' 3. Set up the spatial planning problem
+# 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, roc_tos_SSP585, UniformCost)
 scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
-
 p10 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(0.3) %>% # target is 30% for all features.
+  add_relative_targets(0.3) %>%
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
   add_linear_penalties(scaling, data = "slpTrends")
-
-#' 4. Solve the planning problem 
+# 4. Solve the planning problem 
 s10 <- prioritizr::solve(p10)
-
-#' 5. Plot the spatial design
+saveRDS(s10, paste0(output_solutions, "s10-EM-Penalty-tos-585.rds")) # save solution
+# 5. Plot the spatial design
 s10_plot <- s10 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol10 <- fSpatPlan_PlotSolution(s10_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Penalty, SSP 5-8.5"))
+(ggSol10 <- fSpatPlan_PlotSolution(s10_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Penalty-tos-585.png",
+      plot = ggSol10, width = 21, height = 29.7, dpi = 300,
+      path = "Figures/") # save
 
-#' ### Climate-smart spatial design (Rate of Ocean Acidification)
-#' 1. Prepare climate layer
+#### Ocean acidification ####
+# Parameters:
+# Ensemble: Ensemble mean
+# Climate metric: Rate of Ocean Acidiication (SSP 5-8.5)
+# Approach: "Penalty"
+# 1. Prepare climate layer
 scaling_PenaltyAcidification <- create_Scaling(UniformCost$cost, roc_phos_SSP585$slpTrends, "phos")
-#' 2. Get list of features
-#' Feature list should be the same as above.
-#' 3. Set up the spatial planning problem
+# 2. Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+# 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, roc_phos_SSP585, UniformCost)
 scaling <- scaling_PenaltyAcidification %>% filter(scaling == 30) %>% pull() # get scaling for 30%
-
 p11 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(0.3) %>% # target is 30% for all features.
+  add_relative_targets(0.3) %>%
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
   add_linear_penalties(scaling, data = "slpTrends")
-
-#' 4. Solve the planning problem 
+# 4. Solve the planning problem 
 s11 <- prioritizr::solve(p11)
-
-#' 5. Plot the spatial design
+saveRDS(s11, paste0(output_solutions, "s11-EM-Penalty-phos-585.rds")) # save solution
+# 5. Plot the spatial design
 s11_plot <- s11 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol11 <- fSpatPlan_PlotSolution(s11_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Penalty, SSP 5-8.5"))
+(ggSol11 <- fSpatPlan_PlotSolution(s11_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(sze = 25)))
+ggsave(filename = "EM-Penalty-phos-585.png",
+      plot = ggSol11, width = 21, height = 29.7, dpi = 300,
+      path = "Figures/") # save plot
 
-#' ### Climate-smart spatial design (Rate of Declining Oxygen Concentration)
-#' 1. Prepare climate layer
+#### Declining Oxygen Concentration ####
+# Parameters:
+# Ensemble: Ensemble mean
+# Climate metrics: Rate of declining oxygen concentration (SSP 5-8.5)
+# Approach: "Penalty"
+# 1. Prepare climate layer
 scaling_PenaltyOxygen <- create_Scaling(UniformCost$cost, roc_o2os_SSP585$slpTrends, "o2os")
-#' 2. Get list of features
-#' Feature list should be the same as above.
-#' 3. Set up the spatial planning problem
+# 2. Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+# 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, roc_o2os_SSP585, UniformCost)
 scaling <- scaling_PenaltyOxygen %>% filter(scaling == 30) %>% pull() # get scaling for 30%
-
 p12 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% # target is 30% for all features.
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
   add_linear_penalties(scaling, data = "slpTrends")
-
-#' 4. Solve the planning problem
+# 4. Solve the planning problem
 s12 <- prioritizr::solve(p12)
-
-#' 5. Plot the spatial design
+saveRDS(s12, paste0(output_solutions, "s12-EM-Penalty-o2os-585.rds")) # save solution
+# 5. Plot the spatial design
 s12_plot <- s12 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol12 <- fSpatPlan_PlotSolution(s12_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Penalty, SSP 5-8.5"))
+(ggSol12 <- fSpatPlan_PlotSolution(s12_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Penalty-o2os-585.png",
+      plot = ggSol12, width = 21, height = 29.7, dpi = 300,
+      path = "Figures/") # save plot
 
-#' ### Climate-smart spatial design (Climate Velocity)
-#' 1. Prepare climate layer
+#### Climate velocity ####
+# Parameters:
+# Ensemble: Ensemble mean
+# Climate metrics: Climate velocity (SSP 5-8.5)
+# Approach: "Penalty"
+# 1. Prepare climate layer
 scaling_PenaltyVelocity <- create_Scaling(UniformCost$cost, velocity_SSP585$voccMag, "velocity")
-#' 2. Get list of features
-#' Feature list should be the same as above.
-#' 3. Set up the spatial planning problem
+# 2. Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+# 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, velocity_SSP585, UniformCost)
 scaling <- scaling_PenaltyVelocity %>% filter(scaling == 30) %>% pull() # get scaling for 30%
-
 p13 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% # target is 30% for all features.
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
   add_linear_penalties(scaling, data = "voccMag")
-
-#' 4. Solve the planning problem
+# 4. Solve the planning problem
 s13 <- prioritizr::solve(p13)
-
-#' 5. Plot the spatial design
+saveRDS(s13, paste0(output_solutions, "s13-EM-Penalty-velocity-585.rds")) # save solution
+# 5. Plot the spatial design
 s13_plot <- s13 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol13 <- fSpatPlan_PlotSolution(s13_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Penalty, SSP 5-8.5"))
+(ggSol13 <- fSpatPlan_PlotSolution(s13_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Penalty-velocity-585.png",
+      plot = ggSol13, width = 21, height = 29.7, dpi = 300,
+      path = "Figures/") # save plot
 
-#' ### Summary of Feature
-
+#### Summary ####
 # Feature representation
-list <- c("penalty_tos_585", "penalty_phos_585", "penalty_o2os_585", "penalty_velocity_585")
 problem_list <- list(p10, p11, p12, p13)
 solution_list <- list(s10, s11, s12, s13)
-for (i in 1:length(list)) {
-  tmp_df <- represent_feature(problem_list[[i]], solution_list[[i]], list[i])
-  feat_rep <- left_join(tmp_df, feat_rep)
+names <- c("EM_Penalty_tos_585", "EM_Penalty_phos_585", "EM_Penalty_o2os_585", "EM_Penalty_velocity_585")
+feat_rep <- tibble(feature = character()) # empty tibble
+for (i in 1:length(names)) {
+  df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
+  feat_rep <- left_join(df, feat_rep, by = "feature")
+}
+write.csv(feat_rep, paste0(output_summary, "MetricTheme_Penalty_FeatureRepresentation.csv")) # save
+
+# Summary
+climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585)
+metric_list <- c("tos", "phos", "o2os", "velocity")
+df <- tibble(run = character()) # empty list
+for(i in 1:length(names)) {
+  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  df <- rbind(statistics, df)
 }
 
-# Computing summaries for all "penalty" approach designs
-run_list <- c("penalty_tos_585", "penalty_phos_585", "penalty_o2os_585",
-              "penalty_velocity_585")
-solution_list <- list(s10, s11, s12, s13)
-emptyList <- list()
-for (i in 1:length(run_list)) {
-  emptyList[[i]] <- compute_summary(solution_list[[i]], total_area, PU_size, run_list[i], Cost = "cost")
+climate <- list() # empty list
+for (i in 1:length(names)) {
+  climate[[i]] <- get_ClimateSummary(solution_list, climateLayer_list[[i]], metric_list[i], col_scenario = "585", col_approach = "penalty", col_run = names, climateLayer = "single")
 }
-penaltySummary <- do.call(rbind, emptyList)
 
-# Get the mean rate of climate warming for all designs
-warming <- get_ClimateSummary(solution_list, climate_layer = roc_tos_SSP585, metric = "tos", col_scenario = "585", col_approach = "penalty", col_run = run_list) %>% 
-  left_join(., penaltySummary)
+climate <- plyr::join_all(climate, by=c("run", "scenario", "approach"), type='left')
 
-# Get the mean rate of ocean acidification for all designs
-acidification <- get_ClimateSummary(solution_list, climate_layer = roc_phos_SSP585, metric = "phos", col_scenario = "585", col_approach = "penalty", col_run = run_list) %>% 
-  left_join(., warming, by = c("run", "scenario", "approach"))
+summary <- left_join(climate, df, by = "run")
 
-# Get the mean rate of declining oxygen concentration for all designs
-oxygen <- get_ClimateSummary(solution_list, climate_layer = roc_o2os_SSP585, metric = "o2os", col_scenario = "585", col_approach = "penalty", col_run = run_list) %>% 
-  left_join(., acidification, by = c("run", "scenario", "approach"))
+write.csv(summary, paste0(output_summary, "MetricTheme_Penalty_Summary.csv")) # save
 
-# Get the mean climate velocity for all designs, then bind it with the summary
-summary <- get_ClimateSummary(solution_list, climate_layer = velocity_SSP585, metric = "velocity", col_scenario = "585", col_approach = "penalty", col_run = run_list) %>% 
-  left_join(., oxygen, by = c("run", "scenario", "approach")) %>% 
-  rbind(., summary)
-head(summary)
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "metric") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-MetricTheme-Penalty-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
 
-#' Get Kappa Correlation Matrix
-list <- c("penalty_tos_585", "penalty_phos_585", "penalty_o2os_585", "penalty_velocity_585")
+# Get Kappa Correlation Matrix
+list <- c("tos", "phos", "o2os", "velocity")
 object_list <- list() # empty list
 solution_list <- list(s10, s11, s12, s13)
 for (i in 1:length(list)) {
@@ -542,22 +560,22 @@ for (i in 1:length(list)) {
   object_list[[i]] <- obj
 }
 
+# manually save corrplot
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
 
-#' ### Low-regret Areas
-#' To create low-regret climate-smart design, we should only select areas that have been selected for all climate-smart designs utilizing different climate metrics
-# Select solutions for all climate-smart designs
-solution_list <- list(s10, s11, s12, s13)
-col_names <- c("penalty_tos_585", "penalty_phos_585", "penalty_o2os_585", "penalty_velocity_585")
-LowRegret_Penalty <- create_LowRegretSf(solution_list, col_names, PUs)
+#### Low-regret areas ####
+s4_LRplot <- create_LowRegretSf(solution_list, names, PUs)
 
-(gg_LowRegretPenalty <- plot_lowregret(LowRegret_Penalty, land) + theme(axis.text = element_text(size = 25)))
+(ggLowRegret4 <- plot_lowregret(s4_LRplot, land) + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "LR-Metric-Penalty.png",
+      plot = ggLowRegret4, width = 21, height = 29.7, dpi = 300,
+      path = "Figures/") # save plot
+# Summary of low-regret
+summary <- compute_summary(s4_LRplot, total_area, PU_size, "LR-Penalty-585", Cost = "cost")
+write.csv(summary, paste0(output_summary, "MetricTheme_Penalty_LowRegretSummary.csv")) # save
 
-#' Check low-regret summary
-LowRegret_SummaryPenalty <- compute_summary(LowRegret_Penalty, total_area, PU_size, "low_regret", Cost = "cost") %>% 
-  mutate(approach = "penalty", scenario = "585")
-print(LowRegret_SummaryPenalty)
+#### Climate PRIORITY AREA APPROACH ####
 
 #### Research Question 4 ####
 #' ## Research Question 4

@@ -498,8 +498,10 @@ create_LowRegretSf <- function(solution_list, col_names, PUs, scenario = FALSE) 
 
 # Create penalty scaling values for the "penalty" approach
 create_Scaling <- function(cost, climate_metric, metric) {
-  
-  percentage <- seq(from  = 20, to = 70, by = 10)
+  # I calculated scaling using this equation:
+  # scaling$_ClimateMetric$ $= \frac{(Cost_{Max} - Cost_{Min})}{(ClimateMetric_{Max} - ClimateMetric_{Min})} \cdot (Scaling_{percent})$
+
+  percentage <- seq(from  = 20, to = 100, by = 10)
   
   x = (max(cost)) / (max(climate_metric) - min(climate_metric)) #  Used max cost instead of range of cost because we're using a uniform cost layer
   
