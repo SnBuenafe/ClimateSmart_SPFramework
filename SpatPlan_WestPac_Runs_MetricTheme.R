@@ -314,7 +314,7 @@ p9 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 # 4. Solve the planning problem 
 s9 <- prioritizr::solve(p9)
-save(s9, paste0(output_solutions, "s9-EM-Feature-velocity-585.rds")) # save solution
+saveRDS(s9, paste0(output_solutions, "s9-EM-Feature-velocity-585.rds")) # save solution
 # 5. Plot the spatial design
 s9_plot <- s9 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
