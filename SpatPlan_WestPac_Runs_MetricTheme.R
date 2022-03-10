@@ -194,7 +194,7 @@ ggsave(filename = "LR-Metric-Percentile.png",
         plot = ggLowRegret2, width = 21, height = 29.7, dpi = 300,
         path = "Figures/") # save plot
 # Summary of low-regret
-summary <- compute_summary(s2_LRplot, total_area, PU_size, "LR-Percentile-tos", Cost = "cost")
+summary <- compute_summary(s2_LRplot, total_area, PU_size, "LR-Percentile-585", Cost = "cost")
 write.csv(summary, paste0(output_summary, "MetricTheme_Percentile_LowRegretSummary.csv")) # save
 
 #### Supplementary: Feature ####
@@ -203,181 +203,165 @@ write.csv(summary, paste0(output_summary, "MetricTheme_Percentile_LowRegretSumma
 # Ensemble: Ensemble mean
 # Climate metric: Rate of Climate Warming (SSP 5-8.5)
 # Approach: "Feature"
-
-
-
-#### Research Question 3 ####
-#' ## Research Question 3
-#' ### How can we incorporate climate metrics into a marine reserve design workflow?
-#' We explore 3 climate-smart approaches here:
-#' 1. "Feature" approach: treating the climate metric as a feature itself, with its own target
-#' 2. "Percentile" approach: filtering the planning units for each of the biodiversity feature by only retaining those that have low exposure or high retention (wrt the species' range)
-#' 3. "Penalty" approach: treating the climate metric as a linear penalty, ultimately altering the objective function.
-#' We already did percentile in RQ2. Here we're going to do "Feature" and "Penalty" approaches forced under the highest climate scenario.
-#' 
-#' ### "Feature" approach
-#' #' ### Climate-smart spatial design (Rate of Climate Warming)
-#' 
 #' 1. Prepare climate layer
+# Climate layer is treated as a feature with its own target.
 ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585)
-
-#' 2. Get list of features
-features <- aqua_percentile %>% 
+# 2. Get list of features
+features <- aqua_sf %>% 
   as_tibble() %>% 
   dplyr::select(-geometry) %>% 
   names()
 features <- append(features, "climate_layer") # add "climate_layer" to features
-
-#' 3. Set up the spatial planning problem
+# 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
-
-# using Effective 40% Protection. Since we only considered the climate_layer as 1s if they are under (or above for phos and o2os) the 50th percentile (0.5), we multiply it by 0.8 to get an effective protection of 40%.
-#targets <- features %>% as_tibble() %>% 
-#  setNames(., "Species") %>% 
-#  add_column(target = 0.4) %>% 
-#  mutate(target = ifelse(Species == "climate_layer", 0.8, 0.4))
-
-# 35th percentile areas = "low exposure areas"; we assign all features (including low-exposure areas) a target of 30%
-
 p6 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% 
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
-
-#' 4. Solve the planning problem 
+# 4. Solve the planning problem 
 s6 <- prioritizr::solve(p6)
-
-#' 5. Plot the spatial design
+saveRDS(s6, paste0(output_solutions, "s6-EM-Feature-tos-585.rds")) # save solution
+# 5. Plot the spatial design
 s6_plot <- s6 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol6 <- fSpatPlan_PlotSolution(s6_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Feature, SSP 5-8.5"))
-#' 
-#' ### Climate-smart spatial design (Rate of Ocean Acidification)
-#' 
-#' 1. Prepare climate layer
+(ggSol6 <- fSpatPlan_PlotSolution(s6_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Feature-tos-585.png",
+      plot = ggSol6, width = 21, height = 29.7, dpi = 300,
+      path = "Figures/") # save
+
+#### Ocean acidification ####
+# Parameters:
+# Ensemble: Ensemble mean
+# Climate metric: Rate of Ocean Acidification (SSP 5-8.5)
+# Approach: "Feature"
+# 1. Prepare climate layer
 ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = roc_phos_SSP585)
-
-#' 2. Get list of features
-# features should be the same as above
-
-#' 3. Set up the spatial planning problem
+# 2. Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+features <- append(features, "climate_layer") # add "climate_layer" to features
+# 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
-
-# targets should be the same as above
-
 p7 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% 
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
-
-#' 4. Solve the planning problem 
+# 4. Solve the planning problem 
 s7 <- prioritizr::solve(p7)
-
-#' 5. Plot the spatial design
+saveRDS(s7, paste0(output_solutions, "s7-EM-Feature-phos-585.rds")) # save solution
+# 5. Plot the spatial design
 s7_plot <- s7 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol7 <- fSpatPlan_PlotSolution(s7_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Feature, SSP 5-8.5"))
+(ggSol7 <- fSpatPlan_PlotSolution(s7_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Feature-phos-585.png",
+       plot = ggSol7, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
 
-#' ### Climate-smart spatial design (Rate of Oxygen Decline)
-#' 
-#' 1. Prepare climate layer
+#### Declining oxygen concentration ####
+# Parameters:
+# Ensemble: Ensemble mean
+# Climate metrics: Rate of Declining oxygen concentration (SSP 5-8.5)
+# Approach: "Feature"
+# 1. Prepare climate layer
 ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = roc_o2os_SSP585)
-
-#' 2. Get list of features
-# features should be the same as above
-
-#' 3. Set up the spatial planning problem
+# 2. Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+features <- append(features, "climate_layer") # add "climate_layer" to features
+# 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
-
-# targets should be the same as above
-
 p8 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% 
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
-
-#' 4. Solve the planning problem 
+# 4. Solve the planning problem 
 s8 <- prioritizr::solve(p8)
-
-#' 5. Plot the spatial design
+saveRDS(s8, paste0(output_solutions, "s8-EM_Feature-o2os-585.rds")) # save solution
+# 5. Plot the spatial design
 s8_plot <- s8 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol8 <- fSpatPlan_PlotSolution(s8_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Feature, SSP 5-8.5"))
+(ggSol8 <- fSpatPlan_PlotSolution(s8_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Feature-o2os-585.png",
+       plot = ggSol8, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
 
-#' ### Climate-smart spatial design (Climate Velocity)
-#' 
-#' 1. Prepare climate layer
+#### Climate velocity ####
+# Parameters:
+# Ensemble: Ensemble mean
+# Climate metrics: Climate velocity (SSP 5-8.5)
+# Approach: "Feature"
+# 1. Prepare climate layer
 ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = velocity_SSP585)
-
-#' 2. Get list of features
-# features should be the same as above
-
-#' 3. Set up the spatial planning problem
+# 2. Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+features <- append(features, "climate_layer") # add "climate_layer" to features
+# 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
-
-# targets should be the same as above
-
 p9 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% 
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
-
-#' 4. Solve the planning problem 
+# 4. Solve the planning problem 
 s9 <- prioritizr::solve(p9)
-
-#' 5. Plot the spatial design
+save(s9, paste0(output_solutions, "s9-EM-Feature-velocity-585.rds")) # save solution
+# 5. Plot the spatial design
 s9_plot <- s9 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol9 <- fSpatPlan_PlotSolution(s9_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Feature, SSP 5-8.5"))
+(ggSol9 <- fSpatPlan_PlotSolution(s9_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Feature-velocity-585.png",
+      plot = ggSol9, width = 21, height = 29.7, dpi = 300,
+      path = "Figures/") # save plot
 
+#### Summary ####
 # Feature representation
-feat_rep %<>% 
-  add_row(feature = "climate_layer", percentile_velocity_585 = NA, percentile_o2os_585 = NA, percentile_phos_585 = NA,
-          percentile_tos_585 = NA, uninformed = NA)
-list <- c("feature_tos_585", "feature_phos_585", "feature_o2os_585", "feature_velocity_585")
 problem_list <- list(p6, p7, p8, p9)
 solution_list <- list(s6, s7, s8, s9)
-for (i in 1:length(list)) {
-  tmp_df <- represent_feature(problem_list[[i]], solution_list[[i]], list[i])
-  feat_rep <- left_join(tmp_df, feat_rep)
+names <- c("EM_Feature_tos_585", "EM_Feature_phos_585", "EM_Feature_o2os_585", "EM_Feature_velocity_585")
+feat_rep <- tibble(feature = character()) # empty tibble
+for(i in 1:length(names)) {
+  df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
+  feat_rep <- left_join(df, feat_rep, by = "feature")
+}
+write.csv(feat_rep, paste0(output_summary, "MetricTheme_Feature_FeatureRepresentation.csv")) # save
+
+# Summary
+climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585)
+metric_list <- c("tos", "phos", "o2os", "velocity")
+df <- tibble(run = character()) # empty tibble
+for(i in 1:length(names)) {
+  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  df <- rbind(statistics, df)
 }
 
-#' ### Summary of Feature
-
-# Computing summaries for all "feature" approach designs
-run_list <- c("feature_tos_585", "feature_phos_585", "feature_o2os_585",
-              "feature_velocity_585")
-solution_list <- list(s6, s7, s8, s9)
-emptyList <- list()
-for (i in 1:length(run_list)) {
-  emptyList[[i]] <- compute_summary(solution_list[[i]], total_area, PU_size, run_list[i], Cost = "cost")
+climate <- list() # empty list
+for (i in 1:length(names)) {
+  climate[[i]] <- get_ClimateSummary(solution_list, climateLayer_list[[i]], metric_list[i], col_scenario = "585", col_approach = "feature", col_run = names, climateLayer = "single")
 }
-featureSummary <- do.call(rbind, emptyList)
 
-# Get the mean rate of climate warming for all designs
-warming <- get_ClimateSummary(solution_list, climate_layer = roc_tos_SSP585, metric = "tos", col_scenario = "585", col_approach = "feature", col_run = run_list) %>% 
-  left_join(., featureSummary)
+climate <- plyr::join_all(climate, by=c("run", "scenario", "approach"), type='left')
 
-# Get the mean rate of ocean acidification for all designs
-acidification <- get_ClimateSummary(solution_list, climate_layer = roc_phos_SSP585, metric = "phos", col_scenario = "585", col_approach = "feature", col_run = run_list) %>% 
-  left_join(., warming, by = c("run", "scenario", "approach"))
+summary <- left_join(climate, df, by = "run")
 
-# Get the mean rate of declining oxygen concentration for all designs
-oxygen <- get_ClimateSummary(solution_list, climate_layer = roc_o2os_SSP585, metric = "o2os", col_scenario = "585", col_approach = "feature", col_run = run_list) %>% 
-  left_join(., acidification, by = c("run", "scenario", "approach"))
+write.csv(summary, paste0(output_summary, "MetricTheme_Feature_Summary.csv")) # sav
 
-# Get the mean climate velocity for all designs, then bind it with the summary
-summary <- get_ClimateSummary(solution_list, climate_layer = velocity_SSP585, metric = "velocity", col_scenario = "585", col_approach = "feature", col_run = run_list) %>% 
-  left_join(., oxygen, by = c("run", "scenario", "approach")) %>% 
-  rbind(., summary)
-head(summary)
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "metric") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-MetricTheme-Feature-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
 
 #' Get Kappa Correlation Matrix
-list <- c("feature_tos_585", "feature_phos_585", "feature_o2os_585", "feature_velocity_585")
+list <- c("tos", "phos", "o2os", "velocity")
 object_list <- list() # empty list
 solution_list <- list(s6, s7, s8, s9)
 for (i in 1:length(list)) {
@@ -385,22 +369,20 @@ for (i in 1:length(list)) {
   object_list[[i]] <- obj
 }
 
+# manually save corrplot
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
 
-#' ### Low-regret Areas
-#' To create low-regret climate-smart design, we should only select areas that have been selected for all climate-smart designs utilizing different climate metrics
-# Select solutions for all climate-smart designs
-solution_list <- list(s6, s7, s8, s9)
-col_names <- c("feature_tos_585", "feature_phos_585", "feature_o2os_585", "feature_velocity_585")
-LowRegret_Feature <- create_LowRegretSf(solution_list, col_names, PUs)
+#### Low-regret areas ####
+s3_LRplot <- create_LowRegretSf(solution_list, names, PUs)
 
-(gg_LowRegretFeature <- plot_lowregret(LowRegret_Feature, land) + theme(axis.text = element_text(size = 25)))
-
-#' Check low-regret summary
-LowRegret_SummaryFeature <- compute_summary(LowRegret_Feature, total_area, PU_size, "low_regret", Cost = "cost") %>% 
-  mutate(approach = "feature", scenario = "585")
-print(LowRegret_SummaryFeature)
+(ggLowRegret3 <- plot_lowregret(s3_LRplot, land) + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "LR-Metric-Feature.png",
+      plot = ggLowRegret3, width = 21, height = 29.7, dpi = 300,
+      path = "Figures/") # save plot
+# Summary of low-regret
+summary <- compute_summary(s3_LRplot, total_area, PU_size, "LR-Feature-585", Cost = "cost")
+write.csv(summary, paste0(output_summary, "MetricTheme_Feature_LowRegretSummary.csv")) # save
 
 #' ### "Penalty" approach
 #' 
