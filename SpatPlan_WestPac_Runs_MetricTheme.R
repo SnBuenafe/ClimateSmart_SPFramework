@@ -445,7 +445,7 @@ saveRDS(s11, paste0(output_solutions, "s11-EM-Penalty-phos-585.rds")) # save sol
 # 5. Plot the spatial design
 s11_plot <- s11 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol11 <- fSpatPlan_PlotSolution(s11_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(sze = 25)))
+(ggSol11 <- fSpatPlan_PlotSolution(s11_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
 ggsave(filename = "EM-Penalty-phos-585.png",
       plot = ggSol11, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
