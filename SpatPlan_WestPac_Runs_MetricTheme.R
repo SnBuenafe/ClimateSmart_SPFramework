@@ -609,10 +609,10 @@ saveRDS(s34, paste0(output_solutions, "s34-EM-ClimatePriorityArea-tos-585.rds"))
 #' 5. Plot the spatial design
 s34_plot <- s34 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol34 <- fSpatPlan_PlotSolution(s34_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Important Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+(ggSol34 <- fSpatPlan_PlotSolution(s34_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
 ggsave(filename = "EM-ClimatePriorityArea-tos-585.png",
       plot = ggSol34, width = 21, height = 29.7, dpi = 300,
-      patah = "Figures/") # save
+      path = "Figures/") # save
 
 #### Ocean acidification ####
 # Parameters:
@@ -647,7 +647,7 @@ saveRDS(s35, paste0(output_solutions, "s35-EM-ClimatePriorityArea-phos-585.rds")
 # 6. Plot the spatial design
 s35_plot <- s35 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol35 <- fSpatPlan_PlotSolution(s35_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Important Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+(ggSol35 <- fSpatPlan_PlotSolution(s35_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
 ggsave(filename = "EM-ClimatePriorityArea-phos-585.png",
       plot = ggSol35, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
@@ -685,7 +685,7 @@ saveRDS(s36, paste0(output_solutions, "s36-EM-ClimatePriorityArea-o2os-585.rds")
 # 6. Plot the spatial design
 s36_plot <- s36 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol36 <- fSpatPlan_PlotSolution(s36_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Important Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+(ggSol36 <- fSpatPlan_PlotSolution(s36_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
 ggsave(filename = "EM-ClimatePriorityArea-o2os-585.png",
       plot = ggSol36, width = 21, height = 29.7, dpi = 300,
       path = "Figures/")
