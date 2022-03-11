@@ -153,9 +153,9 @@ for (i in 1:length(list)) {
 
 #### Create low-regret areas ####
 solution_list <- list(s38, s39, s2)
-col_names <- c("penalty_tos_126", "penalty_tos_245", "penalty_tos_585")
+col_names <- c("126", "245", "585")
 s1_LRplot <- create_LowRegretSf(solution_list, col_names, PUs, scenario = TRUE)
-
+saveRDS(s1_LRplot, paste0(output_lowregret, "s1-EM-LowRegret-Percentile-tos.rds")) # save low-regret solution
 (ggLowRegret1 <- plot_lowregret(s1_LRplot, land) + ggtitle("Low-Regret Areas: Different Scenarios", subtitle = "Rate of Climate Warming, Percentile") + theme(axis.text = element_text(size = 25)))
 ggsave(filename = "LR-Scenario-tos.png",
        plot = ggLowRegret1, width = 21, height = 29.7, dpi = 300,

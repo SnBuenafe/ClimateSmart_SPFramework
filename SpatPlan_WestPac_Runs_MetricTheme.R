@@ -188,7 +188,7 @@ for (i in 1:length(list)) {
 
 #### Low-regret areas ####
 s2_LRplot <- create_LowRegretSf(solution_list, names, PUs)
-
+saveRDS(s2_LRplot, paste0(output_lowregret, "s2-EM-LowRegret-Percentile-585.rds")) # save low-regret solution
 (ggLowRegret2 <- plot_lowregret(s2_LRplot, land) + theme(axis.text = element_text(size = 25)))
 ggsave(filename = "LR-Metric-Percentile.png",
         plot = ggLowRegret2, width = 21, height = 29.7, dpi = 300,
@@ -375,7 +375,7 @@ for (i in 1:length(list)) {
 
 #### Low-regret areas ####
 s3_LRplot <- create_LowRegretSf(solution_list, names, PUs)
-
+saveRDS(s3_LRplot, paste0(output_lowregret, "s3-EM-LowRegret-Feature-585.rds")) # save low-regret solution
 (ggLowRegret3 <- plot_lowregret(s3_LRplot, land) + theme(axis.text = element_text(size = 25)))
 ggsave(filename = "LR-Metric-Feature.png",
       plot = ggLowRegret3, width = 21, height = 29.7, dpi = 300,
@@ -566,7 +566,7 @@ for (i in 1:length(list)) {
 
 #### Low-regret areas ####
 s4_LRplot <- create_LowRegretSf(solution_list, names, PUs)
-
+saveRDS(s4_LRplot, paste0(output_lowregret, "s4-EM-LowRegret-Penalty-585.rds")) # save low-regret solution
 (ggLowRegret4 <- plot_lowregret(s4_LRplot, land) + theme(axis.text = element_text(size = 25)))
 ggsave(filename = "LR-Metric-Penalty.png",
       plot = ggLowRegret4, width = 21, height = 29.7, dpi = 300,
@@ -780,7 +780,7 @@ for (i in 1:length(list)) {
 
 #### Low-regret Areas ####
 s5_LRplot <- create_LowRegretSf(solution_list, names, PUs)
-
+saveRDS(s5_LRplot, paste0(output_lowregret, "s5-EM-LowRegret-ClimatePriorityArea-585.rds")) # save low-regret solution
 (ggLowRegret5 <- plot_lowregret(s5_LRplot, land) + theme(axis.text = element_text(size = 25)))
 ggsave(filename = "LR-Metric-ClimatePriorityArea.png",
       plot = ggLowRegret5, width = 21, height = 29.7, dpi = 300,
