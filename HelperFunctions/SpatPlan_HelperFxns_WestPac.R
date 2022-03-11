@@ -96,6 +96,9 @@ plot_statistics <- function(summary, col_name, y_axis, theme) {
   } else if (theme == "metric") {
     color_legend <- c("#289E3D", "#E6C173", "#81B0CC", "#855600")
     string <- "as.factor(run)"
+  } else if (theme == "LR-approach"){
+    color_legend = c("#E6BA7E", "#4D3B2A", "#6984BF", "#2B8142")
+    string <- "as.factor(run)"
   }
   
   plot <- ggplot(data = summary, aes_string(x = string)) + # TODO: add in aes (later on) group = scenario
@@ -524,36 +527,53 @@ create_Scaling <- function(cost, climate_metric, metric) {
 }
 
 # Creates the summaries of the climate metrics for low-regret areas
-lowRegret_ClimateSummary <- function(df, approach_column) {
+lowRegret_ClimateSummary <- function(solution, run, metric, climate, scenario, approach) {
   
-  metric = c("tos", "phos", "o2os", "velocity")
+  list <- list() # empty list
   
-  df_tmp <- list()
-  for (i in 1:length(metric)) {
-    df_tmp[[i]] <- df %>% as_tibble() %>% 
-      dplyr::filter(!!sym(approach_column) == 1) %>% 
-      dplyr::select(!!sym(metric[i]))
+  for(i in 1:length(run)) {
+    df <- solution[[i]] %>% 
+      dplyr::select(selection, cellID) %>% 
+      dplyr::rename(solution_1 = selection)
     
-    if (metric[i] == "tos") {
-      df_tmp[[i]] %<>% summarize(mean_climate_warming = mean(!!sym(metric[i])),
-                            mean_log_climate_warming = mean(log(!!sym(metric[i]))))
-    } else if (metric[i] == "phos") {
-      df_tmp[[i]] %<>% summarize(mean_ocean_acidification = mean(!!sym(metric[i])),
-                            mean_log_ocean_acidification = mean(log(!!sym(metric[i]) + 0.006)))
-    } else if (metric[i] == "o2os") {
-      df_tmp[[i]] %<>% summarize(mean_oxygen_decline = mean(!!sym(metric[i])),
-                            mean_log_oxygen_decline = mean(log(!!sym(metric[i]) + 0.0002)))
-    } else if (metric[i] == "velocity") {
-      df_tmp[[i]] %<>% summarize(median_velocity = mean(!!sym(metric[i])),
-                            mean_log_velocity = mean(log(!!sym(metric[i]))))
+    x <- tibble(run = character()) # empty tibble
+    for(j in 1:length(metric)) {
+      tmp <- get_ClimateSummary(solution_list = list(df), climate_layer = climate[[j]],
+                                metric = metric[j], col_scenario = scenario,
+                                col_approach = approach[i], col_run = run[i], 
+                                climateLayer = "single")
+      x <- left_join(tmp, x)
     }
+    
+    list[[i]] <- x
   }
-  approach = tolower(unlist(str_split(approach_column, pattern = "_"))[1])
   
-  df_ex <- do.call(cbind, df_tmp) %>% 
-    add_column(approach = approach)
-   
-  return(df_ex)
+  complete <- do.call(rbind, list)
+  return(complete)
+}
+
+# intersection of all low-regret areas
+intersect_lowregret <- function(solution, run) {
+  
+  tibble <- tibble(cellID = integer()) #empty tibble
+  for(i in 1:length(run)) {
+    df <- solution[[i]] %>% 
+      as_tibble() %>% 
+      dplyr::select(selection, cellID) %>% 
+      dplyr::rename(!!sym(run[i]) := selection)
+    tibble <- left_join(df, tibble)
+  }
+  
+  tmp <- PUs %>% 
+    dplyr::mutate(cellID = row_number()) %>% 
+    as_tibble()
+  
+  tibble %<>% dplyr::mutate(selection = rowSums(., na.rm = TRUE) - cellID) %>% 
+    left_join(., tmp, by = "cellID") %>% 
+    dplyr::mutate(cost = PU_size) %>% 
+    st_as_sf(sf_column_name = "geometry")
+    
+  return(tibble)
 }
 
 # Compares statistics across approaches and metrics.
@@ -561,22 +581,6 @@ plot_ComparisonStatistics <- function(summary, col_name, y_axis) {
   color_legend = c("uninformed" = "#1C2833", "feature" = "#E6BA7E", "percentile" = "#4D3B2A", "penalty" = "#6984BF")
   
   plot <- ggplot(data = summary, aes(x = as.factor(metric), group = as.factor(approach))) +
-    geom_bar(aes_string(y = col_name, fill = "as.factor(approach)"), stat = 'identity', position = position_dodge()) +
-    scale_fill_manual(name = 'Approach',
-                      values = color_legend) +
-    xlab("Climate-smart Metric") +
-    ylab(y_axis) +
-    theme(legend.position = "bottom") +
-    theme_classic()
-  
-  return(plot)
-}
-
-# Plots statistics of low-regret areas
-plot_LowRegretStatistics <- function(summary, col_name, y_axis) {
-  color_legend = c("feature" = "#E6BA7E", "percentile" = "#4D3B2A", "penalty" = "#6984BF", "imptfeature" = "#2B8142")
-  
-  plot <- ggplot(data = summary, aes(x = as.factor(approach))) +
     geom_bar(aes_string(y = col_name, fill = "as.factor(approach)"), stat = 'identity', position = position_dodge()) +
     scale_fill_manual(name = 'Approach',
                       values = color_legend) +
