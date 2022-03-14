@@ -80,7 +80,7 @@ plot_corrplot <- function(matrix, num) {
   class(matrix_f) <- "numeric"
   
   col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
-  plot <- corrplot(matrix_f, method = "shade", cl.lim = c(-0.02,1), tl.col = "black", addCoef.col = "black",
+  plot <- corrplot(matrix_f, method = "shade", cl.lim = c(-0.1,1), tl.col = "black", addCoef.col = "black",
                    col=col(200), tl.srt=45)
   return(plot)
 }

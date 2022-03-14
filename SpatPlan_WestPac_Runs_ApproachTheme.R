@@ -32,7 +32,7 @@ LRPenalty_summary <- read_csv("Output/summary/MetricTheme_Penalty_LowRegretSumma
 LRClimatePriorityArea_summary <- read_csv("Output/summary/MetricTheme_ClimatePriorityArea_LowRegretSummary.csv") %>% 
   dplyr::select(-1)
 
-# Compare cost of each
+# Compare area of each
 summary <- rbind(LRFeature_summary, LRPercentile_summary, LRPenalty_summary, LRClimatePriorityArea_summary)
 
 ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach")  + theme(axis.text = element_text(size = 25))
@@ -44,8 +44,8 @@ ggsave(filename = "Area-ApproachTheme-Approaches-585.png",
 solution_list <- list(LRFeature, LRPercentile, LRPenalty, LRClimatePriorityArea)
 names <- c("Feature", "Percentile", "Penalty", "ClimatePriorityArea")
 object_list <- list() # empty list
-for (i in 1:length(list)) {
-  obj <- select_solution(solution_list[[i]], list[i])
+for (i in 1:length(names)) {
+  obj <- select_solution(solution_list[[i]], names[i])
   object_list[[i]] <- obj
 }
 
@@ -86,7 +86,7 @@ write.csv(summary, paste0(output_summary, "ApproachTheme_Approaches_LowRegretSum
 sp1 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[4289]) %>% 
   dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
 
-sp1_plot <- plot_AQMFeatures(aqm_subset1, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
+sp1_plot <- plot_AQMFeatures(sp1, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "Workflow-Percentile-sp1.png",
       plot = sp1_plot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
@@ -94,7 +94,7 @@ ggsave(filename = "Workflow-Percentile-sp1.png",
 sp1_percentile <- create_PercentileLayer(aqua_sf = sp1, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
   dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
 
-sp1_PercentilePlot <- plot_AQMFeatures(aqm1_percentile, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
+sp1_PercentilePlot <- plot_AQMFeatures(sp1_percentile, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "Workflow-Percentile-sp1Filtered.png",
       plot = sp1_PercentilePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
@@ -110,7 +110,7 @@ ggsave(filename = "Workflow-Percentile-sp2.png",
 sp2_percentile <- create_PercentileLayer(aqua_sf = sp2, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
   dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
 
-sp2_PercentilePlot <- plot_AQMFeatures(aqm2_percentile, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #1", subtitle = "Thunnus_orientalis") + theme(axis.text = element_text(size = 25))
+sp2_PercentilePlot <- plot_AQMFeatures(sp2_percentile, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #1", subtitle = "Thunnus_orientalis") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "Workflow-Percentile-sp2Filtered.png",
       plot = sp2_PercentilePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
@@ -131,7 +131,7 @@ ggsave(filename = "Workflow-Feature-climateFiltered.png",
 sp1_ImportantFeature <- create_ImportantFeatureLayer(sp1, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585) %>% 
   dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
 
-sp1_ImportantFeaturePlot <- plot_AQMFeatures(ImptFeat, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
+sp1_ImportantFeaturePlot <- plot_AQMFeatures(sp1_ImportantFeature, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "Workflow-ClimatePriorityArea-sp1ImptFeat.png",
       plot = sp1_ImportantFeaturePlot, width = 21, height= 29.7, dpi = 300,
       path = "Figures/") # save plot
@@ -141,7 +141,7 @@ sp1_RepresentationFeature <- create_RepresentationFeature(sp1_ImportantFeature, 
 
 sp1_RepresentationFeaturePlot <- plot_AQMFeatures(sp1_RepresentationFeature, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "Workflow-ClimatePriorityArea-sp1RepFeat.png",
-      plot = sp2_RepresentationFeaturePlot, width = 21, height = 29.7, dpi = 300,
+      plot = sp1_RepresentationFeaturePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
 sp2_ImportantFeature <- create_ImportantFeatureLayer(sp2, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585) %>% 

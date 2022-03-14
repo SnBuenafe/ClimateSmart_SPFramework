@@ -257,9 +257,9 @@ ggsave(filename = "MM-SelectionFrequency-tos-585.png",
        path = "Figures/") # save plot
 
 # Kappa
-list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+list <- c("EnsembleMean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 object_list <- list() # empty list
-solution_list <- list(s14, s15, s16, s17, s18)
+solution_list <- list(s2, s14, s15, s16, s17, s18)
 for (i in 1:length(list)) {
   obj <- select_solution(solution_list[[i]], list[i])
   object_list[[i]] <- obj
@@ -269,6 +269,38 @@ for (i in 1:length(list)) {
     plot_corrplot(., length(object_list)))
 
 #### Supplementary Information: Multi-Model Ensemble Approach #### 
+
+#### "Ensemble mean" approach: Rate of Ocean Acidification ####
+# Parameters:
+# Ensemble: Ensemble mean
+# Climate metric: Rate of Ocean Acidification (SSP 5-8.5)
+# Approach: "Percentile"
+# 1. Prepare climate layer
+# Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (>= 65th percentile)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = roc_phos_SSP585, PUs = PUs)
+# 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+# 3. Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, roc_phos_SSP585, UniformCost)
+p3 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+# 4. Solve the planning problem 
+s3 <- prioritizr::solve(p3)
+saveRDS(s3, paste0(output_solutions, "s3-EM-Percentile-phos-585.rds")) # save solution
+# 5. Plot the spatial design
+s3_plot <- s3 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol3 <- fSpatPlan_PlotSolution(s3_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Percentile-phos-585.png",
+       plot = ggSol3, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
 #### Multi-Model Ensemble Approach: Rate of Ocean Acidification ####
 
 # Parameters:
@@ -446,6 +478,48 @@ saveRDS(s2_MMplot, paste0(output_lowregret, "s2-MM-SelectionFrequency-Percentile
 (ggSelFreq2 <- plot_SelectionFrequency(s2_MMplot, land) + ggtitle("Selection Frequency: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
 ggsave(filename = "MM-SelectionFrequency-phos-585.png",
        plot = ggSelFreq2, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# Kappa
+list <- c("EnsembleMean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+object_list <- list() # empty list
+solution_list <- list(s3, s19, s20, s21, s22, s23)
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], list[i])
+  object_list[[i]] <- obj
+}
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
+#### "Ensemble mean" approach: Rate of Declining Oxygen Concentration ####
+# Parameters:
+# Ensemble: Ensemble mean
+# Climate metric: Rate of Declining Oxygen Concentration (SSP 5-8.5)
+# Approach: "Percentile"
+# 1. Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = roc_o2os_SSP585, PUs = PUs)
+# 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+# 3. Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, roc_o2os_SSP585, UniformCost)
+p4 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+# 4. Solve the planning problem 
+s4 <- prioritizr::solve(p4)
+saveRDS(s4, paste0(output_solutions, "s4-EM-Percentile-o2os-585.rds")) # save solution
+#' 5. Plot the spatial design
+s4_plot <- s4 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol4 <- fSpatPlan_PlotSolution(s4_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concetration", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Percentile-o2os-585.png",
+       plot = ggSol4, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
 #### Multi-Model Ensemble Approach: Rate of Declining Oxygen Concentration ####
@@ -628,6 +702,50 @@ ggsave(filename = "MM-SelectionFrequency-o2os-585.png",
        plot = ggSelFreq3, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
+# Kappa
+list <- c("EnsembleMean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+object_list <- list() # empty list
+solution_list <- list(s4, s24, s25, s26, s27, s28)
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], list[i])
+  object_list[[i]] <- obj
+}
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
+
+
+#### "Ensemble mean" approach: Climate Velocity ####
+# Parameters:
+# Ensemble: Ensemble mean
+# Climate metric: Climate Velocity (SSP 5-8.5)
+# Approach: "Percentile"
+# 1. Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = velocity_SSP585, PUs = PUs)
+# 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+# 3. Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, velocity_SSP585, UniformCost)
+p5 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+# 4. Solve the planning problem 
+s5 <- prioritizr::solve(p5)
+saveRDS(s5, paste0(output_solutions, "s5-EM-Percentile-velocity-585.rds")) # save solution
+# 5. Plot the spatial design
+s5_plot <- s5 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol5 <- fSpatPlan_PlotSolution(s5_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Percentile-velocity-585.png",
+       plot = ggSol5, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
 #### Multi-Model Ensemble Approach: Climate Velocity ####
 
 # Parameters:
@@ -806,5 +924,17 @@ saveRDS(s4_MMplot, paste0(output_lowregret, "s4-MM-SelectionFrequency-Percentile
 ggsave(filename = "MM-SelectionFrequency-velocity-585.png",
        plot = ggSelFreq4, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
+
+# Kappa
+list <- c("EnsembleMean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+object_list <- list() # empty list
+solution_list <- list(s5, s29, s30, s31, s32, s33)
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], list[i])
+  object_list[[i]] <- obj
+}
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
 
 #### TODO: Marine Heatwaves ####
