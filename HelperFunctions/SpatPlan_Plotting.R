@@ -59,13 +59,10 @@ fSpatPlan_PlotCost <- function(Cost, world){
 
 fSpatPlan_PlotClimate <- function(ClimateLayer, world, metric){
   if (metric == "velocity") {
-    fill = "voccMag"
     palette = rev(brewer.pal(11, "RdYlBu"))
-    quantile = ClimateLayer$voccMag
     expression = expression('km yr'^"-1"*'')
     subtitle = "Climate Velocity"
   } else if (metric %in% c("roc_tos", "roc_phos", "roc_o2os")) {
-    fill = "slpTrends"
     quantile = ClimateLayer$slpTrends
     if (metric == "roc_tos") {
       palette = brewer.pal(9, "YlGn")
@@ -83,12 +80,12 @@ fSpatPlan_PlotClimate <- function(ClimateLayer, world, metric){
   }
   
   gg <- ggplot() +
-      geom_sf(data = ClimateLayer, aes(fill = !!sym(fill)), color = NA, size = 0.1, show.legend = TRUE) +
+      geom_sf(data = ClimateLayer, aes(fill = transformed), color = NA, size = 0.1, show.legend = TRUE) +
       geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) + 
       coord_sf(xlim = st_bbox(ClimateLayer)$xlim, ylim = st_bbox(ClimateLayer)$ylim) +
     scale_fill_gradientn(name = expression,
                          colors = palette,
-                         limits = c(as.numeric(quantile(quantile, 0.05)), as.numeric(quantile(quantile, 0.95))),
+                         limits = c(as.numeric(quantile(ClimateLayer$transformed, 0.05)), as.numeric(quantile(ClimateLayer$transformed, 0.95))),
                          oob = scales::squish)+
       labs(fill = expression,
            subtitle = subtitle) +

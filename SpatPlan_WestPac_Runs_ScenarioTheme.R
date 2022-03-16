@@ -22,7 +22,7 @@ total_area = nrow(PUs) * PU_size
 # Approach: "Percentile"
 # 1. Prepare climate layer
 # Intersect this with climate layer, select only those <= 35th percentile.
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP126, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP126, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -52,7 +52,7 @@ ggsave(filename = "EM-Percentile-tos-126.png",
 # Climate metric: Rate of Climate Warming (SSP 2-4.5)
 # Approach: "Percentile"
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP245, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP245, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -83,7 +83,7 @@ ggsave(filename = "EM-Percentile-tos-245.png",
 # Approach: "Percentile"
 # 1. Prepare climate layer
 # Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (<= 35th percentile)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -118,6 +118,36 @@ for (i in 1:length(names)) {
   feat_rep <- left_join(df, feat_rep, by = "feature")
 }
 write.csv(feat_rep, paste0(output_summary, "ScenarioTheme_tos_FeatureRepresentation.csv")) # save
+
+targetSSP126 <- ggplot(data = feat_rep, aes(x = row_number(feature), y = `EM-Percentile-tos-126`, group = 1)) + 
+  geom_line(color = "#289E3D") + 
+  geom_hline(yintercept=30, linetype="dashed", 
+             color = "red", size=1) +
+  theme_classic() +
+  theme(axis.text = element_text(size = 25))
+ggsave(filename = "Target-Percentile-tos-126.png",
+       plot = targetSSP126, width = 15, height = 7, dpi = 300,
+       path = "Figures/") # save plot
+
+targetSSP245 <- ggplot(data = feat_rep, aes(x = row_number(feature), y = `EM-Percentile-tos-245`, group = 1)) + 
+  geom_line(color = "#E6C173") + 
+  geom_hline(yintercept=30, linetype="dashed", 
+             color = "red", size=1) +
+  theme_classic() +
+  theme(axis.text = element_text(size = 25))
+ggsave(filename = "Target-Percentile-tos-245.png",
+       plot = targetSSP245, width = 15, height = 7, dpi = 300,
+       path = "Figures/") # save plot
+
+targetSSP585 <- ggplot(data = feat_rep, aes(x = row_number(feature), y = `EM-Percentile-tos-585`, group = 1)) + 
+  geom_line(color = "#855600") + 
+  geom_hline(yintercept=30, linetype="dashed", 
+             color = "red", size=1) +
+  theme_classic() +
+  theme(axis.text = element_text(size = 25))
+ggsave(filename = "Target-Percentile-tos-585.png",
+       plot = targetSSP585, width = 15, height = 7, dpi = 300,
+       path = "Figures/") # save plot
 
 # Summary
 climateLayer_list <- list(roc_tos_SSP126, roc_tos_SSP245, roc_tos_SSP585)
@@ -164,3 +194,48 @@ ggsave(filename = "LR-Scenario-tos.png",
 #### Summary: low-regret areas ####
 summary <- compute_summary(s1_LRplot, total_area, PU_size, "LR-Percentile-tos", Cost = "cost")
 write.csv(summary, paste0(output_summary, "ScenarioTheme_tos_LowRegretSummary.csv")) # save
+
+#### Measuring "climate-smart"-edness ####
+# Kernel Density Plots
+df1 <- s38 %>% dplyr::filter(solution_1 == 1)
+df2 <- s39 %>% dplyr::filter(solution_1 == 1)
+df3 <- s2 %>% dplyr::filter(solution_1 == 1)
+
+ggDist <- ggplot() +
+  geom_density(data = df1, aes(x = transformed), color = "#289E3D", fill = "#289E3D") +
+  geom_density(data = df2, aes(x = transformed), color = "#E6C173", fill = "#E6C173") +
+  geom_density(data = df3, aes(x = transformed), color = "#855600", fill = "#855600") +
+  theme(axis.text = element_text(size = 25)) +
+  theme_classic()
+ggsave(filename = "ClimateWarmingDist-LR-Percentile-tos.png",
+       plot = ggDist, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
+climate <- read_csv("Output/summary/ScenarioTheme_tos_Summary.csv") %>% dplyr::select(-1)
+ggClimateWarming <- plot_statistics(climate, col_name = "mean_climate_warming", y_axis = "mean climate warming", theme = "scenario") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "ClimateWarming-LR-Percentile-tos.png",
+       plot = ggClimateWarming, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
+# Getting 35th percentile of the climate layers here and creating a selection frequency plot
+tos_SSP126_35th <- create_FeatureLayer(metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP126) %>%
+  dplyr::select(climate_layer, geometry) %>% 
+  dplyr::mutate(climate_layer = as.logical(climate_layer)) %>% 
+  dplyr::rename(solution_1 = climate_layer)
+tos_SSP245_35th <- create_FeatureLayer(metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP245) %>%
+  dplyr::select(climate_layer, geometry) %>% 
+  dplyr::mutate(climate_layer = as.logical(climate_layer)) %>% 
+  dplyr::rename(solution_1 = climate_layer)
+tos_SSP585_35th <- create_FeatureLayer(metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585) %>%
+  dplyr::select(climate_layer, geometry) %>% 
+  dplyr::mutate(climate_layer = as.logical(climate_layer)) %>% 
+  dplyr::rename(solution_1 = climate_layer)
+
+solution_list <- list(tos_SSP126_35th, tos_SSP245_35th, tos_SSP585_35th)
+col_names <- c("126", "245", "585")
+s5_SelFreq <- create_LowRegretSf(solution_list, col_names, PUs, scenario = TRUE)
+ggSelFreq <- plot_lowregret(s5_SelFreq, land) + ggtitle("Selection Frequency of Climate Refugia", subtitle = "Across scenarios") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "ClimateRefugia-SelectionFrequency-Feature-tos.png",
+       plot = ggSelFreq, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+

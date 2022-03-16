@@ -228,9 +228,9 @@ create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs
     }
     
     if (metric_name %in% c("tos", "phos", "o2os")) {
-      list[[i]] <- df %>% dplyr::select(-slpTrends, -seTrends, -sigTrends)
+      list[[i]] <- df %>% dplyr::select(-slpTrends, -seTrends, -sigTrends, -transformed)
     } else if (metric_name == "velocity") {
-      list[[i]] <- df %>% dplyr::select(-voccMag, -voccAng)
+      list[[i]] <- df %>% dplyr::select(-voccMag, -voccAng, -transformed)
     }
     
   }
@@ -243,7 +243,7 @@ create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs
 }
 
 # Streamlines the creation of the climate layer for the "feature" approach
-create_FeatureLayer <- function(aqua_sf, metric_name, colname, metric_df) {
+create_FeatureLayer <- function(metric_name, colname, metric_df) {
   
   #metric_name = tos, phos, o2os, velocity
   # colname = slpTrends / voccMag
@@ -402,14 +402,14 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
     } 
     
     if (metric == "tos") {
-      df[[i]] %<>% summarize(mean_climate_warming = mean(slpTrends))
+      df[[i]] %<>% summarize(mean_climate_warming = mean(transformed))
     } else if (metric == "phos") {
-      df[[i]] %<>% summarize(mean_ocean_acidification = mean(slpTrends))
+      df[[i]] %<>% summarize(mean_ocean_acidification = mean(transformed))
     } else if (metric == "o2os") {
-      df[[i]] %<>% summarize(mean_oxygen_decline = mean(slpTrends))
+      df[[i]] %<>% summarize(mean_oxygen_decline = mean(transformed))
     } else if (metric == "velocity") {
-      df[[i]] %<>% summarize(median_velocity = median(voccMag),
-                             mean_log_velocity = mean(log(voccMag)))
+      df[[i]] %<>% summarize(median_velocity = median(transformed),
+                             mean_log_velocity = mean(log(transformed)))
     }
     
     if (length(col_scenario) > 1) {
@@ -430,6 +430,14 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
   tmp <- do.call(rbind, df)
   
   return(tmp)
+}
+
+# Intersect solution with climate layer
+make_intersect <- function(s, metric) {
+  df <- s %>% as_tibble() %>% 
+    dplyr::select(solution_1, geometry) %>% 
+    left_join(., metric) %>% 
+    filter(solution_1 == 1)
 }
 
 # Check normality of metric.

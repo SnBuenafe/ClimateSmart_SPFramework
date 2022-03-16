@@ -205,7 +205,7 @@ write.csv(summary, paste0(output_summary, "MetricTheme_Percentile_LowRegretSumma
 # Approach: "Feature"
 # 1. Prepare climate layer
 # Climate layer is treated as a feature with its own target.
-ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585)
+ClimateFeature <- create_FeatureLayer(metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585)
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
@@ -236,7 +236,7 @@ ggsave(filename = "EM-Feature-tos-585.png",
 # Climate metric: Rate of Ocean Acidification (SSP 5-8.5)
 # Approach: "Feature"
 # 1. Prepare climate layer
-ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = roc_phos_SSP585)
+ClimateFeature <- create_FeatureLayer(metric_name = "phos", colname = "slpTrends", metric_df = roc_phos_SSP585)
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
@@ -267,7 +267,7 @@ ggsave(filename = "EM-Feature-phos-585.png",
 # Climate metrics: Rate of Declining oxygen concentration (SSP 5-8.5)
 # Approach: "Feature"
 # 1. Prepare climate layer
-ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = roc_o2os_SSP585)
+ClimateFeature <- create_FeatureLayer(metric_name = "o2os", colname = "slpTrends", metric_df = roc_o2os_SSP585)
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
@@ -298,7 +298,7 @@ ggsave(filename = "EM-Feature-o2os-585.png",
 # Climate metrics: Climate velocity (SSP 5-8.5)
 # Approach: "Feature"
 # 1. Prepare climate layer
-ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = velocity_SSP585)
+ClimateFeature <- create_FeatureLayer(metric_name = "velocity", colname = "voccMag", metric_df = velocity_SSP585)
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 

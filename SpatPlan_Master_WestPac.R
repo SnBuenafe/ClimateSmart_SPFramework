@@ -112,9 +112,8 @@ if(reprocess) {
     climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
     layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_tos")
     
-    saveRDS(layer, file.path("Output",
-                            paste(save_name, "PU", paste0(PU_size, "km2"),
-                                  ClimateLayer_files[i], sep = "_")))
+    saveRDS(layer, file.path("Output", 
+                             paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
   }
 
 } else {
@@ -122,52 +121,93 @@ if(reprocess) {
   ClimateLayer_files <- list.files(ClimateLayer_path)
   
   roc_tos_SSP126 <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
+                                      paste(save_name, "ClimateLayer", 
                                             ClimateLayer_files[1], sep = "_")))
   roc_tos_SSP245 <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
+                                      paste(save_name, "ClimateLayer", 
                                             ClimateLayer_files[2], sep = "_")))
   roc_tos_SSP585 <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
+                                      paste(save_name, "ClimateLayer", 
                                             ClimateLayer_files[3], sep = "_")))
 }
 
 # Plot Climate Warming Rates
 (gg_roc_tos_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = roc_tos_SSP126, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofClimateWarming_SSP126.png",
+       plot = gg_roc_tos_SSP126, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (gg_roc_tos_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = roc_tos_SSP245, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofClimateWarming_SSP245.png",
+       plot = gg_roc_tos_SSP245, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (gg_roc_tos_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = roc_tos_SSP585, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofClimateWarming_SSP585.png",
+       plot = gg_roc_tos_SSP585, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
 
 #### Multi-Model Ensemble: Rate of Change of Temperature ####
 if(reprocess) {
-  print("Open SpatPlan_ClimateMetrics.R")
+  ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/tos/SSP 5-8.5/"
+  ClimateLayer_files <- list.files(ClimateLayer_path)
+  
+  for (i in 1:length(ClimateLayer_files)){
+    climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
+    
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_tos_ensemble")
+    
+    saveRDS(layer, file.path("Output", 
+                             paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
+  }
+
   } else {
   ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/tos/SSP 5-8.5/"
   ClimateLayer_files <- list.files(ClimateLayer_path)
   
   tos_CanESM5 <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[1], sep = "_")))
+                                   paste(save_name, "ClimateLayer", 
+                                         ClimateLayer_files[1], sep = "_")))
   `tos_CMCC-ESM2` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[2], sep = "_")))
+                                       paste(save_name, "ClimateLayer", 
+                                             ClimateLayer_files[2], sep = "_")))
   `tos_GFDL-ESM4` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[3], sep = "_")))
+                                       paste(save_name, "ClimateLayer", 
+                                             ClimateLayer_files[3], sep = "_")))
   `tos_IPSL-CM6A-LR` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[4], sep = "_")))
+                                          paste(save_name, "ClimateLayer", 
+                                                ClimateLayer_files[4], sep = "_")))
 
   `tos_NorESM2-MM` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[5], sep = "_")))
+                                        paste(save_name, "ClimateLayer", 
+                                              ClimateLayer_files[5], sep = "_")))
 }
 
 # Plot Climate Warming Rates per model
 (gg_tos_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = tos_CanESM5, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofClimateWarming_CanESM5_SSP585.png",
+       plot = gg_tos_CanESM5, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_tos_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `tos_CMCC-ESM2`, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofClimateWarming_CMCC-ESM2_SSP585.png",
+       plot = `gg_tos_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_tos_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `tos_GFDL-ESM4`, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofClimateWarming_GFDL-ESM4_SSP585.png",
+       plot = `gg_tos_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_tos_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `tos_IPSL-CM6A-LR`, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofClimateWarming_IPSL-CM6A-LR_SSP585.png",
+       plot = `gg_tos_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_tos_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `tos_NorESM2-MM`, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofClimateWarming_NorESM2-MM_SSP585.png",
+       plot = `gg_tos_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
 
 #### Ensemble Mean: Rate of Change of pH ####
 if(reprocess) {
@@ -178,65 +218,102 @@ if(reprocess) {
     climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
     layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_phos")
     
-    saveRDS(layer, file.path("Output",
-                             paste(save_name, "PU", paste0(PU_size, "km2"),
-                                   ClimateLayer_files[i], sep = "_")))
+    saveRDS(layer, file.path("Output", 
+                             paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
   }
 } else {
   ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/phos/"
   ClimateLayer_files <- list.files(ClimateLayer_path)
   
   roc_phos_SSP126 <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[1], sep = "_")))
+                                       paste(save_name, "ClimateLayer", 
+                                             ClimateLayer_files[1], sep = "_")))
   roc_phos_SSP245 <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[2], sep = "_")))
+                                       paste(save_name, "ClimateLayer", 
+                                             ClimateLayer_files[2], sep = "_")))
   roc_phos_SSP585 <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[3], sep = "_")))
+                                       paste(save_name, "ClimateLayer", 
+                                             ClimateLayer_files[3], sep = "_")))
 }
 
 # Plot Rates of Change in pH
 (gg_roc_phos_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = roc_phos_SSP126, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofOceanAcidification_SSP126.png",
+       plot = gg_roc_phos_SSP126, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (gg_roc_phos_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = roc_phos_SSP245, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofOceanAcidification_SSP245.png",
+       plot = gg_roc_phos_SSP245, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (gg_roc_phos_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = roc_phos_SSP585, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofOceanAcidification_SSP585.png",
+       plot = gg_roc_phos_SSP585, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
 
 #### Multi-Model Ensemble: Rate of Change of pH ####
 if(reprocess) {
-  print("Open SpatPlan_ClimateMetrics.R")
-  }
-
+  ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/phos/SSP 5-8.5/"
+  ClimateLayer_files <- list.files(ClimateLayer_path)
+  
+  for (i in 1:length(ClimateLayer_files)){
+    climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
+    
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_phos_ensemble")
+    
+    saveRDS(layer, file.path("Output", 
+                             paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
 } else {
   ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/phos/SSP 5-8.5/"
   ClimateLayer_files <- list.files(ClimateLayer_path)
   
   phos_CanESM5 <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[1], sep = "_")))
+                                    paste(save_name, "ClimateLayer", 
+                                          ClimateLayer_files[1], sep = "_")))
   `phos_CMCC-ESM2` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[2], sep = "_")))
+                                        paste(save_name, "ClimateLayer", 
+                                              ClimateLayer_files[2], sep = "_")))
   `phos_GFDL-ESM4` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[3], sep = "_")))
+                                        paste(save_name, "ClimateLayer", 
+                                              ClimateLayer_files[3], sep = "_")))
   `phos_IPSL-CM6A-LR` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[4], sep = "_")))
+                                           paste(save_name, "ClimateLayer", 
+                                                 ClimateLayer_files[4], sep = "_")))
 
   `phos_NorESM2-MM` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[5], sep = "_")))
+                                         paste(save_name, "ClimateLayer", 
+                                               ClimateLayer_files[5], sep = "_")))
 }
 
 # Plot Ocean Acidification Rates per model
 (gg_phos_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = phos_CanESM5, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofOceanAcidification_CanESM5_SSP585.png",
+         plot = gg_phos_CanESM5, width = 21, height = 29.7, dpi = 300,
+         path = "Figures/")
+  
 (`gg_phos_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `phos_CMCC-ESM2`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofOceanAcidification_CMCC-ESM2_SSP585.png",
+       plot = `gg_phos_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_phos_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `phos_GFDL-ESM4`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofOceanAcidification_GFDL-ESM4_SSP585.png",
+       plot = `gg_phos_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_phos_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `phos_IPSL-CM6A-LR`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofOceanAcidification_IPSL-CM6A-LR_SSP585.png",
+       plot = `gg_phos_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_phos_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `phos_NorESM2-MM`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofOceanAcidification_NorESM2-MM_SSP585.png",
+       plot = `gg_phos_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
 
 #### Ensemble Mean: Rate of Change of O2 ####
+
 if(reprocess) {
   ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/o2os/"
   ClimateLayer_files <- list.files(ClimateLayer_path)
@@ -245,63 +322,101 @@ if(reprocess) {
     climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
     layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_o2os")
     
-    saveRDS(layer, file.path("Output",
-                             paste(save_name, "PU", paste0(PU_size, "km2"),
-                                   ClimateLayer_files[i], sep = "_")))
+    saveRDS(layer, file.path("Output", 
+                             paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
   }
 } else {
   ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/o2os/"
   ClimateLayer_files <- list.files(ClimateLayer_path)
   
   roc_o2os_SSP126 <- readRDS(file.path("Output", 
-                                       paste(save_name, "PU", paste0(PU_size, "km2"),
+                                       paste(save_name, "ClimateLayer", 
                                              ClimateLayer_files[1], sep = "_")))
   roc_o2os_SSP245 <- readRDS(file.path("Output", 
-                                       paste(save_name, "PU", paste0(PU_size, "km2"),
+                                       paste(save_name, "ClimateLayer", 
                                              ClimateLayer_files[2], sep = "_")))
   roc_o2os_SSP585 <- readRDS(file.path("Output", 
-                                       paste(save_name, "PU", paste0(PU_size, "km2"),
+                                       paste(save_name, "ClimateLayer", 
                                              ClimateLayer_files[3], sep = "_")))
 }
 
 # Plot Rates of Declining Oxygen Concentration
 (gg_roc_o2os_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = roc_o2os_SSP126, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofDecliningOxygenConcentration_SSP126.png",
+       plot = gg_roc_o2os_SSP126, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (gg_roc_o2os_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = roc_o2os_SSP245, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofDecliningOxygenConcentration_SSP245.png",
+       plot = gg_roc_o2os_SSP245, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (gg_roc_o2os_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = roc_o2os_SSP585, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofDecliningOxygenConcentration_SSP585.png",
+       plot = gg_roc_o2os_SSP585, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
 
 #### Multi-Model Ensemble: Rate of Change of Oxygen Concentration ####
 if(reprocess) {
-  print("Open SpatPlan_ClimateMetrics.R")
-  }
+  ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/o2os/SSP 5-8.5/"
+  ClimateLayer_files <- list.files(ClimateLayer_path)
+  
+  for (i in 1:length(ClimateLayer_files)){
+    climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
+    
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_o2os_ensemble")
+    
+    saveRDS(layer, file.path("Output", 
+                             paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
+}
 
 } else {
   ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/o2os/SSP 5-8.5/"
   ClimateLayer_files <- list.files(ClimateLayer_path)
   
   o2os_CanESM5 <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[1], sep = "_")))
+                                    paste(save_name, "ClimateLayer", 
+                                          ClimateLayer_files[1], sep = "_")))
   `o2os_CMCC-ESM2` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[2], sep = "_")))
+                                        paste(save_name, "ClimateLayer", 
+                                              ClimateLayer_files[2], sep = "_")))
   `o2os_GFDL-ESM4` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[3], sep = "_")))
+                                        paste(save_name, "ClimateLayer", 
+                                              ClimateLayer_files[3], sep = "_")))
   `o2os_IPSL-CM6A-LR` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[4], sep = "_")))
+                                           paste(save_name, "ClimateLayer", 
+                                                 ClimateLayer_files[4], sep = "_")))
 
   `o2os_NorESM2-MM` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[5], sep = "_")))
+                                         paste(save_name, "ClimateLayer", 
+                                               ClimateLayer_files[5], sep = "_")))
 }
 
 # Plot Declining Oxygen Concentration Rates per model
 (gg_o2os_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = o2os_CanESM5, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofDecliningOxygenConcentration_CanESM5_SSP585.png",
+       plot = gg_o2os_CanESM5, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_o2os_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `o2os_CMCC-ESM2`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofDecliningOxygenConcentration_CMCC-ESM2_SSP585.png",
+       plot = `gg_o2os_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_o2os_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `o2os_GFDL-ESM4`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofDecliningOxygenConcentration_GFDL-ESM4_SSP585.png",
+       plot = `gg_o2os_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_o2os_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `o2os_IPSL-CM6A-LR`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofDecliningOxygenConcentration_IPSL-CM6A-LR_SSP585.png",
+       plot = `gg_o2os_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_o2os_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `o2os_NorESM2-MM`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_RateofDecliningOxygenConcentration_NorESM2-MM_SSP585.png",
+       plot = `gg_o2os_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
 
 #### Ensemble Mean: Climate Velocity ####
 # Climate Velocity
@@ -313,8 +428,8 @@ if(reprocess) {
     climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
     layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "velocity")
     
-    saveRDS(layer, file.path("Output",
-                             paste(save_name, "PU", paste0(PU_size, "km2"),
+    saveRDS(layer, file.path("Output", 
+                             paste(save_name, "ClimateLayer", 
                                    ClimateLayer_files[i], sep = "_")))
   }
 } else {
@@ -322,51 +437,89 @@ if(reprocess) {
   ClimateLayer_files <- list.files(ClimateLayer_path)
   
   velocity_SSP126 <- readRDS(file.path("Output", 
-                                       paste(save_name, "PU", paste0(PU_size, "km2"),
+                                       paste(save_name, "ClimateLayer", 
                                              ClimateLayer_files[1], sep = "_")))
   velocity_SSP245 <- readRDS(file.path("Output", 
-                                       paste(save_name, "PU", paste0(PU_size, "km2"),
+                                       paste(save_name, "ClimateLayer", 
                                              ClimateLayer_files[2], sep = "_")))
   velocity_SSP585 <- readRDS(file.path("Output", 
-                                       paste(save_name, "PU", paste0(PU_size, "km2"),
+                                       paste(save_name, "ClimateLayer", 
                                              ClimateLayer_files[3], sep = "_")))
 }
 
 # Plot Climate velocity
 (gg_velocity_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = velocity_SSP126, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_ClimateVelocity_SSP126.png",
+       plot = gg_velocity_SSP126, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (gg_velocity_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = velocity_SSP245, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_ClimateVelocity_SSP245.png",
+       plot = gg_velocity_SSP245, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (gg_velocity_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = velocity_SSP585, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_ClimateVelocity_SSP585.png",
+       plot = gg_velocity_SSP585, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
 
 #### Multi-Model Ensemble: Climate Velocity ####
 if(reprocess) {
-  print("Open SpatPlan_ClimateMetrics.R")
+  ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/velocity/SSP 5-8.5/"
+  ClimateLayer_files <- list.files(ClimateLayer_path)
+  
+  for (i in 1:length(ClimateLayer_files)){
+    climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
+    
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "velocity_ensemble")
+    
+    saveRDS(layer, file.path("Output", 
+                             paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
   }
-
 } else {
   ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/velocity/SSP 5-8.5/"
   ClimateLayer_files <- list.files(ClimateLayer_path)
   
   velocity_CanESM5 <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[1], sep = "_")))
+                                         paste(save_name, "ClimateLayer", 
+                                               ClimateLayer_files[1], sep = "_")))
   `velocity_CMCC-ESM2` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[2], sep = "_")))
+                                            paste(save_name, "ClimateLayer", 
+                                                  ClimateLayer_files[2], sep = "_")))
   `velocity_GFDL-ESM4` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[3], sep = "_")))
+                                            paste(save_name, "ClimateLayer", 
+                                                  ClimateLayer_files[3], sep = "_")))
   `velocity_IPSL-CM6A-LR` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[4], sep = "_")))
+                                               paste(save_name, "ClimateLayer", 
+                                                     ClimateLayer_files[4], sep = "_")))
 
   `velocity_NorESM2-MM` <- readRDS(file.path("Output", 
-                                      paste(save_name, "PU", paste0(PU_size, "km2"),
-                                            ClimateLayer_files[5], sep = "_")))
+                                             paste(save_name, "ClimateLayer", 
+                                                   ClimateLayer_files[5], sep = "_")))
 }
 
 # Plot Climate Velocity per model
 (gg_velocity_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = velocity_CanESM5, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_ClimateVelocity_CanESM5_SSP585.png",
+       plot = gg_velocity_CanESM5, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_velocity_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `velocity_CMCC-ESM2`, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_ClimateVelocity_CMCC-ESM2_SSP585.png",
+       plot = `gg_velocity_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_velocity_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `velocity_GFDL-ESM4`, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_ClimateVelocity_GFDL-ESM4_SSP585.png",
+       plot = `gg_velocity_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_velocity_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `velocity_IPSL-CM6A-LR`, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_ClimateVelocity_IPSL-CM6A-LR_SSP585.png",
+       plot = `gg_velocity_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
 (`gg_velocity_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `velocity_NorESM2-MM`, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25)))
+ggsave("Layer_ClimateVelocity_NorESM2-MM_SSP585.png",
+       plot = `gg_velocity_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")

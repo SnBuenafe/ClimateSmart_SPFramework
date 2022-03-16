@@ -82,6 +82,7 @@ summary <- left_join(climate, summary, by = "run")
 write.csv(summary, paste0(output_summary, "ApproachTheme_Approaches_LowRegretSummary.csv")) # save
 
 #### Approach: Percentile ####
+# First species: Katsuwonus pelamis
 # Plots for the workflow
 sp1 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[4289]) %>% 
   dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
@@ -91,14 +92,34 @@ ggsave(filename = "Workflow-Percentile-sp1.png",
       plot = sp1_plot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
+# For SSP 1-2.6
+sp1_percentile <- create_PercentileLayer(aqua_sf = sp1, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP126, PUs = PUs) %>% 
+  dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
+
+sp1_PercentilePlot <- plot_AQMFeatures(sp1_percentile, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp1FilteredSSP126.png",
+       plot = sp1_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 2-4.5
+sp1_percentile <- create_PercentileLayer(aqua_sf = sp1, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP245, PUs = PUs) %>% 
+  dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
+
+sp1_PercentilePlot <- plot_AQMFeatures(sp1_percentile, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp1FilteredSSP245.png",
+       plot = sp1_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 5-8.5
 sp1_percentile <- create_PercentileLayer(aqua_sf = sp1, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
   dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
 
 sp1_PercentilePlot <- plot_AQMFeatures(sp1_percentile, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Workflow-Percentile-sp1Filtered.png",
+ggsave(filename = "Workflow-Percentile-sp1FilteredSSP585.png",
       plot = sp1_PercentilePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
+# Second species: Thunnus orientalis
 sp2 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[8199]) %>% 
   dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis)) 
 
@@ -107,17 +128,108 @@ ggsave(filename = "Workflow-Percentile-sp2.png",
       plot = sp2_plot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
+# For SSP 1-2.6
+sp2_percentile <- create_PercentileLayer(aqua_sf = sp2, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP126, PUs = PUs) %>% 
+  dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
+
+sp2_PercentilePlot <- plot_AQMFeatures(sp2_percentile, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #1", subtitle = "Thunnus_orientalis") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp2FilteredSSP126.png",
+       plot = sp2_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 2-4.5
+sp2_percentile <- create_PercentileLayer(aqua_sf = sp2, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP245, PUs = PUs) %>% 
+  dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
+
+sp2_PercentilePlot <- plot_AQMFeatures(sp2_percentile, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #1", subtitle = "Thunnus_orientalis") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp2FilteredSSP245.png",
+       plot = sp2_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 5-8.5
 sp2_percentile <- create_PercentileLayer(aqua_sf = sp2, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
   dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
 
 sp2_PercentilePlot <- plot_AQMFeatures(sp2_percentile, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #1", subtitle = "Thunnus_orientalis") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Workflow-Percentile-sp2Filtered.png",
+ggsave(filename = "Workflow-Percentile-sp2FilteredSSP585.png",
       plot = sp2_PercentilePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
+# Third species:
+sp3 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[7752]) %>% 
+  dplyr::mutate(Stenella_coeruleoalba = as.logical(Stenella_coeruleoalba)) 
+
+sp3_plot <- plot_AQMFeatures(sp3, PUs, land, column = "Stenella_coeruleoalba") + ggtitle("Species Distribution #3", subtitle = "Stenella_coeruleoalba") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp3.png",
+       plot = sp3_plot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 1-2.6
+sp3_percentile <- create_PercentileLayer(aqua_sf = sp3, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP126, PUs = PUs) %>% 
+  dplyr::mutate(Stenella_coeruleoalba = as.logical(Stenella_coeruleoalba))
+
+sp3_PercentilePlot <- plot_AQMFeatures(sp3_percentile, PUs, land, column = "Stenella_coeruleoalba") + ggtitle("Species Distribution #1", subtitle = "Stenella_coeruleoalba") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp3FilteredSSP126.png",
+       plot = sp3_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 2-4.5
+sp3_percentile <- create_PercentileLayer(aqua_sf = sp3, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP245, PUs = PUs) %>% 
+  dplyr::mutate(Stenella_coeruleoalba = as.logical(Stenella_coeruleoalba))
+
+sp3_PercentilePlot <- plot_AQMFeatures(sp3_percentile, PUs, land, column = "Stenella_coeruleoalba") + ggtitle("Species Distribution #1", subtitle = "Stenella_coeruleoalba") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp3FilteredSSP245.png",
+       plot = sp3_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 5-8.5
+sp3_percentile <- create_PercentileLayer(aqua_sf = sp3, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
+  dplyr::mutate(Stenella_coeruleoalba = as.logical(Stenella_coeruleoalba))
+
+sp3_PercentilePlot <- plot_AQMFeatures(sp3_percentile, PUs, land, column = "Stenella_coeruleoalba") + ggtitle("Species Distribution #1", subtitle = "Stenella_coeruleoalba") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp3FilteredSSP585.png",
+       plot = sp3_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# Fourth species:
+sp4 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[5300]) %>% 
+  dplyr::mutate(Nannobrachium_idostigma = as.logical(Nannobrachium_idostigma)) 
+
+sp4_plot <- plot_AQMFeatures(sp4, PUs, land, column = "Nannobrachium_idostigma") + ggtitle("Species Distribution #4", subtitle = "Nannobrachium_idostigma") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp4.png",
+       plot = sp4_plot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 1-2.6
+sp4_percentile <- create_PercentileLayer(aqua_sf = sp4, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP126, PUs = PUs) %>% 
+  dplyr::mutate(Nannobrachium_idostigma = as.logical(Nannobrachium_idostigma))
+
+sp4_PercentilePlot <- plot_AQMFeatures(sp4_percentile, PUs, land, column = "Nannobrachium_idostigma") + ggtitle("Species Distribution #4", subtitle = "Nannobrachium_idostigma") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp4FilteredSSP126.png",
+       plot = sp4_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 2-4.5
+sp4_percentile <- create_PercentileLayer(aqua_sf = sp4, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP245, PUs = PUs) %>% 
+  dplyr::mutate(Nannobrachium_idostigma = as.logical(Nannobrachium_idostigma))
+
+sp4_PercentilePlot <- plot_AQMFeatures(sp4_percentile, PUs, land, column = "Nannobrachium_idostigma") + ggtitle("Species Distribution #4", subtitle = "Nannobrachium_idostigma") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp4FilteredSSP245.png",
+       plot = sp4_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 5-8.5
+sp4_percentile <- create_PercentileLayer(aqua_sf = sp4, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
+  dplyr::mutate(Nannobrachium_idostigma = as.logical(Nannobrachium_idostigma))
+
+sp4_PercentilePlot <- plot_AQMFeatures(sp4_percentile, PUs, land, column = "Nannobrachium_idostigma") + ggtitle("Species Distribution #4", subtitle = "Nannobrachium_idostigma") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp4FilteredSSP585.png",
+       plot = sp4_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
 #### Approach: Feature ####
 # Plots for the workflow
-climateLayer <- create_FeatureLayer(aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585) %>%
+climateLayer <- create_FeatureLayer(metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585) %>%
   dplyr::select(climate_layer, geometry) %>% 
   dplyr::mutate(climate_layer = as.logical(climate_layer))
 

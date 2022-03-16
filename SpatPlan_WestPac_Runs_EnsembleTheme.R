@@ -56,7 +56,7 @@ write.csv(summary, paste0(output_summary, "Uninformed_Summary.csv")) # save
 # Approach: "Percentile"
 # 1. Prepare climate layer
 # Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (<= 35th percentile)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -102,7 +102,7 @@ summary %<>% left_join(., climate, by = c("run"))
 # 1. Prepare climate layer
 # Intersect this with climate layer, select only those <= 35th percentile. 
 ensemble <- list(`tos_CanESM5`, `tos_CMCC-ESM2`, `tos_GFDL-ESM4`, `tos_IPSL-CM6A-LR`, `tos_NorESM2-MM`)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = ensemble[[1]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = ensemble[[1]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -128,7 +128,7 @@ ggsave(filename = "MM-CanESM5-Percentile-tos-585.png",
 
 # B. CMCC-ESM2
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = ensemble[[2]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = ensemble[[2]], PUs = PUs)
 # 2. Get list of features: same list of features as above
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_percentile, `tos_CMCC-ESM2`, UniformCost)
@@ -150,7 +150,7 @@ ggsave(filename = "MM-CMCC_ESM2-Percentile-tos-585.png",
 
 # C. GFDL-ESM4
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = ensemble[[3]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = ensemble[[3]], PUs = PUs)
 # 2. Get list of features: same list of features as above
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_percentile, `tos_GFDL-ESM4`, UniformCost)
@@ -172,7 +172,7 @@ ggsave(filename = "MM-GFDL_ESM4-Percentile-tos-585.png",
 
 # D. IPSL-CM6A-LR
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = ensemble[[4]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = ensemble[[4]], PUs = PUs)
 # 2. Get list of features: same list of features as above
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_percentile, `tos_IPSL-CM6A-LR`, UniformCost)
@@ -194,7 +194,7 @@ ggsave(filename = "MM-IPSL_CM6A_LR-Percentile-tos-585.png",
 
 # E. NorESM2-MM
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = ensemble[[5]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = ensemble[[5]], PUs = PUs)
 # 2. Get list of features: same list of features as above
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_percentile, `tos_NorESM2-MM`, UniformCost)
@@ -243,7 +243,7 @@ write.csv(summary, paste0(output_summary, "EnsembleTheme_tos_Summary.csv")) # sa
 
 ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "ensemble") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "Area-EnsembleTheme-Percentile-tos-585.png",
-       plot = ggArea, width = 7, height = 5, dpi = 300,
+       plot = ggArea, width = 8, height = 5, dpi = 300,
        path = "Figures/") # save plot
 
 # Create selection frequency plot
@@ -277,7 +277,7 @@ for (i in 1:length(list)) {
 # Approach: "Percentile"
 # 1. Prepare climate layer
 # Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (>= 65th percentile)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = roc_phos_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
