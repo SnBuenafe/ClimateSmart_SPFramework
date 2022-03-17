@@ -312,7 +312,7 @@ ggsave(filename = "EM-Percentile-phos-585.png",
 # 1. Prepare climate layer
 # Intersect this with climate layer, select only those >= 65th percentile. 
 ensemble <- list(`phos_CanESM5`, `phos_CMCC-ESM2`, `phos_GFDL-ESM4`, `phos_IPSL-CM6A-LR`, `phos_NorESM2-MM`)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[1]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = ensemble[[1]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -338,7 +338,7 @@ ggsave(filename = "MM-CanESM5-Percentile-phos-585.png",
 
 # B. CMCC-ESM2
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[2]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = ensemble[[2]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -364,7 +364,7 @@ ggsave(filename = "MM-CMCC_ESM2-Percentile-phos-585.png",
 
 # C. GFDL-ESM4
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[3]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = ensemble[[3]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -390,7 +390,7 @@ ggsave(filename = "MM-GFDL_ESM4-Percentile-phos-585.png",
 
 # D. IPSL-CM6A-LR
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[4]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = ensemble[[4]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -416,7 +416,7 @@ ggsave(filename = "MM-IPSL_CM6A_LR-Percentile-phos-585.png",
 
 # E. NorESM2-MM
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[5]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = ensemble[[5]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -498,7 +498,7 @@ for (i in 1:length(list)) {
 # Climate metric: Rate of Declining Oxygen Concentration (SSP 5-8.5)
 # Approach: "Percentile"
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = roc_o2os_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -533,7 +533,7 @@ ggsave(filename = "EM-Percentile-o2os-585.png",
 # 1. Prepare climate layer
 # Intersect this with climate layer, select only those >= 65th percentile). 
 ensemble <- list(`o2os_CanESM5`, `o2os_CMCC-ESM2`, `o2os_GFDL-ESM4`, `o2os_IPSL-CM6A-LR`, `o2os_NorESM2-MM`)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[1]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = ensemble[[1]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -559,7 +559,7 @@ ggsave(filename = "MM-CanESM5-Percentile-o2os-585.png",
 
 # B. CMCC-ESM2
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[2]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = ensemble[[2]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -585,7 +585,7 @@ ggsave(filename = "MM-CMCC_ESM2-Percentile-o2os-585.png",
 
 # C. GFDL-ESM4
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[3]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = ensemble[[3]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -611,7 +611,7 @@ ggsave(filename = "MM-GFDL_ESM4-Percentile-o2os-585.png",
 
 # D. IPSL-CM6A-LR
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[4]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = ensemble[[4]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -637,7 +637,7 @@ ggsave(filename = "MM-IPSL_CM6A_LR-Percentile-o2os-585.png",
 
 # E. NorESM2-MM
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[5]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = ensemble[[5]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -722,7 +722,7 @@ for (i in 1:length(list)) {
 # Climate metric: Climate Velocity (SSP 5-8.5)
 # Approach: "Percentile"
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = velocity_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -756,7 +756,7 @@ ggsave(filename = "EM-Percentile-velocity-585.png",
 # A. CanESM5
 # 1. Prepare climate layer
 ensemble <- list(`velocity_CanESM5`, `velocity_CMCC-ESM2`, `velocity_GFDL-ESM4`, `velocity_IPSL-CM6A-LR`, `velocity_NorESM2-MM`)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[1]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = ensemble[[1]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -782,7 +782,7 @@ ggsave(filename = "MM-CanESM5-Percentile-velocity-585.png",
 
 # B. CMCC-ESM2
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[2]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = ensemble[[2]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -808,7 +808,7 @@ ggsave(filename = "MM-CMCC_ESM2-Percentile-velocity-585.png",
 
 # C. GFDL-ESM4
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[3]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = ensemble[[3]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -834,7 +834,7 @@ ggsave(filename = "MM-GFDL_ESM4-Percentile-velocity-585.png",
 
 # D. IPSL-CM6A-LR
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[4]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = ensemble[[4]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -860,7 +860,7 @@ ggsave(filename = "MM-IPSL_CM6A_LR-Percentile-velocity-585.png",
 
 # E. NorESM2-MM
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[5]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = ensemble[[5]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
