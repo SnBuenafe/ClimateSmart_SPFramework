@@ -117,16 +117,18 @@ test_FullAreaNew <- function(OverlappingPixels) {
 sequence <- seq(from = 50, to = 5, by = -5)
 Test1 <- test_FullAreaNew(sequence)
 
-Test1_Plot <- ggplot(data = Test1 %>% filter(feature == "sp2"), aes(x = overlapping)) +
+plot1 <- ggplot(data = Test1 %>% filter(feature == "sp2"), aes(x = overlapping)) +
   geom_line(aes(y = area_solution), color = "indianred4", size = 1) +
+  ylim(0, 100) +
+  theme_classic()
+
+plot2 <- ggplot(data = Test1 %>% filter(feature == "sp2"), aes(x = overlapping)) +
   geom_line(aes(y = total_amount), color = "turquoise3", size = 1) +
   ylim(0, 100) +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "Total # of pixels for sp2"),
-                     limits = c(0, 100)) +
   theme_classic()
   
 # Get line plots
-Test_Plot + Test1_Plot
+plot1 + plot2
 
 Test_df <- Boundary %>% dplyr::mutate(sp1 = case_when(cellID <= 50 ~ 1,
                                                    cellID > 50 ~ 0),
