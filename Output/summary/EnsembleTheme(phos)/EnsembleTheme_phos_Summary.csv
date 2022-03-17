@@ -1,0 +1,6 @@
+"","mean_ocean_acidification","run","scenario","approach","sum_area","total_cost","percent_area","num_pu"
+"1",-0.00444792101443498,"MM-CanESM5_Percentile_phos_585","585","percentile",15599291.4,15599291.4,65.8001073779988,23286
+"2",-0.00438302758007367,"MM-CMCC-ESM2_Percentile_phos_585","585","percentile",14392131.6,14392131.6,60.7081296448049,21484
+"3",-0.00444202782648242,"MM-GFDL-ESM4_Percentile_phos_585","585","percentile",15039255,15039255,63.4377914041086,22450
+"4",-0.00449239858777165,"MM-IPSL-CM6A-LR_Percentile_phos_585","585","percentile",14747178.6,14747178.6,62.2057701545678,22014
+"5",-0.00446891537441959,"MM-NorESM2-MM_Percentile_phos_585","585","percentile",15889358.1,15889358.1,67.023651417107,23719
