@@ -109,7 +109,9 @@ ggsave(filename = "EM-Percentile-tos-585.png",
 
 #### Summaries #####
 # Feature representation
-problem_list <- list(p38, p39, p2)
+# Load dummy problem, to compare solutions with original distributions and not the filtered distributions
+dummy_problem <- readRDS("Output/temp/p10.rds") # "penalty" problem dummy
+problem_list <- list(dummy_problem, dummy_problem, dummy_problem)
 solution_list <- list(s38, s39, s2)
 names <- c("EM-Percentile-tos-126", "EM-Percentile-tos-245", "EM-Percentile-tos-585")
 feat_rep <- tibble(feature = character()) # empty tibble
@@ -119,34 +121,21 @@ for (i in 1:length(names)) {
 }
 write.csv(feat_rep, paste0(output_summary, "ScenarioTheme_tos_FeatureRepresentation.csv")) # save
 
-targetSSP126 <- ggplot(data = feat_rep, aes(x = row_number(feature), y = `EM-Percentile-tos-126`, group = 1)) + 
-  geom_line(color = "#289E3D") + 
-  geom_hline(yintercept=30, linetype="dashed", 
-             color = "red", size=1) +
-  theme_classic() +
-  theme(axis.text = element_text(size = 25))
-ggsave(filename = "Target-Percentile-tos-126.png",
-       plot = targetSSP126, width = 15, height = 7, dpi = 300,
-       path = "Figures/") # save plot
+# Kernel distribution plots of targets
+x <- feat_rep %>% 
+  pivot_longer(!feature, names_to = "scenario", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
 
-targetSSP245 <- ggplot(data = feat_rep, aes(x = row_number(feature), y = `EM-Percentile-tos-245`, group = 1)) + 
-  geom_line(color = "#E6C173") + 
-  geom_hline(yintercept=30, linetype="dashed", 
-             color = "red", size=1) +
-  theme_classic() +
-  theme(axis.text = element_text(size = 25))
-ggsave(filename = "Target-Percentile-tos-245.png",
-       plot = targetSSP245, width = 15, height = 7, dpi = 300,
-       path = "Figures/") # save plot
-
-targetSSP585 <- ggplot(data = feat_rep, aes(x = row_number(feature), y = `EM-Percentile-tos-585`, group = 1)) + 
-  geom_line(color = "#855600") + 
-  geom_hline(yintercept=30, linetype="dashed", 
-             color = "red", size=1) +
-  theme_classic() +
-  theme(axis.text = element_text(size = 25))
-ggsave(filename = "Target-Percentile-tos-585.png",
-       plot = targetSSP585, width = 15, height = 7, dpi = 300,
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = scenario, group = scenario, fill = scenario),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM-Percentile-tos-126` = "#289E3D",
+                              `EM-Percentile-tos-245` = "#E6C173",
+                              `EM-Percentile-tos-585` = "#855600")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  theme_classic()
+ggsave(filename = "TargetDist-ScenarioTheme-tos.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
        path = "Figures/") # save plot
 
 # Summary
@@ -197,24 +186,33 @@ write.csv(summary, paste0(output_summary, "ScenarioTheme_tos_LowRegretSummary.cs
 
 #### Measuring "climate-smart"-edness ####
 # Kernel Density Plots
-df1 <- s38 %>% dplyr::filter(solution_1 == 1)
-df2 <- s39 %>% dplyr::filter(solution_1 == 1)
-df3 <- s2 %>% dplyr::filter(solution_1 == 1)
+list <- list() # empty list
+solution_list <- list(s38, s39, s2)
+names <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
+group_name = "scenario"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name)
+}
+df <- do.call(rbind, list)
 
-ggDist <- ggplot() +
-  geom_density(data = df1, aes(x = transformed), color = "#289E3D", fill = "#289E3D") +
-  geom_density(data = df2, aes(x = transformed), color = "#E6C173", fill = "#E6C173") +
-  geom_density(data = df3, aes(x = transformed), color = "#855600", fill = "#855600") +
-  theme(axis.text = element_text(size = 25)) +
+ggRidge <- ggplot(data = df, aes(x = transformed, y = scenario, group = scenario, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), option = "C") +
+  #scale_fill_manual(values = c(`SSP 1-2.6` = "#289E3D",
+  #                             `SSP 2-4.5` = "#E6C173",
+  #                             `SSP 5-8.5` = "#855600")) +
+  geom_vline(xintercept=(climate %>% 
+                             dplyr::filter(scenario == 126))$mean_climate_warming,
+             linetype = "dashed", color = "tan1", size = 0.5) +
+  geom_vline(xintercept=(climate %>% 
+                           dplyr::filter(scenario == 245))$mean_climate_warming,
+             linetype = "dashed", color = "orchid3", size = 0.5) +
+  geom_vline(xintercept=(climate %>% 
+                           dplyr::filter(scenario == 585))$mean_climate_warming,
+             linetype = "dashed", color = "orchid4", size = 0.5) +
   theme_classic()
-ggsave(filename = "ClimateWarmingDist-LR-Percentile-tos.png",
-       plot = ggDist, width = 10, height = 6, dpi = 300,
-       path = "Figures/") # save plot
-
-climate <- read_csv("Output/summary/ScenarioTheme_tos_Summary.csv") %>% dplyr::select(-1)
-ggClimateWarming <- plot_statistics(climate, col_name = "mean_climate_warming", y_axis = "mean climate warming", theme = "scenario") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "ClimateWarming-LR-Percentile-tos.png",
-       plot = ggClimateWarming, width = 7, height = 5, dpi = 300,
+ggsave(filename = "ClimateWarmingDist-ScenarioTheme-Percentile-tos.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
        path = "Figures/") # save plot
 
 # Getting 35th percentile of the climate layers here and creating a selection frequency plot

@@ -1,7 +1,7 @@
 #install.packages("pacman")
 # devtools::install_github("JorGarMol/VoCC", dependencies = TRUE, build_vignettes = TRUE)
 
-pacman::p_load(sf, terra, tidyverse, rnaturalearth, prioritizr, stars, patchwork, proj4, magrittr, doParallel,
+pacman::p_load(sf, terra, tidyverse, rnaturalearth, prioritizr, stars, patchwork, proj4, magrittr, doParallel, ggridges, viridis,
                BiocManager, ncdf4, PCICt, ncdf4.helpers, VoCC, RColorBrewer)
 
 longlat <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"

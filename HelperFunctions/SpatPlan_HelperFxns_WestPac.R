@@ -7,13 +7,14 @@ represent_feature <- function(p, s, col_name) {
     mutate(relative_held = relative_held*100) %>% 
     rename(!!sym(col_name) := relative_held)
   
-  if(str_detect(col_name, regex("percentile", ignore_case = TRUE))) {
-    feat_rep %<>% mutate(!!sym(col_name) := .data[[ col_name ]] * 0.35)
-  } else if(str_detect(col_name, regex("penalty", ignore_case = TRUE))) {
+  #if(str_detect(col_name, regex("percentile", ignore_case = TRUE))) {
+  #  feat_rep %<>% mutate(!!sym(col_name) := .data[[ col_name ]] * 0.35)
+  #} 
+  if(str_detect(col_name, grepl("penalty|feature", ignore_case = TRUE))) {
     feat_rep %<>% add_row(feature = "climate_layer", !!sym(col_name) := NA)
-  } else if(str_detect(col_name, regex("ClimatePriorityArea", ignore_case = FALSE))) {
-    feat_rep %<>% mutate(!!sym(col_name) := ifelse(str_detect(feature, ".1"), yes = .data[[ col_name ]] * 0.95, no = .data[[ col_name ]] * 0.05))
-  }
+  }# else if(str_detect(col_name, regex("ClimatePriorityArea", ignore_case = FALSE))) {
+  #  feat_rep %<>% mutate(!!sym(col_name) := ifelse(str_detect(feature, ".1"), yes = .data[[ col_name ]] * 0.95, no = .data[[ col_name ]] * 0.05))
+  #}
 
   return(feat_rep)
 }
@@ -88,7 +89,7 @@ plot_corrplot <- function(matrix, num) {
 # Plot statistics
 plot_statistics <- function(summary, col_name, y_axis, theme) {
   if (theme == "ensemble"){
-    color_legend <- c("#289E3D", "#E6C173", "#855600", "#5075BA", "#81B0CC", "#5A9E67")
+    color_legend <- c("#FAF7B7", "#E6C173", "#855600", "#5075BA", "#81B0CC", "#5A9E67")
     string <- "as.factor(run)"
   } else if (theme == "scenario"){
     color_legend <- c("126" = "#289E3D", "245" = "#E6C173", "585" = "#855600")
@@ -322,9 +323,9 @@ create_ImportantFeatureLayer <- function(aqua_sf, metric_name, colname, metric_d
     }
     
     if (metric_name %in% c("tos", "phos", "o2os")) {
-      list[[i]] <- df %>% dplyr::select(-slpTrends, -seTrends, -sigTrends)
+      list[[i]] <- df %>% dplyr::select(-slpTrends, -seTrends, -sigTrends, -transformed)
     } else if (metric_name == "velocity") {
-      list[[i]] <- df %>% dplyr::select(-voccMag, -voccAng)
+      list[[i]] <- df %>% dplyr::select(-voccMag, -voccAng, -transformed)
     }
     
   }
@@ -614,3 +615,16 @@ plot_AQMFeatures <- function(s1, PlanUnits, world, column){
     theme_bw()
   
 }
+
+# Make Kernel for Climate Data
+make_kernel <- function(solution, name, group) {
+  df <- solution %>% 
+    as_tibble() %>% 
+    dplyr::filter(solution_1 == 1) %>% 
+    dplyr::select(transformed) %>% 
+    dplyr::rename(!!sym(name) := transformed) %>% 
+    pivot_longer(!!sym(name), names_to = group, values_to = "transformed")
+  
+  return(df)
+}
+
