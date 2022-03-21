@@ -10,7 +10,7 @@ represent_feature <- function(p, s, col_name) {
   #if(str_detect(col_name, regex("percentile", ignore_case = TRUE))) {
   #  feat_rep %<>% mutate(!!sym(col_name) := .data[[ col_name ]] * 0.35)
   #} 
-  if(str_detect(col_name, grepl("penalty|feature", ignore_case = TRUE))) {
+  if(grepl(pattern = "penalty|feature", x = col_name, ignore.case = TRUE)) {
     feat_rep %<>% add_row(feature = "climate_layer", !!sym(col_name) := NA)
   }# else if(str_detect(col_name, regex("ClimatePriorityArea", ignore_case = FALSE))) {
   #  feat_rep %<>% mutate(!!sym(col_name) := ifelse(str_detect(feature, ".1"), yes = .data[[ col_name ]] * 0.95, no = .data[[ col_name ]] * 0.05))

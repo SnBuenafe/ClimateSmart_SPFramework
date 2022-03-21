@@ -245,6 +245,7 @@ ggRidge <- ggplot(data = x) +
                                `MM-IPSL-CM6A-LR_Percentile_tos_585` = "#81B0CC",
                                `MM-NorESM2-MM_Percentile_tos_585` = "#5A9E67")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
   theme_classic()
 ggsave(filename = "TargetDist-EnsembleTheme-tos.png",
        plot = ggRidge, width = 15, height = 10, dpi = 300,
@@ -519,6 +520,7 @@ ggRidge <- ggplot(data = x) +
                                `MM-IPSL-CM6A-LR_Percentile_phos_585` = "#81B0CC",
                                `MM-NorESM2-MM_Percentile_phos_585` = "#5A9E67")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
   theme_classic()
 ggsave(filename = "TargetDist-EnsembleTheme-phos.png",
        plot = ggRidge, width = 15, height = 10, dpi = 300,
@@ -759,7 +761,7 @@ ggsave(filename = "MM-NorESM2_MM-Percentile-o2os-585.png",
 dummy_problem <- readRDS("Output/temp/p10.rds") # "penalty" problem dummy
 problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem)
 solution_list <- list(s4, s24, s25, s26, s27, s28)
-names <- c("MM-CanESM5_Percentile_o2os_585", "MM-CMCC-ESM2_Percentile_o2os_585", "MM-GFDL-ESM4_Percentile_o2os_585", "MM-IPSL-CM6A-LR_Percentile_o2os_585", "MM-NorESM2-MM_Percentile_o2os_585")
+names <- c("EM_Percentile_o2os_585", "MM-CanESM5_Percentile_o2os_585", "MM-CMCC-ESM2_Percentile_o2os_585", "MM-GFDL-ESM4_Percentile_o2os_585", "MM-IPSL-CM6A-LR_Percentile_o2os_585", "MM-NorESM2-MM_Percentile_o2os_585")
 feat_rep <- tibble(feature = character()) # empty tibble
 for(i in 1:length(names)) {
   df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
@@ -782,6 +784,7 @@ ggRidge <- ggplot(data = x) +
                                `MM-IPSL-CM6A-LR_Percentile_o2os_585` = "#81B0CC",
                                `MM-NorESM2-MM_Percentile_o2os_585` = "#5A9E67")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
   theme_classic()
 ggsave(filename = "TargetDist-EnsembleTheme-o2os.png",
        plot = ggRidge, width = 15, height = 10, dpi = 300,
@@ -1045,6 +1048,7 @@ ggRidge <- ggplot(data = x) +
                                `MM-IPSL-CM6A-LR_Percentile_velocity_585` = "#81B0CC",
                                `MM-NorESM2-MM_Percentile_velocity_585` = "#5A9E67")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
   theme_classic()
 ggsave(filename = "TargetDist-EnsembleTheme-velocity.png",
        plot = ggRidge, width = 15, height = 10, dpi = 300,
