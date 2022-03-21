@@ -164,6 +164,7 @@ ggRidge <- ggplot(data = x) +
                                `EM_Percentile_o2os_585` = "#81B0CC",
                                `EM_Percentile_velocity_585` = "#855600")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(30, NA)) +
   theme_classic()
 ggsave(filename = "TargetDist-MetricTheme-percentile.png",
        plot = ggRidge, width = 15, height = 10, dpi = 300,

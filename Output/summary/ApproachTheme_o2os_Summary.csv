@@ -1,0 +1,5 @@
+"","mean_oxygen_decline","run","scenario","approach","sum_area","total_cost","percent_area","num_pu"
+"1",-0.00011275462476536,"EM_Percentile_o2os_585","585","percentile",13287466.5,13287466.5,56.0484896436746,19835
+"2",-0.000120307077363044,"EM_Feature_o2os_585","585","feature",7107639,7107639,29.9810675633672,10610
+"3",-0.000113322937178935,"EM_Penalty_o2os_585","585","penalty",7107639,7107639,29.9810675633672,10610
+"4",-0.000113078661650728,"EM_ClimatePriorityArea_o2os_585","585","climate priority area",9672016.2,9672016.2,40.7979880753907,14438

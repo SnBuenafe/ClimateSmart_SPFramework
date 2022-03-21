@@ -282,11 +282,7 @@ for(i in 1:length(names)) {
 }
 
 approach_list <- c("percentile", "feature", "penalty", "climate priority area")
-climate <- list() # empty list
-for (i in 1:length(names)) {
-  climate[[i]] <- get_ClimateSummary(solution_list, climate_layer = roc_tos_SSP585, metric = "tos", col_scenario = "585", col_approach = approach_list)
-}
-climate <- plyr::join_all(climate, by = c("run", "scenario", "approach"), type = "left")
+climate <- get_ClimateSummary(solution_list, climate_layer = roc_tos_SSP585, metric = "tos", col_scenario = "585", col_approach = approach_list, col_run = names, climateLayer = "single")
 
 summary <- left_join(climate, df, by = "run")
 
@@ -310,6 +306,179 @@ for (i in 1:length(list)) {
     plot_corrplot(., length(object_list)))
 
 #### Ocean acidification ####
+# Create low-regret areas per metrics
+# Load solutions
+s3 <- readRDS("Output/solutions/s3-EM-Percentile-phos-585.rds") # Percentile
+s7 <- readRDS("Output/solutions/s7-EM-Feature-phos-585.rds") # Feature
+s11 <- readRDS("Output/solutions/s11-EM-Penalty-phos-585.rds") # Penalty
+s35 <- readRDS("Output/solutions/s35-EM-ClimatePriorityArea-phos-585.rds") # Climate priority area
+solution_list <- list(s3, s7, s11, s35)
+names <- c("EM_Percentile_phos_585", "EM_Feature_phos_585", "EM_Penalty_phos_585", "EM_ClimatePriorityArea_phos_585")
+s7_LRplot <- create_LowRegretSf(solution_list, names, PUs)
+saveRDS(s7_LRplot, paste0(output_lowregret, "s7-EM-LowRegret-phos-585.rds")) # save low-regret solution
+(ggLowRegret7 <- plot_lowregret(s7_LRplot, land) + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "LR-Approach-phos.png",
+       plot = ggLowRegret7, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# Summary of low-regret
+df <- tibble(run = character()) # empty tibble
+for(i in 1:length(names)) {
+  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  df <- rbind(statistics, df)
+}
+
+approach_list <- c("percentile", "feature", "penalty", "climate priority area")
+climate <- get_ClimateSummary(solution_list, climate_layer = roc_phos_SSP585, metric = "phos", col_scenario = "585", col_approach = approach_list, col_run = names, climateLayer = "single")
+
+summary <- left_join(climate, df, by = "run")
+
+write.csv(summary, paste0(output_summary, "ApproachTheme_phos_Summary.csv")) # save
+
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach") +
+  theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-ApproachTheme-phos-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
+# Get Kappa Correlation Matrix
+object_list <- list() # empty list
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], approach_list[i])
+  object_list[[i]] <- obj
+}
+
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
+#### Declining oxygen concentration ####
+# Create low-regret areas per metrics
+# Load solutions
+s4 <- readRDS("Output/solutions/s4-EM-Percentile-o2os-585.rds") # Percentile
+s8 <- readRDS("Output/solutions/s8-EM_Feature-o2os-585.rds") # Feature
+s12 <- readRDS("Output/solutions/s12-EM-Penalty-o2os-585.rds") # Penalty
+s36 <- readRDS("Output/solutions/s36-EM-ClimatePriorityArea-o2os-585.rds") # Climate priority area
+solution_list <- list(s4, s8, s12, s36)
+names <- c("EM_Percentile_o2os_585", "EM_Feature_o2os_585", "EM_Penalty_o2os_585", "EM_ClimatePriorityArea_o2os_585")
+s8_LRplot <- create_LowRegretSf(solution_list, names, PUs)
+saveRDS(s8_LRplot, paste0(output_lowregret, "s8-EM-LowRegret-o2os-585.rds")) # save low-regret solution
+(ggLowRegret8 <- plot_lowregret(s8_LRplot, land) + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "LR-Approach-o2os.png",
+       plot = ggLowRegret8, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# Summary of low-regret
+df <- tibble(run = character()) # empty tibble
+for(i in 1:length(names)) {
+  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  df <- rbind(statistics, df)
+}
+
+approach_list <- c("percentile", "feature", "penalty", "climate priority area")
+climate <- get_ClimateSummary(solution_list, climate_layer = roc_o2os_SSP585, metric = "o2os", col_scenario = "585", col_approach = approach_list, col_run = names, climateLayer = "single")
+
+summary <- left_join(climate, df, by = "run")
+
+write.csv(summary, paste0(output_summary, "ApproachTheme_o2os_Summary.csv")) # save
+
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach") +
+  theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-ApproachTheme-o2os-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
+# Get Kappa Correlation Matrix
+object_list <- list() # empty list
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], approach_list[i])
+  object_list[[i]] <- obj
+}
+
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
+#### Climate velocity ####
+# Create low-regret areas per metrics
+# Load solutions
+s5 <- readRDS("Output/solutions/s5-EM-Percentile-velocity-585.rds") # Percentile
+s9 <- readRDS("Output/solutions/s9-EM-Feature-velocity-585.rds") # Feature
+s13 <- readRDS("Output/solutions/s13-EM-Penalty-velocity-585.rds") # Penalty
+s37 <- readRDS("Output/solutions/s37-EM-ClimatePriorityArea-velocity-585.rds") # Climate priority area
+solution_list <- list(s5, s9, s13, s37)
+names <- c("EM_Percentile_velocity_585", "EM_Feature_velocity_585", "EM_Penalty_velocity_585", "EM_ClimatePriorityArea_velocity_585")
+s9_LRplot <- create_LowRegretSf(solution_list, names, PUs)
+saveRDS(s9_LRplot, paste0(output_lowregret, "s9-EM-LowRegret-velocity-585.rds")) # save low-regret solution
+(ggLowRegret9 <- plot_lowregret(s9_LRplot, land) + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "LR-Approach-velocity.png",
+       plot = ggLowRegret9, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# Summary of low-regret
+df <- tibble(run = character()) # empty tibble
+for(i in 1:length(names)) {
+  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  df <- rbind(statistics, df)
+}
+
+approach_list <- c("percentile", "feature", "penalty", "climate priority area")
+climate <- get_ClimateSummary(solution_list, climate_layer = velocity_SSP585, metric = "velocity", col_scenario = "585", col_approach = approach_list, col_run = names, climateLayer = "single")
+
+summary <- left_join(climate, df, by = "run")
+
+write.csv(summary, paste0(output_summary, "ApproachTheme_velocity_Summary.csv")) # save
+
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach") +
+  theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-ApproachTheme-velocity-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
+# Get Kappa Correlation Matrix
+object_list <- list() # empty list
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], approach_list[i])
+  object_list[[i]] <- obj
+}
+
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
+#### Create low-regret summaries ####
+# Load Low-regret areas
+LR_tos <- readRDS("Output/lowregret/s6-EM-LowRegret-tos-585.rds")
+LR_phos <- readRDS("Output/lowregret/s7-EM-LowRegret-phos-585.rds")
+LR_o2os <- readRDS("Output/lowregret/s8-EM-LowRegret-o2os-585.rds")
+LR_velocity <- readRDS("Output/lowregret/s9-EM-LowRegret-velocity-585.rds")
+
+# Create summaries
+solution_list <- list(LR_tos, LR_phos, LR_o2os, LR_velocity)
+cols <- c("LR-tos", "LR-phos", "LR-o2os", "LR-velocity")
+
+df <- list() # empty list
+for(i in 1:length(names)) {
+  df[[i]] <- compute_summary(solution_list[[i]], total_area, PU_size, cols[i], Cost = "cost")
+}
+summary <- do.call(rbind, df)
+write.csv(summary, paste0(output_summary, "ApproachTheme_Metric_LowRegretSummary.csv")) # save
+
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach")  + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-ApproachTheme-Metrics-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
+# Kappa
+object_list <- list() # empty list
+for (i in 1:length(names)) {
+  obj <- select_solution(solution_list[[i]], cols[i])
+  object_list[[i]] <- obj
+}
+
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
 
 #### Approach: Percentile ####
 # First species: Katsuwonus pelamis
@@ -456,6 +625,8 @@ sp4_PercentilePlot <- plot_AQMFeatures(sp4_percentile, PUs, land, column = "Nann
 ggsave(filename = "Workflow-Percentile-sp4FilteredSSP585.png",
        plot = sp4_PercentilePlot, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
+
+
 
 #### Approach: Feature ####
 # Plots for the workflow
