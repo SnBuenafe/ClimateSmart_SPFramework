@@ -32,6 +32,20 @@ LRPenalty_summary <- read_csv("Output/summary/MetricTheme_Penalty_LowRegretSumma
 LRClimatePriorityArea_summary <- read_csv("Output/summary/MetricTheme_ClimatePriorityArea_LowRegretSummary.csv") %>% 
   dplyr::select(-1)
 
+# Load feature representation
+LRFeature_featrep <- read_csv("Output/summary/MetricTheme_Feature_FeatureRepresentation.csv") %>% 
+  dplyr::select(-1) %>% 
+  dplyr::filter(feature != "climate_layer")
+LRPercentile_featrep <- read_csv("Output/summary/MetricTheme_Percentile_FeatureRepresentation.csv") %>% dplyr::select(-1)
+LRPenalty_featrep <- read_csv("Output/summary/MetricTheme_Penalty_FeatureRepresentation.csv") %>% 
+  dplyr::select(-1) %>% 
+  dplyr::filter(feature != "climate_layer")
+LRClimatePriorityArea_featrep <- read_csv("Output/summary/MetricTheme_ClimatePriorityArea_FeatureRepresentation.csv") %>% dplyr::select(-1)
+
+feat_rep <- left_join(LRFeature_featrep, LRPercentile_featrep, by = "feature") %>% 
+  left_join(., LRPenalty_featrep, by = "feature") %>% 
+  left_join(., LRClimatePriorityArea_featrep, by = "feature")
+
 # Compare area of each
 summary <- rbind(LRFeature_summary, LRPercentile_summary, LRPenalty_summary, LRClimatePriorityArea_summary)
 
@@ -113,7 +127,7 @@ for(i in 1:length(names)) {
 df <- do.call(rbind, list)
 
 ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
-  geom_density_ridges_gradient(scale = 2) +
+  geom_density_ridges_gradient(scale = 1.5) +
   scale_fill_viridis_c(name = expression('Δ pH yr'^"-1"*''), option = "A") +
   geom_vline(xintercept = climate$mean_ocean_acidification,
              linetype = "dashed", color = "tan1", size = 0.5) +
@@ -161,6 +175,90 @@ ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach
 ggsave(filename = "ClimateVelocityDist-ApproachTheme-velocity.png",
        plot = ggRidge, width = 10, height = 6, dpi = 300,
        path = "Figures/") # save plot
+
+# Targets
+# Climate warming
+x <- feat_rep %>% 
+  dplyr::select(feature, contains("tos")) %>% 
+  pivot_longer(!feature, names_to = "approach", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = approach, group = approach, fill = approach),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_ClimatePriorityArea_tos_585` = "#E6BA7E",
+                               `EM_Feature_tos_585` = "#4D3B2A",
+                               `EM_Penalty_tos_585` = "#6984BF",
+                               `EM_Percentile_tos_585` = "#2B8142")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-ApproachTheme-tos.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
+
+# Ocean acidification
+x <- feat_rep %>% 
+  dplyr::select(feature, contains("phos")) %>% 
+  pivot_longer(!feature, names_to = "approach", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = approach, group = approach, fill = approach),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_ClimatePriorityArea_phos_585` = "#E6BA7E",
+                               `EM_Feature_phos_585` = "#4D3B2A",
+                               `EM_Penalty_phos_585` = "#6984BF",
+                               `EM_Percentile_phos_585` = "#2B8142")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-ApproachTheme-phos.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
+
+# Oxygen decline
+x <- feat_rep %>% 
+  dplyr::select(feature, contains("o2os")) %>% 
+  pivot_longer(!feature, names_to = "approach", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = approach, group = approach, fill = approach),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_ClimatePriorityArea_o2os_585` = "#E6BA7E",
+                               `EM_Feature_o2os_585` = "#4D3B2A",
+                               `EM_Penalty_o2os_585` = "#6984BF",
+                               `EM_Percentile_o2os_585` = "#2B8142")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-ApproachTheme-o2os.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
+
+# Climate velocity
+x <- feat_rep %>% 
+  dplyr::select(feature, contains("velocity")) %>% 
+  pivot_longer(!feature, names_to = "approach", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = approach, group = approach, fill = approach),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_ClimatePriorityArea_velocity_585` = "#E6BA7E",
+                               `EM_Feature_velocity_585` = "#4D3B2A",
+                               `EM_Penalty_velocity_585` = "#6984BF",
+                               `EM_Percentile_velocity_585` = "#2B8142")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-ApproachTheme-velocity.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Compare across metrics ####
+
 
 #### Approach: Percentile ####
 # First species: Katsuwonus pelamis
@@ -321,7 +419,7 @@ ggsave(filename = "Workflow-Feature-climateFiltered.png",
 
 #### Approach: Climate Priority Area ####
 # Plots for the workflow
-sp1_ImportantFeature <- create_ImportantFeatureLayer(sp1, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585) %>% 
+sp1_ImportantFeature <- create_ImportantFeatureLayer(sp1, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585) %>% 
   dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
 
 sp1_ImportantFeaturePlot <- plot_AQMFeatures(sp1_ImportantFeature, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
@@ -337,7 +435,7 @@ ggsave(filename = "Workflow-ClimatePriorityArea-sp1RepFeat.png",
       plot = sp1_RepresentationFeaturePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
-sp2_ImportantFeature <- create_ImportantFeatureLayer(sp2, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585) %>% 
+sp2_ImportantFeature <- create_ImportantFeatureLayer(sp2, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585) %>% 
   dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
 
 sp2_ImportantFeaturePlot <- plot_AQMFeatures(sp2_ImportantFeature, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #2", subtitle = "Thunnus orientalis") + theme(axis.text = element_text(size = 25))
