@@ -1,2 +1,5 @@
-"","mean_climate_warming","run","scenario","approach","mean_ocean_acidification","mean_oxygen_decline","median_velocity","mean_log_velocity","sum_area","total_cost","percent_area","num_pu"
-"1",0.0357144002403825,"LR-Approaches","585","LR-Approaches",-0.00449809672102661,-0.000122852101016475,22.8188461298661,2.68997779081368,35504.7,35504.7,0.149764050976292,53
+"","median_velocity","mean_log_velocity","run","scenario","approach","mean_oxygen_decline","mean_ocean_acidification","mean_climate_warming","sum_area","total_cost","percent_area","num_pu"
+"1",17.5699122184566,2.91913275601916,"LRFeature","585","Feature",-0.000120242956181695,-0.0045454317756446,0.0386870860186804,NA,NA,NA,NA
+"2",29.8920404552945,3.3046468022571,"LRPercentile","585","Percentile",-0.000128278171229301,-0.00451384411279012,0.0413213816525084,NA,NA,NA,NA
+"3",20.453461253646,3.0144981350927,"LRPenalty","585","Penalty",-0.00012103165740203,-0.0045341862098507,0.0396016171647389,NA,NA,NA,NA
+"4",23.7787349805746,3.16496117622201,"LRClimatePriorityArea","585","ClimatePriorityArea",-0.000126787348513707,-0.00451745195717852,0.0412541224075775,NA,NA,NA,NA

@@ -81,6 +81,87 @@ summary <- left_join(climate, summary, by = "run")
 
 write.csv(summary, paste0(output_summary, "ApproachTheme_Approaches_LowRegretSummary.csv")) # save
 
+# Measuring "climate-smart"-edness
+# Climate Warming
+# Kernel Density Plots
+list <- list() # empty list
+names <- c("Feature", "Percentile", "Penalty", "Climate Priority Area")
+group_name = "approach"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = roc_tos_SSP585)
+}
+df <- do.call(rbind, list)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), option = "C") +
+  geom_vline(xintercept = climate$mean_climate_warming,
+             linetype = "dashed", color = "tan1", size = 0.5) +
+  theme_classic()
+ggsave(filename = "ClimateWarmingDist-ApproachTheme-tos.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
+# Ocean Acidification
+# Kernel Density Plots
+list <- list() # empty list
+names <- c("Feature", "Percentile", "Penalty", "Climate Priority Area")
+group_name = "approach"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = roc_phos_SSP585)
+}
+df <- do.call(rbind, list)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 2) +
+  scale_fill_viridis_c(name = expression('Δ pH yr'^"-1"*''), option = "A") +
+  geom_vline(xintercept = climate$mean_ocean_acidification,
+             linetype = "dashed", color = "tan1", size = 0.5) +
+  theme_classic()
+ggsave(filename = "OceanAcidificationDist-ApproachTheme-phos.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
+# Rate of Declining Oxygen Concentration
+# Kernel Density Plots
+list <- list() # empty list
+names <- c("Feature", "Percentile", "Penalty", "Climate Priority Area")
+group_name = "approach"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = roc_o2os_SSP585)
+}
+df <- do.call(rbind, list)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('Δ mol m'^"-3"*' yr'^"-1"*''), option = "D") +
+  geom_vline(xintercept = climate$mean_oxygen_decline,
+             linetype = "dashed", color = "black", size = 0.5) +
+  theme_classic()
+ggsave(filename = "OxygenDeclineDist-ApproachTheme-o2os.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
+# Climate velocity
+# Kernel Density Plots
+list <- list() # empty list
+names <- c("Feature", "Percentile", "Penalty", "Climate Priority Area")
+group_name = "approach"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = velocity_SSP585)
+}
+df <- do.call(rbind, list)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_distiller(name = expression('km yr'^"-1"*''), palette = "RdYlBu") +
+  geom_vline(xintercept = climate$median_velocity,
+             linetype = "dashed", color = "khaki3", size = 0.5) +
+  theme_classic()
+ggsave(filename = "ClimateVelocityDist-ApproachTheme-velocity.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
 #### Approach: Percentile ####
 # First species: Katsuwonus pelamis
 # Plots for the workflow

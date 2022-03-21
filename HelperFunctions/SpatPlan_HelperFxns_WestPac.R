@@ -617,13 +617,28 @@ plot_AQMFeatures <- function(s1, PlanUnits, world, column){
 }
 
 # Make Kernel for Climate Data
-make_kernel <- function(solution, name, group) {
-  df <- solution %>% 
-    as_tibble() %>% 
-    dplyr::filter(solution_1 == 1) %>% 
-    dplyr::select(transformed) %>% 
-    dplyr::rename(!!sym(name) := transformed) %>% 
-    pivot_longer(!!sym(name), names_to = group, values_to = "transformed")
+make_kernel <- function(solution, name, group, metric = NA) {
+  
+  if(is.na(metric)) {
+    df <- solution %>% 
+      as_tibble() %>% 
+      dplyr::filter(solution_1 == 1) %>% 
+      dplyr::select(transformed) %>% 
+      dplyr::rename(!!sym(name) := transformed) %>% 
+      pivot_longer(!!sym(name), names_to = group, values_to = "transformed")
+  } else {
+    metric_df <- metric %>% 
+      as_tibble()
+    
+    df <- solution %>% 
+      as_tibble() %>%
+      left_join(., metric_df, by = "geometry") %>% 
+      dplyr::filter(solution_1 == 1) %>% 
+      dplyr::select(transformed) %>% 
+      dplyr::rename(!!sym(name) := transformed) %>% 
+      pivot_longer(!!sym(name), names_to = group, values_to = "transformed")
+  }
+  
   
   return(df)
 }
