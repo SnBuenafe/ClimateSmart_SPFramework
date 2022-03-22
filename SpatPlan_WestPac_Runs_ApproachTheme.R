@@ -464,7 +464,7 @@ for(i in 1:length(names)) {
 summary <- do.call(rbind, df)
 write.csv(summary, paste0(output_summary, "ApproachTheme_Metric_LowRegretSummary.csv")) # save
 
-ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach")  + theme(axis.text = element_text(size = 25))
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "metric")  + theme(axis.text = element_text(size = 25))
 ggsave(filename = "Area-ApproachTheme-Metrics-585.png",
        plot = ggArea, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
@@ -657,18 +657,18 @@ ggsave(filename = "Workflow-ClimatePriorityArea-sp1RepFeat.png",
       plot = sp1_RepresentationFeaturePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
-sp2_ImportantFeature <- create_ImportantFeatureLayer(sp2, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585) %>% 
-  dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
+sp3_ImportantFeature <- create_ImportantFeatureLayer(sp3, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585) %>% 
+  dplyr::mutate(Stenella_coeruleoalba = as.logical(Stenella_coeruleoalba))
 
-sp2_ImportantFeaturePlot <- plot_AQMFeatures(sp2_ImportantFeature, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #2", subtitle = "Thunnus orientalis") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Workflow-ClimatePriorityArea-sp2ImptFeat.png",
-      plot = sp2_ImportantFeaturePlot, width = 21, height = 29.7, dpi = 300,
+sp3_ImportantFeaturePlot <- plot_AQMFeatures(sp3_ImportantFeature, PUs, land, column = "Stenella_coeruleoalba") + ggtitle("Species Distribution #3", subtitle = "Stenella_coeruleoalba") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-ClimatePriorityArea-sp3ImptFeat.png",
+      plot = sp3_ImportantFeaturePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
-sp2_RepresentationFeature <- create_RepresentationFeature(sp2_ImportantFeature, sp2) %>% 
-  dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
+sp3_RepresentationFeature <- create_RepresentationFeature(sp3_ImportantFeature, sp3) %>% 
+  dplyr::mutate(Stenella_coeruleoalba = as.logical(Stenella_coeruleoalba))
   
-sp2_RepresentationFeaturePlot <- plot_AQMFeatures(sp2_RepresentationFeature, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #2", subtitle = "Thunnus orientalis") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Workflow-CLimatePriorityArea-sp2RepFeat.png",
-      plot = sp2_RepresentationFeaturePlot, width = 21, height = 29.7, dpi = 300,
+sp3_RepresentationFeaturePlot <- plot_AQMFeatures(sp3_RepresentationFeature, PUs, land, column = "Stenella_coeruleoalba") + ggtitle("Species Distribution #3", subtitle = "Stenella_coeruleoalba") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-CLimatePriorityArea-sp3RepFeat.png",
+      plot = sp3_RepresentationFeaturePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
