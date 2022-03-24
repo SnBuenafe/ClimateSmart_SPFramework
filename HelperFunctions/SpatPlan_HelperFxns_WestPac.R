@@ -515,7 +515,9 @@ create_Scaling <- function(cost, climate_metric, metric) {
   # I calculated scaling using this equation:
   # scaling$_ClimateMetric$ $= \frac{(Cost_{Max} - Cost_{Min})}{(ClimateMetric_{Max} - ClimateMetric_{Min})} \cdot (Scaling_{percent})$
 
-  percentage <- seq(from  = 20, to = 100, by = 10)
+  percentage <- c(seq(from  = 20, to = 100, by = 10), seq(from = 120, to = 200, by = 20), 400)
+  
+  #x = (max(cost) - min(cost)) / (max(climate_metric) - min(climate_metric))
   
   x = (max(cost)) / (max(climate_metric) - min(climate_metric)) #  Used max cost instead of range of cost because we're using a uniform cost layer
   
