@@ -154,3 +154,166 @@ solution_plot <- ggplot() + geom_sf(data = solution, aes(fill = solution_1)) +
   scale_fill_manual(values = c("FALSE" = "skyblue1", "TRUE" = "skyblue4"))
 
 (sp1 + sp2) / (solution_plot + plot_spacer())
+
+#### Both species have 50 cells each ####
+
+species2 <- tibble(
+  from = seq(from = 1, to = 51, by = 1),
+  to = seq(from = 50, to = 100, by = 1)
+)
+
+test_problems <- function(x){
+  sequence <- seq(from = species2$from[x], to = species2$to[x], by = 1)
+  
+  df <- Boundary %>% dplyr::mutate(sp1 = case_when(cellID <= 50 ~ 1,
+                                                   cellID > 50 ~ 0)) %>% 
+    dplyr::mutate(sp2 = ifelse(cellID %in% sequence, yes = 1, no = 0))
+  
+  features <- c("sp1", "sp2")
+  
+  p <- prioritizr::problem(df, features, "cost") %>%
+    add_min_set_objective() %>%
+    add_relative_targets(0.4) %>%
+    add_binary_decisions() %>%
+    add_gurobi_solver(gap = 0, verbose = FALSE)
+  
+  s <- solve(p) %>% 
+    dplyr::mutate(solution_1 = as.logical(solution_1))
+  
+  summary <- tibble(
+    total_cost = sum(s %>% as_tibble() %>% dplyr::filter(solution_1 == 1) %>% dplyr::select(cost)),
+    total_sp1 = sum(s %>% as_tibble() %>% dplyr::filter(solution_1 == 1) %>% dplyr::select(sp1)),
+    total_sp2 = sum(s %>% as_tibble() %>% dplyr::filter(solution_1 == 1) %>% dplyr::select(sp2)),
+    overlapping_cells = 50-(x-1)
+  )
+}
+
+summary <- lapply(seq(from = 1, to = nrow(species2), by = 1), test_problems) %>% 
+  do.call(bind_rows, .)
+
+test50 <- ggplot(data = summary, aes(x = overlapping_cells, y = total_cost)) +
+  geom_line() +
+  geom_point()
+
+test50x <- ggplot(data = summary, aes(x = total_sp2, y = total_cost)) +
+  geom_line() +
+  geom_point()
+
+ggsave(plot = test50, filename = "Output/temp/test_results.png", height = 10, width = 10, dpi = 600)
+
+#### Percentile approach ####
+
+# Remove 50% all the time.
+climateSmart <- seq(from = 25, by = 1, length = 51)
+
+species2 <- cbind(species2, climateSmart)
+
+test_problems <- function(x){
+  sequence <- seq(from = species2$from[x], to = species2$to[x], by = 1)
+  
+  df <- Boundary %>% dplyr::mutate(sp1 = case_when(cellID <= 50 ~ 1,
+                                                   cellID > 50 ~ 0)) %>% 
+    dplyr::mutate(sp1_ClimateSmart = case_when(cellID <= 25 ~ 1,
+                                               cellID > 25 ~ 0)) %>% 
+    dplyr::mutate(sp2 = ifelse(cellID %in% sequence, yes = 1, no = 0)) %>% 
+    dplyr::mutate(sp2_ClimateSmart = case_when((sp2 == 1 & cellID <= species2$climateSmart[x]) ~ 1,
+                                               TRUE ~ 0))
+  
+  features <- c("sp1_ClimateSmart", "sp2_ClimateSmart")
+  
+  p <- prioritizr::problem(df, features, "cost") %>%
+    add_min_set_objective() %>%
+    add_relative_targets(0.8) %>% # 40% protection, 50th percentile
+    add_binary_decisions() %>%
+    add_gurobi_solver(gap = 0, verbose = FALSE)
+  
+  s <- solve(p) #%>% 
+   # dplyr::mutate(solution_1 = as.logical(solution_1))
+  
+  summary <- tibble(
+    total_cost = sum(s %>% as_tibble() %>% dplyr::filter(solution_1 == 1) %>% dplyr::select(cost)),
+    total_sp1 = sum(s %>% as_tibble() %>% dplyr::filter(solution_1 == 1) %>% dplyr::select(sp1)),
+    total_sp2 = sum(s %>% as_tibble() %>% dplyr::filter(solution_1 == 1) %>% dplyr::select(sp2)),
+    overlapping_cells = 25 - species2$from[x] + 1
+  ) %>% dplyr::mutate(overlapping_cells = ifelse(overlapping_cells < 0, yes = 0, no = overlapping_cells))
+}
+
+summary <- lapply(seq(from = 1, to = nrow(species2), by = 1), test_problems) %>% 
+  do.call(bind_rows, .)
+
+testPercentile <- ggplot(data = summary, aes(x = overlapping_cells, y = total_cost)) +
+  geom_line() +
+  geom_point()
+testPercentilex <- ggplot(data = summary, aes(x = total_sp2, y = total_cost)) +
+  geom_line() +
+  geom_point()
+
+test <- test50 + testPercentile
+test50x + testPercentilex
+ggsave(plot = test, filename = "Output/temp/test_results.png", height = 7, width = 12, dpi = 600)
+
+# Example
+x = 16
+sequence <- seq(from = species2$from[x], to = species2$to[x], by = 1)
+
+df <- Boundary %>% dplyr::mutate(sp1 = case_when(cellID <= 50 ~ 1,
+                                                 cellID > 50 ~ 0)) %>% 
+  dplyr::mutate(sp1_ClimateSmart = case_when(cellID <= 25 ~ 1,
+                                             cellID > 25 ~ 0)) %>% 
+  dplyr::mutate(sp2 = ifelse(cellID %in% sequence, yes = 1, no = 0)) %>% 
+  dplyr::mutate(sp2_ClimateSmart = case_when((sp2 == 1 & cellID <= species2$climateSmart[x]) ~ 1,
+                                             TRUE ~ 0))
+
+sp1 <- ggplot() + geom_sf(data = df, aes(fill = as.logical(sp1_ClimateSmart)), size = 0.01, show.legend = FALSE) +
+  scale_fill_manual(values = c("TRUE" = "black",
+                               "FALSE" = "grey80")) +
+  ggtitle("Species 1")
+
+sp2 <- ggplot() + geom_sf(data = df, aes(fill = as.logical(sp2_ClimateSmart)), size = 0.01, show.legend = FALSE) +
+  scale_fill_manual(values = c("TRUE" = "black",
+                               "FALSE" = "grey80")) +
+  ggtitle("Species 2")
+
+features <- c("sp1_ClimateSmart", "sp2_ClimateSmart")
+
+p <- prioritizr::problem(df, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.8) %>% # 40% protection, 50th percentile
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+s <- solve(p) %>% 
+  dplyr::mutate(solution_1 = as.logical(solution_1))
+
+solution <- ggplot() + geom_sf(data = s, aes(fill = as.logical(solution_1)), size = 0.01, show.legend = FALSE) +
+  scale_fill_manual(values = c("TRUE" = "black",
+                               "FALSE" = "grey80")) +
+  ggtitle("Solution")
+
+testPlot <- sp1 + sp2 + solution + plot_spacer() + plot_annotation(title = "10 Overlapping Cells")
+ggsave(plot = testPlot, filename = "Output/temp/testPlot.png", height = 10, width = 10, dpi = 600)
+
+summary <- tibble(
+  total_cost = sum(s %>% as_tibble() %>% dplyr::filter(solution_1 == 1) %>% dplyr::select(cost)),
+  total_sp1 = sum(s %>% as_tibble() %>% dplyr::filter(solution_1 == 1) %>% dplyr::select(sp1_ClimateSmart)),
+  total_sp2 = sum(s %>% as_tibble() %>% dplyr::filter(solution_1 == 1) %>% dplyr::select(sp2_ClimateSmart)),
+  overlapping_cells = 25 - species2$from[x] + 1
+) %>% dplyr::mutate(overlapping_cells = ifelse(overlapping_cells < 0, yes = 0, no = overlapping_cells))
+
+df <- Boundary %>% dplyr::mutate(sp1 = case_when(cellID <= 100 ~ 1,
+                                                 cellID > 100 ~ 0))
+
+features <- c("sp1")
+
+p <- prioritizr::problem(df, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.01) %>% # 40% protection, 50th percentile
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0.2, verbose = FALSE)
+
+s <- solve(p) %>% 
+  dplyr::mutate(solution_1 = as.logical(solution_1))
+ggplot() + geom_sf(data = s, aes(fill = as.logical(solution_1)), size = 0.01, show.legend = FALSE) +
+  scale_fill_manual(values = c("TRUE" = "black",
+                               "FALSE" = "grey80")) +
+  ggtitle("Solution")
