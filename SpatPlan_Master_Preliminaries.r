@@ -149,8 +149,8 @@ aqua_sf <- aqua_sf %>%
 
 #### Cost layer ####
 # Cost Layer, Squished
-#cost <- read_rds(file.path("Output", paste(save_name, paste0("Cost.rds"), sep = "_"))) %>% 
-#  mutate(Cost_squish = scales::oob_squish(Cost, quantile(Cost, c(0.01, 0.99))))
+cost <- read_rds(file.path("Output", paste(save_name, paste0("Cost.rds"), sep = "_"))) %>% 
+  mutate(Cost_squish = scales::oob_squish(Cost, quantile(Cost, c(0.01, 0.99))))
 
 # Uniform Cost (Using the Area)
 UniformCost <- PUs %>% 

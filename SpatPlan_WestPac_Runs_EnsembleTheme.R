@@ -56,7 +56,7 @@ write.csv(summary, paste0(output_summary, "Uninformed_Summary.csv")) # save
 # Approach: "Percentile"
 # 1. Prepare climate layer
 # Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (<= 35th percentile)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -81,7 +81,8 @@ ggsave(filename = "EM-Percentile-tos-585.png",
        path = "Figures/") # save plot
 # 6. Check summary statistics
 # Feature Representation
-feat_rep <- represent_feature(p2, s2, "EM_Percentile_tos_585")
+dummy_problem <- readRDS("Output/temp/p10.rds")
+feat_rep <- represent_feature(dummy_problem, s2, "EM_Percentile_tos_585")
 head(feat_rep)
 
 # Summary
@@ -102,7 +103,7 @@ summary %<>% left_join(., climate, by = c("run"))
 # 1. Prepare climate layer
 # Intersect this with climate layer, select only those <= 35th percentile. 
 ensemble <- list(`tos_CanESM5`, `tos_CMCC-ESM2`, `tos_GFDL-ESM4`, `tos_IPSL-CM6A-LR`, `tos_NorESM2-MM`)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = ensemble[[1]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = ensemble[[1]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -128,7 +129,7 @@ ggsave(filename = "MM-CanESM5-Percentile-tos-585.png",
 
 # B. CMCC-ESM2
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = ensemble[[2]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = ensemble[[2]], PUs = PUs)
 # 2. Get list of features: same list of features as above
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_percentile, `tos_CMCC-ESM2`, UniformCost)
@@ -150,7 +151,7 @@ ggsave(filename = "MM-CMCC_ESM2-Percentile-tos-585.png",
 
 # C. GFDL-ESM4
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = ensemble[[3]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = ensemble[[3]], PUs = PUs)
 # 2. Get list of features: same list of features as above
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_percentile, `tos_GFDL-ESM4`, UniformCost)
@@ -172,7 +173,7 @@ ggsave(filename = "MM-GFDL_ESM4-Percentile-tos-585.png",
 
 # D. IPSL-CM6A-LR
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = ensemble[[4]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = ensemble[[4]], PUs = PUs)
 # 2. Get list of features: same list of features as above
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_percentile, `tos_IPSL-CM6A-LR`, UniformCost)
@@ -194,7 +195,7 @@ ggsave(filename = "MM-IPSL_CM6A_LR-Percentile-tos-585.png",
 
 # E. NorESM2-MM
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = ensemble[[5]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = ensemble[[5]], PUs = PUs)
 # 2. Get list of features: same list of features as above
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_percentile, `tos_NorESM2-MM`, UniformCost)
@@ -216,7 +217,9 @@ ggsave(filename = "MM-NorESM2_MM-Percentile-tos-585.png",
 
 # Get summaries of all solutions
 # Feature representation
-problem_list <- list(p14, p15, p16, p17, p18)
+# Load dummy problem, to compare solutions with original distributions and not the filtered distributions
+dummy_problem <- readRDS("Output/temp/p10.rds") # "penalty" problem dummy
+problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem)
 solution_list <- list(s14, s15, s16, s17, s18)
 names <- c("MM-CanESM5_Percentile_tos_585", "MM-CMCC-ESM2_Percentile_tos_585", "MM-GFDL-ESM4_Percentile_tos_585", "MM-IPSL-CM6A-LR_Percentile_tos_585", "MM-NorESM2-MM_Percentile_tos_585")
 empty_list <- tibble(feature = character()) # empty tibble
@@ -226,6 +229,27 @@ for(i in 1:length(names)) {
 }
 feat_rep %<>% left_join(., empty_list)
 write.csv(feat_rep, paste0(output_summary, "EnsembleTheme_tos_FeatureRepresentation.csv")) # save
+
+# Kernel distribution plots of targets
+x <- feat_rep %>% 
+  pivot_longer(!feature, names_to = "ensemble", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = ensemble, group = ensemble, fill = ensemble),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_Percentile_tos_585` = "#FAF7B7",
+                               `MM-CanESM5_Percentile_tos_585` = "#E6C173",
+                               `MM-CMCC-ESM2_Percentile_tos_585` = "#855600",
+                               `MM-GFDL-ESM4_Percentile_tos_585` = "#5075BA",
+                               `MM-IPSL-CM6A-LR_Percentile_tos_585` = "#81B0CC",
+                               `MM-NorESM2-MM_Percentile_tos_585` = "#5A9E67")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-EnsembleTheme-tos.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
 
 # Summary
 climateLayer_list <- list(`tos_CanESM5`, `tos_CMCC-ESM2`, `tos_GFDL-ESM4`, `tos_IPSL-CM6A-LR`, `tos_NorESM2-MM`)
@@ -243,7 +267,7 @@ write.csv(summary, paste0(output_summary, "EnsembleTheme_tos_Summary.csv")) # sa
 
 ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "ensemble") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "Area-EnsembleTheme-Percentile-tos-585.png",
-       plot = ggArea, width = 7, height = 5, dpi = 300,
+       plot = ggArea, width = 8, height = 5, dpi = 300,
        path = "Figures/") # save plot
 
 # Create selection frequency plot
@@ -268,6 +292,33 @@ for (i in 1:length(list)) {
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
 
+# Measuring "climate-smart"-edness
+# Kernel Density Plots
+list <- list() # empty list
+names <- c("EnsembleMean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+group_name = "ensemble"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name)
+}
+df <- do.call(rbind, list)
+
+intercept1 <- (climate %>% dplyr::filter(grepl("NorESM2|GFDL", run)))$mean_climate_warming
+intercept2 <- (climate %>% dplyr::filter(grepl("EM|CMCC", run)))$mean_climate_warming
+intercept3 <- (climate %>% dplyr::filter(grepl("IPSL|CanESM5", run)))$mean_climate_warming
+ggRidge <- ggplot(data = df, aes(x = transformed, y = ensemble, group = ensemble, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), option = "C") +
+  geom_vline(xintercept = intercept1,
+             linetype = "dashed", color = "tan1", size = 0.5) +
+  geom_vline(xintercept = intercept2,
+             linetype = "dashed", color = "orchid3", size = 0.5) +
+  geom_vline(xintercept = intercept3,
+             linetype = "dashed", color = "orchid4", size = 0.5) +
+  theme_classic()
+ggsave(filename = "ClimateWarmingDist-EnsembleTheme-Percentile-tos.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
 #### Supplementary Information: Multi-Model Ensemble Approach #### 
 
 #### "Ensemble mean" approach: Rate of Ocean Acidification ####
@@ -277,7 +328,7 @@ for (i in 1:length(list)) {
 # Approach: "Percentile"
 # 1. Prepare climate layer
 # Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (>= 65th percentile)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = roc_phos_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -312,7 +363,7 @@ ggsave(filename = "EM-Percentile-phos-585.png",
 # 1. Prepare climate layer
 # Intersect this with climate layer, select only those >= 65th percentile. 
 ensemble <- list(`phos_CanESM5`, `phos_CMCC-ESM2`, `phos_GFDL-ESM4`, `phos_IPSL-CM6A-LR`, `phos_NorESM2-MM`)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[1]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = ensemble[[1]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -338,7 +389,7 @@ ggsave(filename = "MM-CanESM5-Percentile-phos-585.png",
 
 # B. CMCC-ESM2
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[2]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = ensemble[[2]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -364,7 +415,7 @@ ggsave(filename = "MM-CMCC_ESM2-Percentile-phos-585.png",
 
 # C. GFDL-ESM4
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[3]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = ensemble[[3]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -390,7 +441,7 @@ ggsave(filename = "MM-GFDL_ESM4-Percentile-phos-585.png",
 
 # D. IPSL-CM6A-LR
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[4]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = ensemble[[4]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -416,7 +467,7 @@ ggsave(filename = "MM-IPSL_CM6A_LR-Percentile-phos-585.png",
 
 # E. NorESM2-MM
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = ensemble[[5]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = ensemble[[5]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -442,15 +493,38 @@ ggsave(filename = "MM-NorESM2_MM-Percentile-phos-585.png",
 
 # Get summaries of all solutions
 # Feature representation
-problem_list <- list(p19, p20, p21, p22, p23)
-solution_list <- list(s19, s20, s21, s22, s23)
-names <- c("MM-CanESM5_Percentile_phos_585", "MM-CMCC-ESM2_Percentile_phos_585", "MM-GFDL-ESM4_Percentile_phos_585", "MM-IPSL-CM6A-LR_Percentile_phos_585", "MM-NorESM2-MM_Percentile_phos_585")
+# Load dummy problem, to compare solutions with original distributions and not the filtered distributions
+dummy_problem <- readRDS("Output/temp/p10.rds") # "penalty" problem dummy
+problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem)
+solution_list <- list(s3, s19, s20, s21, s22, s23)
+names <- c("EM_Percentile_phos_585", "MM-CanESM5_Percentile_phos_585", "MM-CMCC-ESM2_Percentile_phos_585", "MM-GFDL-ESM4_Percentile_phos_585", "MM-IPSL-CM6A-LR_Percentile_phos_585", "MM-NorESM2-MM_Percentile_phos_585")
 feat_rep <- tibble(feature = character()) # empty tibble
 for(i in 1:length(names)) {
   df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
   feat_rep <- left_join(df, feat_rep, by = "feature")
 }
 write.csv(feat_rep, paste0(output_summary, "EnsembleTheme_phos_FeatureRepresentation.csv")) # save
+
+# Kernel distribution plots of targets
+x <- feat_rep %>% 
+  pivot_longer(!feature, names_to = "ensemble", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = ensemble, group = ensemble, fill = ensemble),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_Percentile_phos_585` = "#FAF7B7",
+                               `MM-CanESM5_Percentile_phos_585` = "#E6C173",
+                               `MM-CMCC-ESM2_Percentile_phos_585` = "#855600",
+                               `MM-GFDL-ESM4_Percentile_phos_585` = "#5075BA",
+                               `MM-IPSL-CM6A-LR_Percentile_phos_585` = "#81B0CC",
+                               `MM-NorESM2-MM_Percentile_phos_585` = "#5A9E67")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-EnsembleTheme-phos.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
 
 # Summary
 climateLayer_list <- list(`phos_CanESM5`, `phos_CMCC-ESM2`, `phos_GFDL-ESM4`, `phos_IPSL-CM6A-LR`, `phos_NorESM2-MM`)
@@ -492,13 +566,33 @@ for (i in 1:length(list)) {
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
 
+# Measuring "climate-smart"-edness
+# Kernel Density Plots
+list <- list() # empty list
+names <- c("EnsembleMean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+group_name = "ensemble"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name)
+}
+df <- do.call(rbind, list)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = ensemble, group = ensemble, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('Δ pH yr'^"-1"*''), option = "A") +
+  geom_vline(xintercept = climate$mean_ocean_acidification,
+             linetype = "dashed", color = "tan1", size = 0.5) +
+  theme_classic()
+ggsave(filename = "OceanAcidificationDist-EnsembleTheme-Percentile-phos.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
 #### "Ensemble mean" approach: Rate of Declining Oxygen Concentration ####
 # Parameters:
 # Ensemble: Ensemble mean
 # Climate metric: Rate of Declining Oxygen Concentration (SSP 5-8.5)
 # Approach: "Percentile"
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = roc_o2os_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -533,7 +627,7 @@ ggsave(filename = "EM-Percentile-o2os-585.png",
 # 1. Prepare climate layer
 # Intersect this with climate layer, select only those >= 65th percentile). 
 ensemble <- list(`o2os_CanESM5`, `o2os_CMCC-ESM2`, `o2os_GFDL-ESM4`, `o2os_IPSL-CM6A-LR`, `o2os_NorESM2-MM`)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[1]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = ensemble[[1]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -559,7 +653,7 @@ ggsave(filename = "MM-CanESM5-Percentile-o2os-585.png",
 
 # B. CMCC-ESM2
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[2]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = ensemble[[2]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -585,7 +679,7 @@ ggsave(filename = "MM-CMCC_ESM2-Percentile-o2os-585.png",
 
 # C. GFDL-ESM4
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[3]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = ensemble[[3]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -611,7 +705,7 @@ ggsave(filename = "MM-GFDL_ESM4-Percentile-o2os-585.png",
 
 # D. IPSL-CM6A-LR
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[4]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = ensemble[[4]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -637,7 +731,7 @@ ggsave(filename = "MM-IPSL_CM6A_LR-Percentile-o2os-585.png",
 
 # E. NorESM2-MM
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = ensemble[[5]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = ensemble[[5]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -663,15 +757,38 @@ ggsave(filename = "MM-NorESM2_MM-Percentile-o2os-585.png",
 
 # Get summaries of all solutions
 # Feature representation
-problem_list <- list(p24, p25, p26, p27, p28)
-solution_list <- list(s24, s25, s26, s27, s28)
-names <- c("MM-CanESM5_Percentile_o2os_585", "MM-CMCC-ESM2_Percentile_o2os_585", "MM-GFDL-ESM4_Percentile_o2os_585", "MM-IPSL-CM6A-LR_Percentile_o2os_585", "MM-NorESM2-MM_Percentile_o2os_585")
+# Load dummy problem, to compare solutions with original distributions and not the filtered distributions
+dummy_problem <- readRDS("Output/temp/p10.rds") # "penalty" problem dummy
+problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem)
+solution_list <- list(s4, s24, s25, s26, s27, s28)
+names <- c("EM_Percentile_o2os_585", "MM-CanESM5_Percentile_o2os_585", "MM-CMCC-ESM2_Percentile_o2os_585", "MM-GFDL-ESM4_Percentile_o2os_585", "MM-IPSL-CM6A-LR_Percentile_o2os_585", "MM-NorESM2-MM_Percentile_o2os_585")
 feat_rep <- tibble(feature = character()) # empty tibble
 for(i in 1:length(names)) {
   df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
   feat_rep <- left_join(df, feat_rep, by = "feature")
 }
 write.csv(feat_rep, paste0(output_summary, "EnsembleTheme_o2os_FeatureRepresentation.csv")) # save
+
+# Kernel distribution plots of targets
+x <- feat_rep %>% 
+  pivot_longer(!feature, names_to = "ensemble", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = ensemble, group = ensemble, fill = ensemble),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_Percentile_o2os_585` = "#FAF7B7",
+                               `MM-CanESM5_Percentile_o2os_585` = "#E6C173",
+                               `MM-CMCC-ESM2_Percentile_o2os_585` = "#855600",
+                               `MM-GFDL-ESM4_Percentile_o2os_585` = "#5075BA",
+                               `MM-IPSL-CM6A-LR_Percentile_o2os_585` = "#81B0CC",
+                               `MM-NorESM2-MM_Percentile_o2os_585` = "#5A9E67")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-EnsembleTheme-o2os.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
 
 # Summary
 climateLayer_list <- list(`o2os_CanESM5`, `o2os_CMCC-ESM2`, `o2os_GFDL-ESM4`, `o2os_IPSL-CM6A-LR`, `o2os_NorESM2-MM`)
@@ -714,7 +831,25 @@ for (i in 1:length(list)) {
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
 
+# Measuring "climate-smart"-edness
+# Kernel Density Plots
+list <- list() # empty list
+names <- c("EnsembleMean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+group_name = "ensemble"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name)
+}
+df <- do.call(rbind, list)
 
+ggRidge <- ggplot(data = df, aes(x = transformed, y = ensemble, group = ensemble, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('Δ mol m'^"-3"*' yr'^"-1"*''), option = "D") +
+  geom_vline(xintercept = climate$mean_oxygen_decline,
+             linetype = "dashed", color = "black", size = 0.5) +
+  theme_classic()
+ggsave(filename = "OxygenDeclineDist-EnsembleTheme-Percentile-o2os.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
 
 #### "Ensemble mean" approach: Climate Velocity ####
 # Parameters:
@@ -722,7 +857,7 @@ for (i in 1:length(list)) {
 # Climate metric: Climate Velocity (SSP 5-8.5)
 # Approach: "Percentile"
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = velocity_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -756,7 +891,7 @@ ggsave(filename = "EM-Percentile-velocity-585.png",
 # A. CanESM5
 # 1. Prepare climate layer
 ensemble <- list(`velocity_CanESM5`, `velocity_CMCC-ESM2`, `velocity_GFDL-ESM4`, `velocity_IPSL-CM6A-LR`, `velocity_NorESM2-MM`)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[1]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = ensemble[[1]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -782,7 +917,7 @@ ggsave(filename = "MM-CanESM5-Percentile-velocity-585.png",
 
 # B. CMCC-ESM2
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[2]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = ensemble[[2]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -808,7 +943,7 @@ ggsave(filename = "MM-CMCC_ESM2-Percentile-velocity-585.png",
 
 # C. GFDL-ESM4
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[3]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = ensemble[[3]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -834,7 +969,7 @@ ggsave(filename = "MM-GFDL_ESM4-Percentile-velocity-585.png",
 
 # D. IPSL-CM6A-LR
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[4]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = ensemble[[4]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -860,7 +995,7 @@ ggsave(filename = "MM-IPSL_CM6A_LR-Percentile-velocity-585.png",
 
 # E. NorESM2-MM
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = ensemble[[5]], PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = ensemble[[5]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -886,15 +1021,38 @@ ggsave(filename = "MM-NorESM2_MM-Percentile-velocity-585.png",
 
 # Get summaries of all solutions
 # Feature representation
-problem_list <- list(p29, p30, p31, p32, p33)
-solution_list <- list(s29, s30, s31, s32, s33)
-names <- c("MM-CanESM5_Percentile_velocity_585", "MM-CMCC-ESM2_Percentile_velocity_585", "MM-GFDL-ESM4_Percentile_velocity_585", "MM-IPSL-CM6A-LR_Percentile_velocity_585", "MM-NorESM2-MM_Percentile_velocity_585")
+# Load dummy problem, to compare solutions with original distributions and not the filtered distributions
+dummy_problem <- readRDS("Output/temp/p10.rds") # "penalty" problem dummy
+problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem)
+solution_list <- list(s5, s29, s30, s31, s32, s33)
+names <- c("EM_Percentile_velocity_585", "MM-CanESM5_Percentile_velocity_585", "MM-CMCC-ESM2_Percentile_velocity_585", "MM-GFDL-ESM4_Percentile_velocity_585", "MM-IPSL-CM6A-LR_Percentile_velocity_585", "MM-NorESM2-MM_Percentile_velocity_585")
 feat_rep <- tibble(feature = character()) # empty tibble
 for(i in 1:length(names)) {
   df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
   feat_rep <- left_join(df, feat_rep, by = "feature")
 }
 write.csv(feat_rep, paste0(output_summary, "EnsembleTheme_velocity_FeatureRepresentation.csv")) # save
+
+# Kernel distribution plots of targets
+x <- feat_rep %>% 
+  pivot_longer(!feature, names_to = "ensemble", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = ensemble, group = ensemble, fill = ensemble),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_Percentile_velocity_585` = "#FAF7B7",
+                               `MM-CanESM5_Percentile_velocity_585` = "#E6C173",
+                               `MM-CMCC-ESM2_Percentile_velocity_585` = "#855600",
+                               `MM-GFDL-ESM4_Percentile_velocity_585` = "#5075BA",
+                               `MM-IPSL-CM6A-LR_Percentile_velocity_585` = "#81B0CC",
+                               `MM-NorESM2-MM_Percentile_velocity_585` = "#5A9E67")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-EnsembleTheme-velocity.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
 
 # Summary
 climateLayer_list <- list(`velocity_CanESM5`, `velocity_CMCC-ESM2`, `velocity_GFDL-ESM4`, `velocity_IPSL-CM6A-LR`, `velocity_NorESM2-MM`)
@@ -936,5 +1094,25 @@ for (i in 1:length(list)) {
 # manually save corrplot
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
+
+# Measuring "climate-smart"-edness
+# Kernel Density Plots
+list <- list() # empty list
+names <- c("EnsembleMean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+group_name = "ensemble"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name)
+}
+df <- do.call(rbind, list)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = ensemble, group = ensemble, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_distiller(name = expression('km yr'^"-1"*''), palette = "RdYlBu") +
+  geom_vline(xintercept = climate$median_velocity,
+             linetype = "dashed", color = "khaki3", size = 0.5) +
+  theme_classic()
+ggsave(filename = "ClimateVelocityDist-EnsembleTheme-Percentile-velocity.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
 
 #### TODO: Marine Heatwaves ####

@@ -23,7 +23,7 @@ total_area = nrow(PUs) * PU_size
 # Approach: "Percentile"
 # 1. Prepare climate layer
 # Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (<= 35th percentile)
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -53,7 +53,7 @@ ggsave(filename = "EM-Percentile-tos-585.png",
 # Climate metric: Rate of Ocean Acidification (SSP 5-8.5)
 # Approach: "Percentile"
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = roc_phos_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -83,7 +83,7 @@ ggsave(filename = "EM-Percentile-phos-585.png",
 # Climate metrics: Rate of Declining oxygen concentration (SSP 5-8.5)
 # Approach: "Percentile"
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = roc_o2os_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -113,7 +113,7 @@ ggsave(filename = "EM-Percentile-o2os-585.png",
 # Climate metrics: Climate velocity (SSP 5-8.5)
 # Approach: "Percentile"
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = velocity_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
@@ -139,7 +139,9 @@ ggsave(filename = "EM-Percentile-velocity-585.png",
 
 #### Summary ####
 # Feature representation
-problem_list <- list(p2, p3, p4, p5)
+# Load dummy problem, to compare solutions with original distributions and not the filtered distributions
+dummy_problem <- readRDS("Output/temp/p10.rds") # "penalty" problem dummy
+problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem)
 solution_list <- list(s2, s3, s4, s5)
 names <- c("EM_Percentile_tos_585", "EM_Percentile_phos_585", "EM_Percentile_o2os_585", "EM_Percentile_velocity_585")
 feat_rep <- tibble(feature = character()) # empty tibble
@@ -148,6 +150,25 @@ for(i in 1:length(names)) {
   feat_rep <- left_join(df, feat_rep, by = "feature")
 }
 write.csv(feat_rep, paste0(output_summary, "MetricTheme_Percentile_FeatureRepresentation.csv")) # save
+
+# Kernel distribution plots of targets
+x <- feat_rep %>% 
+  pivot_longer(!feature, names_to = "metric", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = metric, group = metric, fill = metric),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_Percentile_tos_585` = "#289E3D",
+                               `EM_Percentile_phos_585` = "#E6C173",
+                               `EM_Percentile_o2os_585` = "#81B0CC",
+                               `EM_Percentile_velocity_585` = "#855600")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(30, NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-MetricTheme-percentile.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
 
 # Summary
 climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585)
@@ -205,7 +226,7 @@ write.csv(summary, paste0(output_summary, "MetricTheme_Percentile_LowRegretSumma
 # Approach: "Feature"
 # 1. Prepare climate layer
 # Climate layer is treated as a feature with its own target.
-ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585)
+ClimateFeature <- create_FeatureLayer(metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585)
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
@@ -236,7 +257,7 @@ ggsave(filename = "EM-Feature-tos-585.png",
 # Climate metric: Rate of Ocean Acidification (SSP 5-8.5)
 # Approach: "Feature"
 # 1. Prepare climate layer
-ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = roc_phos_SSP585)
+ClimateFeature <- create_FeatureLayer(metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP585)
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
@@ -267,7 +288,7 @@ ggsave(filename = "EM-Feature-phos-585.png",
 # Climate metrics: Rate of Declining oxygen concentration (SSP 5-8.5)
 # Approach: "Feature"
 # 1. Prepare climate layer
-ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = roc_o2os_SSP585)
+ClimateFeature <- create_FeatureLayer(metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP585)
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
@@ -298,7 +319,7 @@ ggsave(filename = "EM-Feature-o2os-585.png",
 # Climate metrics: Climate velocity (SSP 5-8.5)
 # Approach: "Feature"
 # 1. Prepare climate layer
-ClimateFeature <- create_FeatureLayer(aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = velocity_SSP585)
+ClimateFeature <- create_FeatureLayer(metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP585)
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
@@ -334,6 +355,25 @@ for(i in 1:length(names)) {
   feat_rep <- left_join(df, feat_rep, by = "feature")
 }
 write.csv(feat_rep, paste0(output_summary, "MetricTheme_Feature_FeatureRepresentation.csv")) # save
+
+# Kernel distribution plots of targets
+x <- feat_rep %>% 
+  pivot_longer(!feature, names_to = "metric", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = metric, group = metric, fill = metric),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_Feature_tos_585` = "#289E3D",
+                               `EM_Feature_phos_585` = "#E6C173",
+                               `EM_Feature_o2os_585` = "#81B0CC",
+                               `EM_Feature_velocity_585` = "#855600")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(min(x$percent), 100) +
+  theme_classic()
+ggsave(filename = "TargetDist-MetricTheme-feature.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
 
 # Summary
 climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585)
@@ -392,7 +432,7 @@ write.csv(summary, paste0(output_summary, "MetricTheme_Feature_LowRegretSummary.
 # Approach: "Penalty"
 # 1. Prepare climate layer
 # Get scaling
-scaling_PenaltyWarming <- create_Scaling(UniformCost$cost, roc_tos_SSP585$slpTrends, "tos")
+scaling_PenaltyWarming <- create_Scaling(UniformCost$cost, roc_tos_SSP585$transformed, "tos")
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
@@ -406,7 +446,7 @@ p10 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_relative_targets(0.3) %>%
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
-  add_linear_penalties(scaling, data = "slpTrends")
+  add_linear_penalties(scaling, data = "transformed")
 # 4. Solve the planning problem 
 s10 <- prioritizr::solve(p10)
 saveRDS(s10, paste0(output_solutions, "s10-EM-Penalty-tos-585.rds")) # save solution
@@ -424,7 +464,7 @@ ggsave(filename = "EM-Penalty-tos-585.png",
 # Climate metric: Rate of Ocean Acidiication (SSP 5-8.5)
 # Approach: "Penalty"
 # 1. Prepare climate layer
-scaling_PenaltyAcidification <- create_Scaling(UniformCost$cost, roc_phos_SSP585$slpTrends, "phos")
+scaling_PenaltyAcidification <- create_Scaling(UniformCost$cost, roc_phos_SSP585$transformed, "phos")
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
@@ -438,7 +478,7 @@ p11 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_relative_targets(0.3) %>%
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
-  add_linear_penalties(scaling, data = "slpTrends")
+  add_linear_penalties(scaling, data = "transformed")
 # 4. Solve the planning problem 
 s11 <- prioritizr::solve(p11)
 saveRDS(s11, paste0(output_solutions, "s11-EM-Penalty-phos-585.rds")) # save solution
@@ -456,7 +496,7 @@ ggsave(filename = "EM-Penalty-phos-585.png",
 # Climate metrics: Rate of declining oxygen concentration (SSP 5-8.5)
 # Approach: "Penalty"
 # 1. Prepare climate layer
-scaling_PenaltyOxygen <- create_Scaling(UniformCost$cost, roc_o2os_SSP585$slpTrends, "o2os")
+scaling_PenaltyOxygen <- create_Scaling(UniformCost$cost, roc_o2os_SSP585$transformed, "o2os")
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
@@ -470,7 +510,7 @@ p12 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_relative_targets(0.3) %>% # target is 30% for all features.
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
-  add_linear_penalties(scaling, data = "slpTrends")
+  add_linear_penalties(scaling, data = "transformed")
 # 4. Solve the planning problem
 s12 <- prioritizr::solve(p12)
 saveRDS(s12, paste0(output_solutions, "s12-EM-Penalty-o2os-585.rds")) # save solution
@@ -488,7 +528,7 @@ ggsave(filename = "EM-Penalty-o2os-585.png",
 # Climate metrics: Climate velocity (SSP 5-8.5)
 # Approach: "Penalty"
 # 1. Prepare climate layer
-scaling_PenaltyVelocity <- create_Scaling(UniformCost$cost, velocity_SSP585$voccMag, "velocity")
+scaling_PenaltyVelocity <- create_Scaling(UniformCost$cost, velocity_SSP585$transformed, "velocity")
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
@@ -502,7 +542,7 @@ p13 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_relative_targets(0.3) %>% # target is 30% for all features.
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
-  add_linear_penalties(scaling, data = "voccMag")
+  add_linear_penalties(scaling, data = "transformed")
 # 4. Solve the planning problem
 s13 <- prioritizr::solve(p13)
 saveRDS(s13, paste0(output_solutions, "s13-EM-Penalty-velocity-585.rds")) # save solution
@@ -525,6 +565,26 @@ for (i in 1:length(names)) {
   feat_rep <- left_join(df, feat_rep, by = "feature")
 }
 write.csv(feat_rep, paste0(output_summary, "MetricTheme_Penalty_FeatureRepresentation.csv")) # save
+
+# Kernel distribution plots of targets
+x <- feat_rep %>% 
+  pivot_longer(!feature, names_to = "metric", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature)) %>% 
+  dplyr::filter(!is.na(percent))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = metric, group = metric, fill = metric),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_Penalty_tos_585` = "#289E3D",
+                               `EM_Penalty_phos_585` = "#E6C173",
+                               `EM_Penalty_o2os_585` = "#81B0CC",
+                               `EM_Penalty_velocity_585` = "#855600")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(min(x$percent), 100) +
+  theme_classic()
+ggsave(filename = "TargetDist-MetricTheme-penalty.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
 
 # Summary
 climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585)
@@ -582,7 +642,7 @@ write.csv(summary, paste0(output_summary, "MetricTheme_Penalty_LowRegretSummary.
 # Climate metric: Rate of Climate Warming (SSP 5-8.5)
 # Approach: "Climate Priority Area"
 # 1. Prepare the climate layers and features
-ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585)
+ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585)
 RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
 Features <- cbind(ImptFeat, RepFeat) %>% 
   dplyr::select(-geometry.1)
@@ -620,7 +680,7 @@ ggsave(filename = "EM-ClimatePriorityArea-tos-585.png",
 # Climate metric: Rate of ocean acidification (SSP 5-8.5)
 # Approach: "Climate Priority Area"
 # 1. Prepare the climate layers and features
-ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "phos", colname = "slpTrends", metric_df = roc_phos_SSP585)
+ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP585)
 RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
 Features <- cbind(ImptFeat, RepFeat) %>% 
   dplyr::select(-geometry.1)
@@ -658,7 +718,7 @@ ggsave(filename = "EM-ClimatePriorityArea-phos-585.png",
 # Cliamte metrics: Rate of declining oxygen concentration (SSP 5-8.5)
 # Approach: "Climate Priority Area"
 # 1. Prepare the climate layers and features
-ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "o2os", colname = "slpTrends", metric_df = roc_o2os_SSP585)
+ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP585)
 RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
 Features <- cbind(ImptFeat, RepFeat) %>% 
   dplyr::select(-geometry.1)
@@ -696,7 +756,7 @@ ggsave(filename = "EM-ClimatePriorityArea-o2os-585.png",
 # Climate metrics: Climate velocity (SSP 5-8.5)
 # Approach: "Climate priority area"
 # 1. Prepare the climate layers and features
-ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "velocity", colname = "voccMag", metric_df = velocity_SSP585)
+ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP585)
 RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
 Features <- cbind(ImptFeat, RepFeat) %>% 
   dplyr::select(-geometry.1)
@@ -730,8 +790,14 @@ ggsave(filename = "EM-ClimatePriorityArea-velocity-585.png",
 
 #### Summary ####
 # Feature representation
-problem_list <- list(p34, p35, p36, p37)
+# Load dummy problem, to compare solutions with original distributions and not the filtered distributions
+dummy_problem <- readRDS("Output/temp/p10.rds") # "penalty" problem dummy
+problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem)
 solution_list <- list(s34, s35, s36, s37)
+
+x <- s34 %>% dplyr::select(solution_1, geometry)
+eval_feature_representation_summary(dummy_problem, x[,'solution_1'])
+
 names <- c("EM_ClimatePriorityArea_tos_585", "EM_ClimatePriorityArea_phos_585", "EM_ClimatePriorityArea_o2os_585", "EM_ClimatePriorityArea_velocity_585")
 feat_rep <- tibble(feature = character()) # empty tibble
 for (i in 1:length(names)) {
@@ -739,6 +805,25 @@ for (i in 1:length(names)) {
   feat_rep <- left_join(df, feat_rep, by = "feature")
 }
 write.csv(feat_rep, paste0(output_summary, "MetricTheme_ClimatePriorityArea_FeatureRepresentation.csv")) # save
+
+# Kernel distribution plots of targets
+x <- feat_rep %>% 
+  pivot_longer(!feature, names_to = "metric", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = metric, group = metric, fill = metric),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_ClimatePriorityArea_tos_585` = "#289E3D",
+                               `EM_ClimatePriorityArea_phos_585` = "#E6C173",
+                               `EM_ClimatePriorityArea_o2os_585` = "#81B0CC",
+                               `EM_ClimatePriorityArea_velocity_585` = "#855600")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(min(x$percent), 100) +
+  theme_classic()
+ggsave(filename = "TargetDist-MetricTheme-ClimatePriorityArea.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
 
 # Summary
 climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585)
@@ -786,5 +871,5 @@ ggsave(filename = "LR-Metric-ClimatePriorityArea.png",
       plot = ggLowRegret5, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 # Summary of low-regret
-summary <- compute_summary(s4_LRplot, total_area, PU_size, "LR-ClimatePriorityArea-585", Cost = "cost")
+summary <- compute_summary(s5_LRplot, total_area, PU_size, "LR-ClimatePriorityArea-585", Cost = "cost")
 write.csv(summary, paste0(output_summary, "MetricTheme_ClimatePriorityArea_LowRegretSummary.csv")) # save

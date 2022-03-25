@@ -5,31 +5,25 @@ fSpatPlan_Get_ClimateLayer <- function(PlanUnits,
                                        metric){
   
   source("HelperFunctions/fSpatPlan_Convert2PacificRobinson.R")
-
+  
+  PUs <- PlanUnits %>% 
+    dplyr::mutate(cellID = row_number())
   # If Pacific-Centered
   if(cCRS == "+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"){
+    
     temp_ClimateLayer <- ClimateLayer %>% 
       terra::rast() %>% # Convert from RasterStack to SpatRaster
+      as.data.frame(xy = TRUE) %>% 
+      as_tibble() %>% 
+      dplyr::mutate(x = ifelse(x < 0, yes = x + 180, no = x - 180)) %>% 
+      as.data.frame() %>% 
+      terra::rast(type = "xyz") %>% 
       terra::as.polygons(trunc = FALSE, dissolve = FALSE, na.rm=FALSE) %>% # Convert to polygon data
       st_as_sf() %>% 
-      st_transform(longlat)
+      st_set_crs(longlat)
     
     temp_ClimateLayer <- temp_ClimateLayer %>% 
       fSpatPlan_Convert2PacificRobinson()
-    
-    ClimateLayer_sf <- temp_ClimateLayer %>% 
-      st_interpolate_aw(PUs, extensive = FALSE) 
-    
-    if (metric %in% c("velocity", "velocity_ensemble")) {
-      ClimateLayer_sf <- ClimateLayer_sf %>% 
-        dplyr::mutate(voccMag = ifelse(is.na(voccMag), median(filter(ClimateLayer_sf, ClimateLayer_sf$voccMag!=0)$voccMag), voccMag)) %>% # replacing NAs with the median
-        dplyr::mutate(voccAng = ifelse(is.na(voccAng), median(filter(ClimateLayer_sf, ClimateLayer_sf$voccAng!=0)$voccAng), voccAng)) 
-    } else if (metric %in% c("roc_tos", "roc_phos", "roc_o2os", "roc_tos_ensemble", "roc_phos_ensemble", "roc_o2os_ensemble")) {
-      ClimateLayer_sf <- ClimateLayer_sf %>% 
-        dplyr::mutate(slpTrends = ifelse(is.na(slpTrends), median(filter(ClimateLayer_sf, ClimateLayer_sf$slpTrends!=0)$slpTrends), slpTrends)) %>% # replacing NAs with the median
-        dplyr::mutate(seTrends = ifelse(is.na(seTrends), median(filter(ClimateLayer_sf, ClimateLayer_sf$seTrends!=0)$seTrends), seTrends)) %>% 
-        dplyr::mutate(sigTrends = ifelse(is.na(sigTrends), median(filter(ClimateLayer_sf, ClimateLayer_sf$sigTrends!=0)$sigTrends), sigTrends))
-    } 
 
   } else {
     
@@ -39,11 +33,30 @@ fSpatPlan_Get_ClimateLayer <- function(PlanUnits,
       st_as_sf() %>% 
       st_transform(longlat)
     
-    ClimateLayer_sf <- temp_ClimateLayer %>% 
-      st_interpolate_aw(PUs, extensive = FALSE) 
+    } 
     
-  }
+  ClimateLayer_sf <- temp_ClimateLayer %>% 
+    st_interpolate_aw(PUs, extensive = FALSE)
+  ggplot() + geom_sf(data = ClimateLayer_sf, aes(fill = slpTrends), size = 0.01)
   
-  return(ClimateLayer_sf)
+  if (str_detect(metric, "velocity")) {
+    vector <- as_vector(st_nearest_feature(PUs, ClimateLayer_sf %>% filter(!is.na(voccMag))))
+    
+    # mutate climate layer; replace NAs with values from nearest neighbor
+    mutatedClimateLayer <- ClimateLayer_sf %>% 
+      dplyr::mutate(transformed = ifelse(is.na(voccMag), 
+                                         yes = voccMag[vector[cellID]], 
+                                         no = voccMag))
+  } else if (str_detect(metric, "roc")) {
+    vector <- as_vector(st_nearest_feature(PUs, ClimateLayer_sf %>% filter(!is.na(slpTrends))))
+    
+    # mutate climate layer; replace NAs with values from nearest neighbor
+    mutatedClimateLayer <- ClimateLayer_sf %>% 
+      dplyr::mutate(transformed = ifelse(is.na(slpTrends), 
+                                         yes = slpTrends[vector[cellID]],
+                                         no = slpTrends))
+  } 
+  
+  return(mutatedClimateLayer)
 
 }

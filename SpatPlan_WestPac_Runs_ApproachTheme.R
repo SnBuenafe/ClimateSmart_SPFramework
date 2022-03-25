@@ -32,7 +32,21 @@ LRPenalty_summary <- read_csv("Output/summary/MetricTheme_Penalty_LowRegretSumma
 LRClimatePriorityArea_summary <- read_csv("Output/summary/MetricTheme_ClimatePriorityArea_LowRegretSummary.csv") %>% 
   dplyr::select(-1)
 
-# Compare area of each
+# Load feature representation
+LRFeature_featrep <- read_csv("Output/summary/MetricTheme_Feature_FeatureRepresentation.csv") %>% 
+  dplyr::select(-1) %>% 
+  dplyr::filter(feature != "climate_layer")
+LRPercentile_featrep <- read_csv("Output/summary/MetricTheme_Percentile_FeatureRepresentation.csv") %>% dplyr::select(-1)
+LRPenalty_featrep <- read_csv("Output/summary/MetricTheme_Penalty_FeatureRepresentation.csv") %>% 
+  dplyr::select(-1) %>% 
+  dplyr::filter(feature != "climate_layer")
+LRClimatePriorityArea_featrep <- read_csv("Output/summary/MetricTheme_ClimatePriorityArea_FeatureRepresentation.csv") %>% dplyr::select(-1)
+
+feat_rep <- left_join(LRFeature_featrep, LRPercentile_featrep, by = "feature") %>% 
+  left_join(., LRPenalty_featrep, by = "feature") %>% 
+  left_join(., LRClimatePriorityArea_featrep, by = "feature")
+
+#### Summaries ####
 summary <- rbind(LRFeature_summary, LRPercentile_summary, LRPenalty_summary, LRClimatePriorityArea_summary)
 
 ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach")  + theme(axis.text = element_text(size = 25))
@@ -81,7 +95,393 @@ summary <- left_join(climate, summary, by = "run")
 
 write.csv(summary, paste0(output_summary, "ApproachTheme_Approaches_LowRegretSummary.csv")) # save
 
+#### Climate-smart metrics ####
+# Climate Warming
+# Kernel Density Plots
+list <- list() # empty list
+names <- c("Feature", "Percentile", "Penalty", "Climate Priority Area")
+group_name = "approach"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = roc_tos_SSP585)
+}
+df <- do.call(rbind, list)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), option = "C") +
+  geom_vline(xintercept = climate$mean_climate_warming,
+             linetype = "dashed", color = "tan1", size = 0.5) +
+  theme_classic()
+ggsave(filename = "ClimateWarmingDist-ApproachTheme-tos.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
+# Ocean Acidification
+# Kernel Density Plots
+list <- list() # empty list
+names <- c("Feature", "Percentile", "Penalty", "Climate Priority Area")
+group_name = "approach"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = roc_phos_SSP585)
+}
+df <- do.call(rbind, list)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 1.5) +
+  scale_fill_viridis_c(name = expression('Δ pH yr'^"-1"*''), option = "A") +
+  geom_vline(xintercept = climate$mean_ocean_acidification,
+             linetype = "dashed", color = "tan1", size = 0.5) +
+  theme_classic()
+ggsave(filename = "OceanAcidificationDist-ApproachTheme-phos.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
+# Rate of Declining Oxygen Concentration
+# Kernel Density Plots
+list <- list() # empty list
+names <- c("Feature", "Percentile", "Penalty", "Climate Priority Area")
+group_name = "approach"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = roc_o2os_SSP585)
+}
+df <- do.call(rbind, list)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('Δ mol m'^"-3"*' yr'^"-1"*''), option = "D") +
+  geom_vline(xintercept = climate$mean_oxygen_decline,
+             linetype = "dashed", color = "black", size = 0.5) +
+  theme_classic()
+ggsave(filename = "OxygenDeclineDist-ApproachTheme-o2os.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
+# Climate velocity
+# Kernel Density Plots
+list <- list() # empty list
+names <- c("Feature", "Percentile", "Penalty", "Climate Priority Area")
+group_name = "approach"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = velocity_SSP585)
+}
+df <- do.call(rbind, list)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_distiller(name = expression('km yr'^"-1"*''), palette = "RdYlBu") +
+  geom_vline(xintercept = climate$median_velocity,
+             linetype = "dashed", color = "khaki3", size = 0.5) +
+  theme_classic()
+ggsave(filename = "ClimateVelocityDist-ApproachTheme-velocity.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Targets ####
+# Climate warming
+x <- feat_rep %>% 
+  dplyr::select(feature, contains("tos")) %>% 
+  pivot_longer(!feature, names_to = "approach", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = approach, group = approach, fill = approach),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_ClimatePriorityArea_tos_585` = "#E6BA7E",
+                               `EM_Feature_tos_585` = "#4D3B2A",
+                               `EM_Penalty_tos_585` = "#6984BF",
+                               `EM_Percentile_tos_585` = "#2B8142")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-ApproachTheme-tos.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
+
+# Ocean acidification
+x <- feat_rep %>% 
+  dplyr::select(feature, contains("phos")) %>% 
+  pivot_longer(!feature, names_to = "approach", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = approach, group = approach, fill = approach),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_ClimatePriorityArea_phos_585` = "#E6BA7E",
+                               `EM_Feature_phos_585` = "#4D3B2A",
+                               `EM_Penalty_phos_585` = "#6984BF",
+                               `EM_Percentile_phos_585` = "#2B8142")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-ApproachTheme-phos.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
+
+# Oxygen decline
+x <- feat_rep %>% 
+  dplyr::select(feature, contains("o2os")) %>% 
+  pivot_longer(!feature, names_to = "approach", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = approach, group = approach, fill = approach),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_ClimatePriorityArea_o2os_585` = "#E6BA7E",
+                               `EM_Feature_o2os_585` = "#4D3B2A",
+                               `EM_Penalty_o2os_585` = "#6984BF",
+                               `EM_Percentile_o2os_585` = "#2B8142")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-ApproachTheme-o2os.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
+
+# Climate velocity
+x <- feat_rep %>% 
+  dplyr::select(feature, contains("velocity")) %>% 
+  pivot_longer(!feature, names_to = "approach", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = approach, group = approach, fill = approach),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_ClimatePriorityArea_velocity_585` = "#E6BA7E",
+                               `EM_Feature_velocity_585` = "#4D3B2A",
+                               `EM_Penalty_velocity_585` = "#6984BF",
+                               `EM_Percentile_velocity_585` = "#2B8142")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-ApproachTheme-velocity.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Compare across metrics ####
+#### Climate warming ####
+# Create low-regret areas per metrics
+# Load solutions
+s2 <- readRDS("Output/solutions/s2-EM-Percentile-tos-585.rds") # Percentile
+s6 <- readRDS("Output/solutions/s6-EM-Feature-tos-585.rds") # Feature
+s10 <- readRDS("Output/solutions/s10-EM-Penalty-tos-585.rds") # Penalty
+s34 <- readRDS("Output/solutions/s34-EM-ClimatePriorityArea-tos-585.rds") # Climate priority area
+solution_list <- list(s2, s6, s10, s34)
+names <- c("EM_Percentile_tos_585", "EM_Feature_tos_585", "EM_Penalty_tos_585", "EM_ClimatePriorityArea_tos_585")
+s6_LRplot <- create_LowRegretSf(solution_list, names, PUs)
+saveRDS(s6_LRplot, paste0(output_lowregret, "s6-EM-LowRegret-tos-585.rds")) # save low-regret solution
+(ggLowRegret6 <- plot_lowregret(s6_LRplot, land) + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "LR-Approach-tos.png",
+       plot = ggLowRegret6, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# Summary of low-regret
+df <- tibble(run = character()) # empty tibble
+for(i in 1:length(names)) {
+  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  df <- rbind(statistics, df)
+}
+
+approach_list <- c("percentile", "feature", "penalty", "climate priority area")
+climate <- get_ClimateSummary(solution_list, climate_layer = roc_tos_SSP585, metric = "tos", col_scenario = "585", col_approach = approach_list, col_run = names, climateLayer = "single")
+
+summary <- left_join(climate, df, by = "run")
+
+write.csv(summary, paste0(output_summary, "ApproachTheme_tos_Summary.csv")) # save
+
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach") +
+  theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-ApproachTheme-tos-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
+# Get Kappa Correlation Matrix
+object_list <- list() # empty list
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], approach_list[i])
+  object_list[[i]] <- obj
+}
+
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
+#### Ocean acidification ####
+# Create low-regret areas per metrics
+# Load solutions
+s3 <- readRDS("Output/solutions/s3-EM-Percentile-phos-585.rds") # Percentile
+s7 <- readRDS("Output/solutions/s7-EM-Feature-phos-585.rds") # Feature
+s11 <- readRDS("Output/solutions/s11-EM-Penalty-phos-585.rds") # Penalty
+s35 <- readRDS("Output/solutions/s35-EM-ClimatePriorityArea-phos-585.rds") # Climate priority area
+solution_list <- list(s3, s7, s11, s35)
+names <- c("EM_Percentile_phos_585", "EM_Feature_phos_585", "EM_Penalty_phos_585", "EM_ClimatePriorityArea_phos_585")
+s7_LRplot <- create_LowRegretSf(solution_list, names, PUs)
+saveRDS(s7_LRplot, paste0(output_lowregret, "s7-EM-LowRegret-phos-585.rds")) # save low-regret solution
+(ggLowRegret7 <- plot_lowregret(s7_LRplot, land) + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "LR-Approach-phos.png",
+       plot = ggLowRegret7, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# Summary of low-regret
+df <- tibble(run = character()) # empty tibble
+for(i in 1:length(names)) {
+  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  df <- rbind(statistics, df)
+}
+
+approach_list <- c("percentile", "feature", "penalty", "climate priority area")
+climate <- get_ClimateSummary(solution_list, climate_layer = roc_phos_SSP585, metric = "phos", col_scenario = "585", col_approach = approach_list, col_run = names, climateLayer = "single")
+
+summary <- left_join(climate, df, by = "run")
+
+write.csv(summary, paste0(output_summary, "ApproachTheme_phos_Summary.csv")) # save
+
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach") +
+  theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-ApproachTheme-phos-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
+# Get Kappa Correlation Matrix
+object_list <- list() # empty list
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], approach_list[i])
+  object_list[[i]] <- obj
+}
+
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
+#### Declining oxygen concentration ####
+# Create low-regret areas per metrics
+# Load solutions
+s4 <- readRDS("Output/solutions/s4-EM-Percentile-o2os-585.rds") # Percentile
+s8 <- readRDS("Output/solutions/s8-EM_Feature-o2os-585.rds") # Feature
+s12 <- readRDS("Output/solutions/s12-EM-Penalty-o2os-585.rds") # Penalty
+s36 <- readRDS("Output/solutions/s36-EM-ClimatePriorityArea-o2os-585.rds") # Climate priority area
+solution_list <- list(s4, s8, s12, s36)
+names <- c("EM_Percentile_o2os_585", "EM_Feature_o2os_585", "EM_Penalty_o2os_585", "EM_ClimatePriorityArea_o2os_585")
+s8_LRplot <- create_LowRegretSf(solution_list, names, PUs)
+saveRDS(s8_LRplot, paste0(output_lowregret, "s8-EM-LowRegret-o2os-585.rds")) # save low-regret solution
+(ggLowRegret8 <- plot_lowregret(s8_LRplot, land) + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "LR-Approach-o2os.png",
+       plot = ggLowRegret8, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# Summary of low-regret
+df <- tibble(run = character()) # empty tibble
+for(i in 1:length(names)) {
+  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  df <- rbind(statistics, df)
+}
+
+approach_list <- c("percentile", "feature", "penalty", "climate priority area")
+climate <- get_ClimateSummary(solution_list, climate_layer = roc_o2os_SSP585, metric = "o2os", col_scenario = "585", col_approach = approach_list, col_run = names, climateLayer = "single")
+
+summary <- left_join(climate, df, by = "run")
+
+write.csv(summary, paste0(output_summary, "ApproachTheme_o2os_Summary.csv")) # save
+
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach") +
+  theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-ApproachTheme-o2os-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
+# Get Kappa Correlation Matrix
+object_list <- list() # empty list
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], approach_list[i])
+  object_list[[i]] <- obj
+}
+
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
+#### Climate velocity ####
+# Create low-regret areas per metrics
+# Load solutions
+s5 <- readRDS("Output/solutions/s5-EM-Percentile-velocity-585.rds") # Percentile
+s9 <- readRDS("Output/solutions/s9-EM-Feature-velocity-585.rds") # Feature
+s13 <- readRDS("Output/solutions/s13-EM-Penalty-velocity-585.rds") # Penalty
+s37 <- readRDS("Output/solutions/s37-EM-ClimatePriorityArea-velocity-585.rds") # Climate priority area
+solution_list <- list(s5, s9, s13, s37)
+names <- c("EM_Percentile_velocity_585", "EM_Feature_velocity_585", "EM_Penalty_velocity_585", "EM_ClimatePriorityArea_velocity_585")
+s9_LRplot <- create_LowRegretSf(solution_list, names, PUs)
+saveRDS(s9_LRplot, paste0(output_lowregret, "s9-EM-LowRegret-velocity-585.rds")) # save low-regret solution
+(ggLowRegret9 <- plot_lowregret(s9_LRplot, land) + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "LR-Approach-velocity.png",
+       plot = ggLowRegret9, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# Summary of low-regret
+df <- tibble(run = character()) # empty tibble
+for(i in 1:length(names)) {
+  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  df <- rbind(statistics, df)
+}
+
+approach_list <- c("percentile", "feature", "penalty", "climate priority area")
+climate <- get_ClimateSummary(solution_list, climate_layer = velocity_SSP585, metric = "velocity", col_scenario = "585", col_approach = approach_list, col_run = names, climateLayer = "single")
+
+summary <- left_join(climate, df, by = "run")
+
+write.csv(summary, paste0(output_summary, "ApproachTheme_velocity_Summary.csv")) # save
+
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach") +
+  theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-ApproachTheme-velocity-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
+# Get Kappa Correlation Matrix
+object_list <- list() # empty list
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], approach_list[i])
+  object_list[[i]] <- obj
+}
+
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
+#### Create low-regret summaries ####
+# Load Low-regret areas
+LR_tos <- readRDS("Output/lowregret/s6-EM-LowRegret-tos-585.rds")
+LR_phos <- readRDS("Output/lowregret/s7-EM-LowRegret-phos-585.rds")
+LR_o2os <- readRDS("Output/lowregret/s8-EM-LowRegret-o2os-585.rds")
+LR_velocity <- readRDS("Output/lowregret/s9-EM-LowRegret-velocity-585.rds")
+
+# Create summaries
+solution_list <- list(LR_tos, LR_phos, LR_o2os, LR_velocity)
+cols <- c("LR-tos", "LR-phos", "LR-o2os", "LR-velocity")
+
+df <- list() # empty list
+for(i in 1:length(names)) {
+  df[[i]] <- compute_summary(solution_list[[i]], total_area, PU_size, cols[i], Cost = "cost")
+}
+summary <- do.call(rbind, df)
+write.csv(summary, paste0(output_summary, "ApproachTheme_Metric_LowRegretSummary.csv")) # save
+
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "metric")  + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-ApproachTheme-Metrics-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
+# Kappa
+object_list <- list() # empty list
+for (i in 1:length(names)) {
+  obj <- select_solution(solution_list[[i]], cols[i])
+  object_list[[i]] <- obj
+}
+
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
 #### Approach: Percentile ####
+# First species: Katsuwonus pelamis
 # Plots for the workflow
 sp1 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[4289]) %>% 
   dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
@@ -91,14 +491,34 @@ ggsave(filename = "Workflow-Percentile-sp1.png",
       plot = sp1_plot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
-sp1_percentile <- create_PercentileLayer(aqua_sf = sp1, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
+# For SSP 1-2.6
+sp1_percentile <- create_PercentileLayer(aqua_sf = sp1, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP126, PUs = PUs) %>% 
   dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
 
 sp1_PercentilePlot <- plot_AQMFeatures(sp1_percentile, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Workflow-Percentile-sp1Filtered.png",
+ggsave(filename = "Workflow-Percentile-sp1FilteredSSP126.png",
+       plot = sp1_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 2-4.5
+sp1_percentile <- create_PercentileLayer(aqua_sf = sp1, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP245, PUs = PUs) %>% 
+  dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
+
+sp1_PercentilePlot <- plot_AQMFeatures(sp1_percentile, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp1FilteredSSP245.png",
+       plot = sp1_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 5-8.5
+sp1_percentile <- create_PercentileLayer(aqua_sf = sp1, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
+  dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
+
+sp1_PercentilePlot <- plot_AQMFeatures(sp1_percentile, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp1FilteredSSP585.png",
       plot = sp1_PercentilePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
+# Second species: Thunnus orientalis
 sp2 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[8199]) %>% 
   dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis)) 
 
@@ -107,17 +527,110 @@ ggsave(filename = "Workflow-Percentile-sp2.png",
       plot = sp2_plot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
-sp2_percentile <- create_PercentileLayer(aqua_sf = sp2, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
+# For SSP 1-2.6
+sp2_percentile <- create_PercentileLayer(aqua_sf = sp2, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP126, PUs = PUs) %>% 
   dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
 
 sp2_PercentilePlot <- plot_AQMFeatures(sp2_percentile, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #1", subtitle = "Thunnus_orientalis") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Workflow-Percentile-sp2Filtered.png",
+ggsave(filename = "Workflow-Percentile-sp2FilteredSSP126.png",
+       plot = sp2_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 2-4.5
+sp2_percentile <- create_PercentileLayer(aqua_sf = sp2, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP245, PUs = PUs) %>% 
+  dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
+
+sp2_PercentilePlot <- plot_AQMFeatures(sp2_percentile, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #1", subtitle = "Thunnus_orientalis") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp2FilteredSSP245.png",
+       plot = sp2_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 5-8.5
+sp2_percentile <- create_PercentileLayer(aqua_sf = sp2, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
+  dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
+
+sp2_PercentilePlot <- plot_AQMFeatures(sp2_percentile, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #1", subtitle = "Thunnus_orientalis") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp2FilteredSSP585.png",
       plot = sp2_PercentilePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
+# Third species:
+sp3 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[7752]) %>% 
+  dplyr::mutate(Stenella_coeruleoalba = as.logical(Stenella_coeruleoalba)) 
+
+sp3_plot <- plot_AQMFeatures(sp3, PUs, land, column = "Stenella_coeruleoalba") + ggtitle("Species Distribution #3", subtitle = "Stenella_coeruleoalba") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp3.png",
+       plot = sp3_plot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 1-2.6
+sp3_percentile <- create_PercentileLayer(aqua_sf = sp3, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP126, PUs = PUs) %>% 
+  dplyr::mutate(Stenella_coeruleoalba = as.logical(Stenella_coeruleoalba))
+
+sp3_PercentilePlot <- plot_AQMFeatures(sp3_percentile, PUs, land, column = "Stenella_coeruleoalba") + ggtitle("Species Distribution #1", subtitle = "Stenella_coeruleoalba") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp3FilteredSSP126.png",
+       plot = sp3_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 2-4.5
+sp3_percentile <- create_PercentileLayer(aqua_sf = sp3, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP245, PUs = PUs) %>% 
+  dplyr::mutate(Stenella_coeruleoalba = as.logical(Stenella_coeruleoalba))
+
+sp3_PercentilePlot <- plot_AQMFeatures(sp3_percentile, PUs, land, column = "Stenella_coeruleoalba") + ggtitle("Species Distribution #1", subtitle = "Stenella_coeruleoalba") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp3FilteredSSP245.png",
+       plot = sp3_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 5-8.5
+sp3_percentile <- create_PercentileLayer(aqua_sf = sp3, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
+  dplyr::mutate(Stenella_coeruleoalba = as.logical(Stenella_coeruleoalba))
+
+sp3_PercentilePlot <- plot_AQMFeatures(sp3_percentile, PUs, land, column = "Stenella_coeruleoalba") + ggtitle("Species Distribution #1", subtitle = "Stenella_coeruleoalba") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp3FilteredSSP585.png",
+       plot = sp3_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# Fourth species:
+sp4 <- aqua_sf %>% dplyr::select(colnames(aqua_sf)[5300]) %>% 
+  dplyr::mutate(Nannobrachium_idostigma = as.logical(Nannobrachium_idostigma)) 
+
+sp4_plot <- plot_AQMFeatures(sp4, PUs, land, column = "Nannobrachium_idostigma") + ggtitle("Species Distribution #4", subtitle = "Nannobrachium_idostigma") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp4.png",
+       plot = sp4_plot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 1-2.6
+sp4_percentile <- create_PercentileLayer(aqua_sf = sp4, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP126, PUs = PUs) %>% 
+  dplyr::mutate(Nannobrachium_idostigma = as.logical(Nannobrachium_idostigma))
+
+sp4_PercentilePlot <- plot_AQMFeatures(sp4_percentile, PUs, land, column = "Nannobrachium_idostigma") + ggtitle("Species Distribution #4", subtitle = "Nannobrachium_idostigma") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp4FilteredSSP126.png",
+       plot = sp4_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 2-4.5
+sp4_percentile <- create_PercentileLayer(aqua_sf = sp4, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP245, PUs = PUs) %>% 
+  dplyr::mutate(Nannobrachium_idostigma = as.logical(Nannobrachium_idostigma))
+
+sp4_PercentilePlot <- plot_AQMFeatures(sp4_percentile, PUs, land, column = "Nannobrachium_idostigma") + ggtitle("Species Distribution #4", subtitle = "Nannobrachium_idostigma") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp4FilteredSSP245.png",
+       plot = sp4_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# For SSP 5-8.5
+sp4_percentile <- create_PercentileLayer(aqua_sf = sp4, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585, PUs = PUs) %>% 
+  dplyr::mutate(Nannobrachium_idostigma = as.logical(Nannobrachium_idostigma))
+
+sp4_PercentilePlot <- plot_AQMFeatures(sp4_percentile, PUs, land, column = "Nannobrachium_idostigma") + ggtitle("Species Distribution #4", subtitle = "Nannobrachium_idostigma") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-Percentile-sp4FilteredSSP585.png",
+       plot = sp4_PercentilePlot, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+
+
 #### Approach: Feature ####
 # Plots for the workflow
-climateLayer <- create_FeatureLayer(aqua_sf, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585) %>%
+climateLayer <- create_FeatureLayer(metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585) %>%
   dplyr::select(climate_layer, geometry) %>% 
   dplyr::mutate(climate_layer = as.logical(climate_layer))
 
@@ -128,7 +641,7 @@ ggsave(filename = "Workflow-Feature-climateFiltered.png",
 
 #### Approach: Climate Priority Area ####
 # Plots for the workflow
-sp1_ImportantFeature <- create_ImportantFeatureLayer(sp1, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585) %>% 
+sp1_ImportantFeature <- create_ImportantFeatureLayer(sp1, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585) %>% 
   dplyr::mutate(Katsuwonus_pelamis = as.logical(Katsuwonus_pelamis))
 
 sp1_ImportantFeaturePlot <- plot_AQMFeatures(sp1_ImportantFeature, PUs, land, column = "Katsuwonus_pelamis") + ggtitle("Species Distribution #1", subtitle = "Katsuwonus pelamis") + theme(axis.text = element_text(size = 25))
@@ -144,18 +657,18 @@ ggsave(filename = "Workflow-ClimatePriorityArea-sp1RepFeat.png",
       plot = sp1_RepresentationFeaturePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
-sp2_ImportantFeature <- create_ImportantFeatureLayer(sp2, metric_name = "tos", colname = "slpTrends", metric_df = roc_tos_SSP585) %>% 
-  dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
+sp3_ImportantFeature <- create_ImportantFeatureLayer(sp3, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585) %>% 
+  dplyr::mutate(Stenella_coeruleoalba = as.logical(Stenella_coeruleoalba))
 
-sp2_ImportantFeaturePlot <- plot_AQMFeatures(sp2_ImportantFeature, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #2", subtitle = "Thunnus orientalis") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Workflow-ClimatePriorityArea-sp2ImptFeat.png",
-      plot = sp2_ImportantFeaturePlot, width = 21, height = 29.7, dpi = 300,
+sp3_ImportantFeaturePlot <- plot_AQMFeatures(sp3_ImportantFeature, PUs, land, column = "Stenella_coeruleoalba") + ggtitle("Species Distribution #3", subtitle = "Stenella_coeruleoalba") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-ClimatePriorityArea-sp3ImptFeat.png",
+      plot = sp3_ImportantFeaturePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
-sp2_RepresentationFeature <- create_RepresentationFeature(sp2_ImportantFeature, sp2) %>% 
-  dplyr::mutate(Thunnus_orientalis = as.logical(Thunnus_orientalis))
+sp3_RepresentationFeature <- create_RepresentationFeature(sp3_ImportantFeature, sp3) %>% 
+  dplyr::mutate(Stenella_coeruleoalba = as.logical(Stenella_coeruleoalba))
   
-sp2_RepresentationFeaturePlot <- plot_AQMFeatures(sp2_RepresentationFeature, PUs, land, column = "Thunnus_orientalis") + ggtitle("Species Distribution #2", subtitle = "Thunnus orientalis") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Workflow-CLimatePriorityArea-sp2RepFeat.png",
-      plot = sp2_RepresentationFeaturePlot, width = 21, height = 29.7, dpi = 300,
+sp3_RepresentationFeaturePlot <- plot_AQMFeatures(sp3_RepresentationFeature, PUs, land, column = "Stenella_coeruleoalba") + ggtitle("Species Distribution #3", subtitle = "Stenella_coeruleoalba") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Workflow-CLimatePriorityArea-sp3RepFeat.png",
+      plot = sp3_RepresentationFeaturePlot, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
