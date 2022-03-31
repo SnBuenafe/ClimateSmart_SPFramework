@@ -95,7 +95,7 @@ summary <- left_join(climate, summary, by = "run")
 
 write.csv(summary, paste0(output_summary, "ApproachTheme_Approaches_LowRegretSummary.csv")) # save
 
-#### Climate-smart metrics ####
+#### Climate-smart metrics of LR areas ####
 # Climate Warming
 # Kernel Density Plots
 list <- list() # empty list
@@ -112,7 +112,7 @@ ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach
   geom_vline(xintercept = climate$mean_climate_warming,
              linetype = "dashed", color = "tan1", size = 0.5) +
   theme_classic()
-ggsave(filename = "ClimateWarmingDist-ApproachTheme-tos.png",
+ggsave(filename = "ClimateWarmingDist-ApproachThemeLR-tos.png",
        plot = ggRidge, width = 10, height = 6, dpi = 300,
        path = "Figures/") # save plot
 
@@ -132,7 +132,7 @@ ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach
   geom_vline(xintercept = climate$mean_ocean_acidification,
              linetype = "dashed", color = "tan1", size = 0.5) +
   theme_classic()
-ggsave(filename = "OceanAcidificationDist-ApproachTheme-phos.png",
+ggsave(filename = "OceanAcidificationDist-ApproachThemeLR-phos.png",
        plot = ggRidge, width = 10, height = 6, dpi = 300,
        path = "Figures/") # save plot
 
@@ -152,7 +152,7 @@ ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach
   geom_vline(xintercept = climate$mean_oxygen_decline,
              linetype = "dashed", color = "black", size = 0.5) +
   theme_classic()
-ggsave(filename = "OxygenDeclineDist-ApproachTheme-o2os.png",
+ggsave(filename = "OxygenDeclineDist-ApproachThemeLR-o2os.png",
        plot = ggRidge, width = 10, height = 6, dpi = 300,
        path = "Figures/") # save plot
 
@@ -165,6 +165,119 @@ for(i in 1:length(names)) {
   list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = velocity_SSP585)
 }
 df <- do.call(rbind, list)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_distiller(name = expression('km yr'^"-1"*''), palette = "RdYlBu") +
+  geom_vline(xintercept = climate$median_velocity,
+             linetype = "dashed", color = "khaki3", size = 0.5) +
+  theme_classic()
+ggsave(filename = "ClimateVelocityDist-ApproachThemeLR-velocity.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Climate-smart metrics of solutions across approaches and metrics####
+# Climate Warming
+# Kernel Density Plots
+solution_list <- list(s6, s2, s10, s34)
+list <- list() # empty list
+names <- c("Feature", "Percentile", "Penalty", "Climate Priority Area")
+group_name = "approach"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = roc_tos_SSP585)
+}
+df <- do.call(rbind, list)
+
+feature <- read_csv(paste0(output_summary, "MetricTheme_Feature_Summary.csv")) %>% dplyr::filter(grepl("tos", run)) %>% dplyr::select(mean_climate_warming, run)
+percentile <- read_csv(paste0(output_summary, "MetricTheme_Percentile_Summary.csv")) %>% dplyr::filter(grepl("tos", run)) %>% dplyr::select(mean_climate_warming, run)
+penalty <- read_csv(paste0(output_summary, "MetricTheme_Penalty_Summary.csv")) %>% dplyr::filter(grepl("tos", run)) %>% dplyr::select(mean_climate_warming, run)
+climatePriorityArea <- read_csv(paste0(output_summary, "MetricTheme_ClimatePriorityArea_Summary.csv")) %>% dplyr::filter(grepl("tos", run)) %>% dplyr::select(mean_climate_warming, run)
+
+climate <- bind_rows(feature, percentile, penalty, climatePriorityArea)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), option = "C") +
+  geom_vline(xintercept = climate$mean_climate_warming,
+             linetype = "dashed", color = "tan1", size = 0.5) +
+  theme_classic()
+ggsave(filename = "ClimateWarmingDist-ApproachTheme-tos.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
+# Ocean Acidification
+# Kernel Density Plots
+solution_list <- list(s7, s3, s11, s35)
+list <- list() # empty list
+names <- c("Feature", "Percentile", "Penalty", "Climate Priority Area")
+group_name = "approach"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = roc_phos_SSP585)
+}
+df <- do.call(rbind, list)
+
+feature <- read_csv(paste0(output_summary, "MetricTheme_Feature_Summary.csv")) %>% dplyr::filter(grepl("phos", run)) %>% dplyr::select(mean_ocean_acidification, run)
+percentile <- read_csv(paste0(output_summary, "MetricTheme_Percentile_Summary.csv")) %>% dplyr::filter(grepl("phos", run)) %>% dplyr::select(mean_ocean_acidification, run)
+penalty <- read_csv(paste0(output_summary, "MetricTheme_Penalty_Summary.csv")) %>% dplyr::filter(grepl("phos", run)) %>% dplyr::select(mean_ocean_acidification, run)
+climatePriorityArea <- read_csv(paste0(output_summary, "MetricTheme_ClimatePriorityArea_Summary.csv")) %>% dplyr::filter(grepl("phos", run)) %>% dplyr::select(mean_ocean_acidification, run)
+
+climate <- bind_rows(feature, percentile, penalty, climatePriorityArea)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('Δ pH yr'^"-1"*''), option = "A") +
+  geom_vline(xintercept = climate$mean_ocean_acidification,
+             linetype = "dashed", color = "tan1", size = 0.5) +
+  theme_classic()
+ggsave(filename = "OceanAcidificationDist-ApproachTheme-phos.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
+# Rate of Declining Oxygen Concentration
+# Kernel Density Plots
+solution_list <- list(s8, s4, s12, s36)
+list <- list() # empty list
+names <- c("Feature", "Percentile", "Penalty", "Climate Priority Area")
+group_name = "approach"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = roc_o2os_SSP585)
+}
+df <- do.call(rbind, list)
+
+feature <- read_csv(paste0(output_summary, "MetricTheme_Feature_Summary.csv")) %>% dplyr::filter(grepl("o2os", run)) %>% dplyr::select(mean_oxygen_decline, run)
+percentile <- read_csv(paste0(output_summary, "MetricTheme_Percentile_Summary.csv")) %>% dplyr::filter(grepl("o2os", run)) %>% dplyr::select(mean_oxygen_decline, run)
+penalty <- read_csv(paste0(output_summary, "MetricTheme_Penalty_Summary.csv")) %>% dplyr::filter(grepl("o2os", run)) %>% dplyr::select(mean_oxygen_decline, run)
+climatePriorityArea <- read_csv(paste0(output_summary, "MetricTheme_ClimatePriorityArea_Summary.csv")) %>% dplyr::filter(grepl("o2os", run)) %>% dplyr::select(mean_oxygen_decline, run)
+
+climate <- bind_rows(feature, percentile, penalty, climatePriorityArea)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('Δ mol m'^"-3"*' yr'^"-1"*''), option = "D") +
+  geom_vline(xintercept = climate$mean_oxygen_decline,
+             linetype = "dashed", color = "black", size = 0.5) +
+  theme_classic()
+ggsave(filename = "OxygenDeclineDist-ApproachTheme-o2os.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
+# Climate velocity
+# Kernel Density Plots
+solution_list <- list(s9, s5, s13, s37)
+list <- list() # empty list
+names <- c("Feature", "Percentile", "Penalty", "Climate Priority Area")
+group_name = "approach"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = velocity_SSP585)
+}
+df <- do.call(rbind, list)
+
+feature <- read_csv(paste0(output_summary, "MetricTheme_Feature_Summary.csv")) %>% dplyr::filter(grepl("velocity", run)) %>% dplyr::select(median_velocity, run)
+percentile <- read_csv(paste0(output_summary, "MetricTheme_Percentile_Summary.csv")) %>% dplyr::filter(grepl("velocity", run)) %>% dplyr::select(median_velocity, run)
+penalty <- read_csv(paste0(output_summary, "MetricTheme_Penalty_Summary.csv")) %>% dplyr::filter(grepl("velocity", run)) %>% dplyr::select(median_velocity, run)
+climatePriorityArea <- read_csv(paste0(output_summary, "MetricTheme_ClimatePriorityArea_Summary.csv")) %>% dplyr::filter(grepl("velocity", run)) %>% dplyr::select(median_velocity, run)
+
+climate <- bind_rows(feature, percentile, penalty, climatePriorityArea)
 
 ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
   geom_density_ridges_gradient(scale = 3) +
@@ -445,6 +558,11 @@ for (i in 1:length(list)) {
 # manually save corrplot
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
+
+# Get intersection of all low-regret areas
+solution_list <- list(s6_LRplot, s7_LRplot, s8_LRplot, s9_LRplot)
+intersection <- intersect_lowregret(solution_list, run_list) %>% 
+  dplyr::mutate(solution_1 = ifelse(selection == (length(run_list)*4), yes = 1, no = 0)) #*4 because 4 metrics TODO: Change it to 5 once including marine heatwaves
 
 #### Create low-regret summaries ####
 # Load Low-regret areas

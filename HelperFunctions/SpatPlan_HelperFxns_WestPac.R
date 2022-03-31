@@ -634,7 +634,7 @@ make_kernel <- function(solution, name, group, metric = NA) {
     
     df <- solution %>% 
       as_tibble() %>%
-      left_join(., metric_df, by = "geometry") %>% 
+      left_join(., metric_df) %>% 
       dplyr::filter(solution_1 == 1) %>% 
       dplyr::select(transformed) %>% 
       dplyr::rename(!!sym(name) := transformed) %>% 
