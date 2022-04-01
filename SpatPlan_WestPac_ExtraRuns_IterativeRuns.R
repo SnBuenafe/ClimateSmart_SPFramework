@@ -1,0 +1,691 @@
+# title: "Climate-smart methods paper runs"
+# author: "Tin Buenafe"
+
+#### Preliminaries ####
+# Description
+# This code creates and analyzes spatial designs using the features and the planning region generated from `SpatPlan_Master_WestPac.R`
+
+source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functions and libraries
+source("HelperFunctions/SpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
+output_solutions <- "Output/solutions/"
+output_summary <- "Output/summary/"
+output_lowregret <- "Output/lowregret/"
+
+# Load files
+source("SpatPlan_Master_Preliminaries.R")
+total_area = nrow(PUs) * PU_size
+
+#### Ensemble mean approach ####
+#### Percentile approach runs ####
+#### Ocean acidification (SSP1-2.6) ####
+# Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP126, PUs = PUs)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, roc_phos_SSP126, UniformCost)
+p40 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s40 <- prioritizr::solve(p40)
+saveRDS(s40, paste0(output_solutions, "s40-EM-Percentile-phos-126.rds")) # save solution
+
+# Plot the spatial design
+s40_plot <- s40 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol40 <- fSpatPlan_PlotSolution(s40_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Percentile-phos-126.png",
+       plot = ggSol40, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Ocean acidification (SSP2-4.5) ####
+# Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP245, PUs = PUs)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, roc_phos_SSP245, UniformCost)
+p41 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s41 <- prioritizr::solve(p41)
+saveRDS(s41, paste0(output_solutions, "s41-EM-Percentile-phos-245.rds")) # save solution
+
+# Plot the spatial design
+s41_plot <- s41 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol41 <- fSpatPlan_PlotSolution(s41_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 2-4.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Percentile-phos-245.png",
+       plot = ggSol41, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Declining oxygen concentration (SSP1-2.6) ####
+# Prepare climate layer
+# Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (>= 65th percentile)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP126, PUs = PUs)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, roc_o2os_SSP126, UniformCost)
+p42 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s42 <- prioritizr::solve(p42)
+saveRDS(s42, paste0(output_solutions, "s42-EM-Percentile-o2os-126.rds")) # save solution
+
+# Plot the spatial design
+s42_plot <- s42 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol42 <- fSpatPlan_PlotSolution(s42_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Percentile, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Percentile-o2os-126.png",
+       plot = ggSol42, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Declining oxygen concentration (SSP2-4.5) ####
+# Prepare climate layer
+# Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (>= 65th percentile)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP245, PUs = PUs)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, roc_o2os_SSP245, UniformCost)
+p43 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s43 <- prioritizr::solve(p43)
+saveRDS(s43, paste0(output_solutions, "s43-EM-Percentile-o2os-245.rds")) # save solution
+
+# Plot the spatial design
+s43_plot <- s43 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol43 <- fSpatPlan_PlotSolution(s43_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Percentile, SSP 2-4.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Percentile-o2os-245.png",
+       plot = ggSol43, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Climate velocity (SSP1-2.6) ####
+# Prepare climate layer
+# Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (<= 35th percentile)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP126, PUs = PUs)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, velocity_SSP126, UniformCost)
+p44 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s44 <- prioritizr::solve(p44)
+saveRDS(s44, paste0(output_solutions, "s44-EM-Percentile-velocity-126.rds")) # save solution
+
+# Plot the spatial design
+s44_plot <- s44 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol44 <- fSpatPlan_PlotSolution(s44_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Percentile, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Percentile-velocity-126.png",
+       plot = ggSol44, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Climate velocity (SSP2-4.5) ####
+# Prepare climate layer
+# Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (<= 35th percentile)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP245, PUs = PUs)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, velocity_SSP245, UniformCost)
+p45 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s45 <- prioritizr::solve(p45)
+saveRDS(s45, paste0(output_solutions, "s45-EM-Percentile-velocity-245.rds")) # save solution
+
+# Plot the spatial design
+s45_plot <- s45 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol45 <- fSpatPlan_PlotSolution(s45_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Percentile, SSP 2-4.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Percentile-velocity-245.png",
+       plot = ggSol45, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Feature approach runs ####
+#### Climate warming (SSP1-2.6) ####
+# Prepare climate layer
+# Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (<= 35th percentile)
+ClimateFeature <- create_FeatureLayer(metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP126)
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+features <- append(features, "climate_layer") # add "climate_layer" to features
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
+p46 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s46 <- prioritizr::solve(p46)
+saveRDS(s46, paste0(output_solutions, "s46-EM-Feature-tos-126.rds")) # save solution
+
+# Plot the spatial design
+s46_plot <- s46 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol46 <- fSpatPlan_PlotSolution(s46_plot, PUs, land) + ggtitle("Climate-smart design: Climate Warming", subtitle = "Feature, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Feature-tos-126.png",
+       plot = ggSol46, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Climate warming (SSP2-4.5) ####
+# Prepare climate layer
+# Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (<= 35th percentile)
+ClimateFeature <- create_FeatureLayer(metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP245)
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+features <- append(features, "climate_layer") # add "climate_layer" to features
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
+p47 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s47 <- prioritizr::solve(p47)
+saveRDS(s47, paste0(output_solutions, "s47-EM-Feature-tos-245.rds")) # save solution
+
+# Plot the spatial design
+s47_plot <- s47 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol47 <- fSpatPlan_PlotSolution(s47_plot, PUs, land) + ggtitle("Climate-smart design: Climate Warming", subtitle = "Feature, SSP 2-4.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Feature-tos-245.png",
+       plot = ggSol47, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Ocean Acidification (SSP1-2.6) ####
+# Prepare climate layer
+# Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (>= 65th percentile)
+ClimateFeature <- create_FeatureLayer(metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP126)
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+features <- append(features, "climate_layer") # add "climate_layer" to features
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
+p48 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s48 <- prioritizr::solve(p48)
+saveRDS(s48, paste0(output_solutions, "s48-EM-Feature-phos-126.rds")) # save solution
+
+# Plot the spatial design
+s48_plot <- s48 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol48 <- fSpatPlan_PlotSolution(s48_plot, PUs, land) + ggtitle("Climate-smart design: Ocean Acidification", subtitle = "Feature, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Feature-phos-126.png",
+       plot = ggSol48, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Ocean Acidification (SSP2-4.5) ####
+# Prepare climate layer
+# Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (>= 65th percentile)
+ClimateFeature <- create_FeatureLayer(metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP245)
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+features <- append(features, "climate_layer") # add "climate_layer" to features
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
+p49 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s49 <- prioritizr::solve(p49)
+saveRDS(s49, paste0(output_solutions, "s49-EM-Feature-phos-245.rds")) # save solution
+
+# Plot the spatial design
+s49_plot <- s49 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol49 <- fSpatPlan_PlotSolution(s49_plot, PUs, land) + ggtitle("Climate-smart design: Ocean Acidification", subtitle = "Feature, SSP 2-4.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Feature-phos-245.png",
+       plot = ggSol49, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Declining Oxygen Concentration (SSP1-2.6) ####
+# Prepare climate layer
+# Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (>= 65th percentile)
+ClimateFeature <- create_FeatureLayer(metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP126)
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+features <- append(features, "climate_layer") # add "climate_layer" to features
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
+p50 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s50 <- prioritizr::solve(p50)
+saveRDS(s50, paste0(output_solutions, "s50-EM-Feature-o2os-126.rds")) # save solution
+
+# Plot the spatial design
+s50_plot <- s50 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol50 <- fSpatPlan_PlotSolution(s50_plot, PUs, land) + ggtitle("Climate-smart design: Declining Oxygen Concentration", subtitle = "Feature, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Feature-o2os-126.png",
+       plot = ggSol50, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Declining Oxygen Concentration (SSP2-4.5) ####
+# Prepare climate layer
+# Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (>= 65th percentile)
+ClimateFeature <- create_FeatureLayer(metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP245)
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+features <- append(features, "climate_layer") # add "climate_layer" to features
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
+p51 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s51 <- prioritizr::solve(p51)
+saveRDS(s51, paste0(output_solutions, "s51-EM-Feature-o2os-245.rds")) # save solution
+
+# Plot the spatial design
+s51_plot <- s51 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol51 <- fSpatPlan_PlotSolution(s51_plot, PUs, land) + ggtitle("Climate-smart design: Declining Oxygen Concentration", subtitle = "Feature, SSP 2-4.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Feature-o2os-245.png",
+       plot = ggSol51, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Climate velocity (SSP1-2.6) ####
+# Prepare climate layer
+# Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (<=35th percentile)
+ClimateFeature <- create_FeatureLayer(metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP126)
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+features <- append(features, "climate_layer") # add "climate_layer" to features
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
+p52 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s52 <- prioritizr::solve(p52)
+saveRDS(s52, paste0(output_solutions, "s52-EM-Feature-velocity-126.rds")) # save solution
+
+# Plot the spatial design
+s52_plot <- s52 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol52 <- fSpatPlan_PlotSolution(s52_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Feature, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Feature-velocity-126.png",
+       plot = ggSol52, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Climate velocity (SSP2-4.5) ####
+# Prepare climate layer
+# Retain only planning units of each of the biodiversity features that in intersect with areas of low exposure (<= 35th percentile)
+ClimateFeature <- create_FeatureLayer(metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP245)
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+features <- append(features, "climate_layer") # add "climate_layer" to features
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
+p53 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s53 <- prioritizr::solve(p53)
+saveRDS(s53, paste0(output_solutions, "s53-EM-Feature-velocity-245.rds")) # save solution
+
+# Plot the spatial design
+s53_plot <- s53 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol53 <- fSpatPlan_PlotSolution(s53_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Feature, SSP 2-4.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Feature-velocity-245.png",
+       plot = ggSol53, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Penalty approach runs ####
+#### Climate Warming (SSP1-2.6) ####
+# Prepare climate layer
+# Get scaling
+scaling_PenaltyWarming <- create_Scaling(UniformCost$cost, roc_tos_SSP126$transformed, "tos")
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, roc_tos_SSP126, UniformCost)
+scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+p54 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+  add_linear_penalties(scaling, data = "transformed")
+
+# Solve the planning problem 
+s54 <- prioritizr::solve(p54)
+saveRDS(s54, paste0(output_solutions, "s54-EM-Penalty-tos-126.rds")) # save solution
+
+# Plot the spatial design
+s54_plot <- s54 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol54 <- fSpatPlan_PlotSolution(s54_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Penalty, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Penalty-tos-126.png",
+       plot = ggSol54, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save
+
+#### Climate Warming (SSP2-4.5) ####
+# Prepare climate layer
+# Get scaling
+scaling_PenaltyWarming <- create_Scaling(UniformCost$cost, roc_tos_SSP245$transformed, "tos")
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, roc_tos_SSP245, UniformCost)
+scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+p55 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+  add_linear_penalties(scaling, data = "transformed")
+
+# Solve the planning problem 
+s55 <- prioritizr::solve(p55)
+saveRDS(s55, paste0(output_solutions, "s55-EM-Penalty-tos-245.rds")) # save solution
+
+# Plot the spatial design
+s55_plot <- s55 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol55 <- fSpatPlan_PlotSolution(s55_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Penalty, SSP 2-4.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Penalty-tos-245.png",
+       plot = ggSol55, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save
+
+#### Ocean Acidification (SSP1-2.6) ####
+# Prepare climate layer
+# Get scaling
+scaling_PenaltyWarming <- create_Scaling(UniformCost$cost, roc_phos_SSP126$transformed, "phos")
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, roc_phos_SSP126, UniformCost)
+scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+p56 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+  add_linear_penalties(scaling, data = "transformed")
+
+# Solve the planning problem 
+s56 <- prioritizr::solve(p56)
+saveRDS(s56, paste0(output_solutions, "s56-EM-Penalty-phos-126.rds")) # save solution
+
+# Plot the spatial design
+s56_plot <- s56 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol56 <- fSpatPlan_PlotSolution(s56_plot, PUs, land) + ggtitle("Climate-smart design: Ocean Acidification", subtitle = "Penalty, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Penalty-phos-126.png",
+       plot = ggSol56, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save
+
+#### Declining Oxygen Concentration (SSP1-2.6) ####
+# Prepare climate layer
+# Get scaling
+scaling_PenaltyWarming <- create_Scaling(UniformCost$cost, roc_o2os_SSP126$transformed, "o2os")
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, roc_o2os_SSP126, UniformCost)
+scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+p58 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+  add_linear_penalties(scaling, data = "transformed")
+
+# Solve the planning problem 
+s58 <- prioritizr::solve(p58)
+saveRDS(s58, paste0(output_solutions, "s58-EM-Penalty-o2os-126.rds")) # save solution
+
+# Plot the spatial design
+s58_plot <- s58 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol58 <- fSpatPlan_PlotSolution(s58_plot, PUs, land) + ggtitle("Climate-smart design: Declining Oxygen Concentration", subtitle = "Penalty, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Penalty-o2os-126.png",
+       plot = ggSol58, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save
+
+#### Declining Oxygen Concentration (SSP2-4.5) ####
+# Prepare climate layer
+# Get scaling
+scaling_PenaltyWarming <- create_Scaling(UniformCost$cost, roc_o2os_SSP245$transformed, "o2os")
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, roc_o2os_SSP245, UniformCost)
+scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+p59 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+  add_linear_penalties(scaling, data = "transformed")
+
+# Solve the planning problem 
+s59 <- prioritizr::solve(p59)
+saveRDS(s59, paste0(output_solutions, "s59-EM-Penalty-o2os-245.rds")) # save solution
+
+# Plot the spatial design
+s59_plot <- s59 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol59 <- fSpatPlan_PlotSolution(s59_plot, PUs, land) + ggtitle("Climate-smart design: Declining Oxygen Concentration", subtitle = "Penalty, SSP 2-4.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Penalty-o2os-245.png",
+       plot = ggSol59, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save
+
+#### Velocity (SSP1-2.6) ####
+# Prepare climate layer
+# Get scaling
+scaling_PenaltyWarming <- create_Scaling(UniformCost$cost, velocity_SSP126$transformed, "velocity")
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, velocity_SSP126, UniformCost)
+scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+p60 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+  add_linear_penalties(scaling, data = "transformed")
+
+# Solve the planning problem 
+s60 <- prioritizr::solve(p60)
+saveRDS(s60, paste0(output_solutions, "s60-EM-Penalty-velocity-126.rds")) # save solution
+
+# Plot the spatial design
+s60_plot <- s60 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol60 <- fSpatPlan_PlotSolution(s60_plot, PUs, land) + ggtitle("Climate-smart design: Climate velocity", subtitle = "Penalty, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Penalty-velocity-126.png",
+       plot = ggSol60, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save
+
+#### Velocity (SSP2-4.5) ####
+# Prepare climate layer
+# Get scaling
+scaling_PenaltyWarming <- create_Scaling(UniformCost$cost, velocity_SSP245$transformed, "velocity")
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, velocity_SSP245, UniformCost)
+scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+p61 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+  add_linear_penalties(scaling, data = "transformed")
+
+# Solve the planning problem 
+s61 <- prioritizr::solve(p61)
+saveRDS(s61, paste0(output_solutions, "s61-EM-Penalty-velocity-245.rds")) # save solution
+
+# Plot the spatial design
+s61_plot <- s61 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol61 <- fSpatPlan_PlotSolution(s61_plot, PUs, land) + ggtitle("Climate-smart design: Climate velocity", subtitle = "Penalty, SSP 2-4.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Penalty-velocity-245.png",
+       plot = ggSol61, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save
