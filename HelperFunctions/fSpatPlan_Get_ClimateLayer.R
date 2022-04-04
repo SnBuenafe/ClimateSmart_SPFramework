@@ -36,8 +36,8 @@ fSpatPlan_Get_ClimateLayer <- function(PlanUnits,
     } 
     
   ClimateLayer_sf <- temp_ClimateLayer %>% 
-    st_interpolate_aw(PUs, extensive = FALSE)
-  ggplot() + geom_sf(data = ClimateLayer_sf, aes(fill = slpTrends), size = 0.01)
+    st_interpolate_aw(PUs, extensive = FALSE) %>% 
+    dplyr::mutate(cellID = row_number())
   
   if (str_detect(metric, "velocity")) {
     vector <- as_vector(st_nearest_feature(PUs, ClimateLayer_sf %>% filter(!is.na(voccMag))))

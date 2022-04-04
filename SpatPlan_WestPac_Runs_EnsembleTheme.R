@@ -102,7 +102,7 @@ summary %<>% left_join(., climate, by = c("run"))
 # A. CanESM5
 # 1. Prepare climate layer
 # Intersect this with climate layer, select only those <= 35th percentile. 
-ensemble <- list(`tos_CanESM5`, `tos_CMCC-ESM2`, `tos_GFDL-ESM4`, `tos_IPSL-CM6A-LR`, `tos_NorESM2-MM`)
+ensemble <- list(`tos_CanESM5_SSP585`, `tos_CMCC-ESM2_SSP585`, `tos_GFDL-ESM4_SSP585`, `tos_IPSL-CM6A-LR_SSP585`, `tos_NorESM2-MM_SSP585`)
 aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = ensemble[[1]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
@@ -252,7 +252,7 @@ ggsave(filename = "TargetDist-EnsembleTheme-tos.png",
        path = "Figures/") # save plot
 
 # Summary
-climateLayer_list <- list(`tos_CanESM5`, `tos_CMCC-ESM2`, `tos_GFDL-ESM4`, `tos_IPSL-CM6A-LR`, `tos_NorESM2-MM`)
+climateLayer_list <- list(`tos_CanESM5_SSP585`, `tos_CMCC-ESM2_SSP585`, `tos_GFDL-ESM4_SSP585`, `tos_IPSL-CM6A-LR_SSP585`, `tos_NorESM2-MM_SSP585`)
 df <- tibble(run = character()) # empty tibble
 for(i in 1:length(names)) {
   statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
@@ -362,7 +362,7 @@ ggsave(filename = "EM-Percentile-phos-585.png",
 # A. CanESM5
 # 1. Prepare climate layer
 # Intersect this with climate layer, select only those >= 65th percentile. 
-ensemble <- list(`phos_CanESM5`, `phos_CMCC-ESM2`, `phos_GFDL-ESM4`, `phos_IPSL-CM6A-LR`, `phos_NorESM2-MM`)
+ensemble <- list(`phos_CanESM5_SSP585`, `phos_CMCC-ESM2_SSP585`, `phos_GFDL-ESM4_SSP585`, `phos_IPSL-CM6A-LR_SSP585`, `phos_NorESM2-MM_SSP585`)
 aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = ensemble[[1]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
@@ -527,7 +527,7 @@ ggsave(filename = "TargetDist-EnsembleTheme-phos.png",
        path = "Figures/") # save plot
 
 # Summary
-climateLayer_list <- list(`phos_CanESM5`, `phos_CMCC-ESM2`, `phos_GFDL-ESM4`, `phos_IPSL-CM6A-LR`, `phos_NorESM2-MM`)
+climateLayer_list <- list(`phos_CanESM5_SSP585`, `phos_CMCC-ESM2_SSP585`, `phos_GFDL-ESM4_SSP585`, `phos_IPSL-CM6A-LR_SSP585`, `phos_NorESM2-MM_SSP585`)
 df <- tibble(run = character()) # empty tibble
 for(i in 1:length(names)) {
   statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
@@ -626,7 +626,7 @@ ggsave(filename = "EM-Percentile-o2os-585.png",
 # A. CanESM5
 # 1. Prepare climate layer
 # Intersect this with climate layer, select only those >= 65th percentile). 
-ensemble <- list(`o2os_CanESM5`, `o2os_CMCC-ESM2`, `o2os_GFDL-ESM4`, `o2os_IPSL-CM6A-LR`, `o2os_NorESM2-MM`)
+ensemble <- list(`o2os_CanESM5_SSP585`, `o2os_CMCC-ESM2_SSP585`, `o2os_GFDL-ESM4_SSP585`, `o2os_IPSL-CM6A-LR_SSP585`, `o2os_NorESM2-MM_SSP585`)
 aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = ensemble[[1]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
@@ -791,7 +791,7 @@ ggsave(filename = "TargetDist-EnsembleTheme-o2os.png",
        path = "Figures/") # save plot
 
 # Summary
-climateLayer_list <- list(`o2os_CanESM5`, `o2os_CMCC-ESM2`, `o2os_GFDL-ESM4`, `o2os_IPSL-CM6A-LR`, `o2os_NorESM2-MM`)
+climateLayer_list <- list(`o2os_CanESM5_SSP585`, `o2os_CMCC-ESM2_SSP585`, `o2os_GFDL-ESM4_SSP585`, `o2os_IPSL-CM6A-LR_SSP585`, `o2os_NorESM2-MM_SSP585`)
 df <- tibble(run = character()) # empty tibble
 for(i in 1:length(names)) {
   statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
@@ -890,7 +890,7 @@ ggsave(filename = "EM-Percentile-velocity-585.png",
 
 # A. CanESM5
 # 1. Prepare climate layer
-ensemble <- list(`velocity_CanESM5`, `velocity_CMCC-ESM2`, `velocity_GFDL-ESM4`, `velocity_IPSL-CM6A-LR`, `velocity_NorESM2-MM`)
+ensemble <- list(`velocity_CanESM5_SSP585`, `velocity_CMCC-ESM2_SSP585`, `velocity_GFDL-ESM4_SSP585`, `velocity_IPSL-CM6A-LR_SSP585`, `velocity_NorESM2-MM_SSP585`)
 aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = ensemble[[1]], PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
@@ -1055,7 +1055,7 @@ ggsave(filename = "TargetDist-EnsembleTheme-velocity.png",
        path = "Figures/") # save plot
 
 # Summary
-climateLayer_list <- list(`velocity_CanESM5`, `velocity_CMCC-ESM2`, `velocity_GFDL-ESM4`, `velocity_IPSL-CM6A-LR`, `velocity_NorESM2-MM`)
+climateLayer_list <- list(`velocity_CanESM5_SSP585`, `velocity_CMCC-ESM2_SSP585`, `velocity_GFDL-ESM4_SSP585`, `velocity_IPSL-CM6A-LR_SSP585`, `velocity_NorESM2-MM_SSP585`)
 df <- tibble(run = character()) # empty tibble
 for(i in 1:length(names)) {
   statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
