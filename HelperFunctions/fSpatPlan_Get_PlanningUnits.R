@@ -21,7 +21,7 @@ fSpatPlan_Get_PlanningUnits <- function(Bndry, LandMass, CellArea, Shape, invers
   }
   
   if(Shape %in% c("square", "Square")){
-    sq < TRUE
+    sq <- TRUE
     diameter <- sqrt(CellArea*1e6) # Diameter in m's
   }
   

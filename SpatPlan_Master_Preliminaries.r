@@ -25,11 +25,22 @@ fcallMetrics <- function(metric,
   scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
   
   if(is.na(model)) {
-    files <- list.files(file.path(path, metric))
+    if (metric == "velocity") {
+      files <- list.files(file.path(path))
+    } else {
+      files <- list.files(file.path(path, metric))
+    }
+    
     for(i in 1:length(files)) {
       df <- readRDS(file.path("Output",
                               paste(save_name, "ClimateLayer", files[i], sep = "_")))
-      assign(x = paste("roc", metric, scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      
+      if (metric == "velocity") {
+        assign(x = paste(metric, scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      } else {
+        assign(x = paste("roc", metric, scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      }
+      
     }
   }
   else{
