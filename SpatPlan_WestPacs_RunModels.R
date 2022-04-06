@@ -102,111 +102,46 @@ for (theme_num in 1:length(theme_names)){
           fcallMetrics(metric = metric_names[metric_num],path = "Data/Climate/ClimateMetrics_Ensemble", model = model_names) # ensemble mean
           metric_dat <- paste(metric_names[metric_num], model_names[model_num], scenario_names[scenario_num], sep = "_") #string at the moment: could be problem (https://stackoverflow.com/questions/6034655/convert-string-to-a-variable-name)
           metric_dat <- eval(parse(text = metric_dat))
+          gc()
           ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = metric_names[metric_num], colname = "transformed", 
                                                    metric_df =  metric_dat)
           gc()#clear up space
           RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
           #rm(metric_dat)
+          gc()
+          Features <- cbind(ImptFeat, RepFeat) %>% 
+            dplyr::select(-geometry.1)
+          # 2. Get list of features
+          features <- Features %>% 
+            as_tibble() %>% 
+            dplyr::select(-geometry) %>% 
+            names()
+          # 3. Differentiate targets for important features and representative features
+          targets <- features %>% as_tibble() %>% 
+            setNames(., "Species") %>% 
+            add_column(target = 1) %>% 
+            mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
+          # 4. Set up the spatial planning problem
+          out_sf <- cbind(Features, metric_dat, UniformCost)
+          p <- prioritizr::problem(out_sf, features, "cost") %>%
+            add_min_set_objective() %>%
+            add_relative_targets(targets$target) %>%
+            add_binary_decisions() %>%
+            add_gurobi_solver(gap = 0, verbose = FALSE)
+          # 5. Solve the planning problem 
+          s <- prioritizr::solve(p)
+          ID <- paste("s", i, sep= "")
+          print(ID)
+          ID_long <- paste(ID,model_names[model_num], theme_names[theme_num], metric_names[metric_num], scenario_names[scenario_num], sep = "-")
+          ID_save <- paste(ID_long, ".rds", sep = "")
+          saveRDS(s, paste0(output_solutions, ID_save)) # save solution
+          i <- i+1
           
       }
     }
   }
 }
 
-
-metric_dat <- paste(metric_names[1], model_names[1], scenario_names[1], sep = "_") #string at the moment: could be problem (https://stackoverflow.com/questions/6034655/convert-string-to-a-variable-name)
-ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = metric_names[metric_num], colname = "transformed", 
-                                         metric_df =  metric_dat)
-
-
-
-for (theme_num in 1:length(theme_names)){
-  for (scenario_num in 1:length(scenario_names)){
-    for (model_num in 1:length(model_names)){
-      for (metric_num in 1:length(metric_names)){
-        # 1. Rates of Climate warming
-        if (metric_num == 1){ #load temperature data
-          fcallMetrics(metric = metric_names[metric_num],path = "Data/Climate/ClimateMetrics_Ensemble", model = model_names) # ensemble mean
-          metric_dat <- paste(metric_names[metric_num], model_names[model_num], scenario_names[scenario_num], sep = "_") #string at the moment: could be problem (https://stackoverflow.com/questions/6034655/convert-string-to-a-variable-name)
-          
-        } else if (metric_num == 2){ #load pH data
-          fcallMetrics(metric = metric_names[metric_num], path = "Data/Climate/ClimateMetrics/ClimateVelocity") # ensemble mean
-          
-        } else if (metric_num == 3){ #load oxygen data
-          fcallMetrics(metric = metric_names[metric_num], path = "Data/Climate/ClimateMetrics/ClimateVelocity") # ensemble mean
-          
-        } else if (metric_num == 4){ #load velocity data
-          fcallMetrics(metric = metric_names[metric_num], path = "Data/Climate/ClimateMetrics/ClimateVelocity") # ensemble mean
-          
-        }
-        
-      }
-    }
-  }
-}
-
-
-for (theme_num in 1:length(theme_names)){
-  for (scenario_num in 1:length(scenario_names)){
-    for (model_num in 1:length(model_names)){
-      for (metric_num in 1:length(metric_names)){
-        # 1. Rates of Climate warming
-        if (metric_num == 1){ #load temperature data
-          fcallMetrics(metric = metric_names[metric_num], path = "Data/Climate/ClimateMetrics/TempSlope", model = model_names) # ensemble mean
-         
-          } else if (metric_num == 2){ #load pH data
-              fcallMetrics(metric = metric_names[metric_num], path = "Data/Climate/ClimateMetrics/ClimateVelocity") # ensemble mean
-          
-          } else if (metric_num == 3){ #load oxygen data
-              fcallMetrics(metric = metric_names[metric_num], path = "Data/Climate/ClimateMetrics/ClimateVelocity") # ensemble mean
-            
-          } else if (metric_num == 4){ #load velocity data
-             fcallMetrics(metric = metric_names[metric_num], path = "Data/Climate/ClimateMetrics/ClimateVelocity") # ensemble mean
-            
-        }
-        
-      }
-    }
-  }
-}
-
-
-for (theme_num in 1:length(theme_names)){
-  for (scenario_num in 1:length(scenario_names)){
-    for (model_num in 1:length(model_names)){
-      for (metric_num in 1:length(metric_names)){
-        
-        metric_dat <- paste(metric_names[metric_num], model_names[model_num], scenario_names[scenario_num], sep = "_") #string at the moment: could be problem (https://stackoverflow.com/questions/6034655/convert-string-to-a-variable-name)
-        ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = metric_names[metric_num], colname = "transformed", 
-                                                 metric_df =  metric_dat)
-        RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
-        Features <- cbind(ImptFeat, RepFeat) %>% 
-          dplyr::select(-geometry.1)
-        # 2. Get list of features
-        features <- Features %>% 
-          as_tibble() %>% 
-          dplyr::select(-geometry) %>% 
-          names()
-        # 3. Differentiate targets for important features and representative features
-        targets <- features %>% as_tibble() %>% 
-          setNames(., "Species") %>% 
-          add_column(target = 1) %>% 
-          mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
-        # 4. Set up the spatial planning problem
-        out_sf <- cbind(Features, metric_dat, UniformCost)
-        p <- prioritizr::problem(out_sf, features, "cost") %>%
-          add_min_set_objective() %>%
-          add_relative_targets(targets$target) %>%
-          add_binary_decisions() %>%
-          add_gurobi_solver(gap = 0, verbose = FALSE)
-        # 5. Solve the planning problem 
-        s <- prioritizr::solve(p)
-        ID <- paste("s", i, sep= "")
-        print(ID)
-        ID_long <- paste(ID,model_names[model_num], theme_names[theme_num], metric_names[metric_num], scenario_names[scenario_num], sep = "-")
-        ID_save <- paste(ID_long, ".rds", sep = "")
-        saveRDS(s, paste0(output_solutions, ID_save)) # save solution
-        
         # 6. Plot the spatial design
         s37_plot <- s37 %>% 
           mutate(solution_1 = as.logical(solution_1)) 
@@ -214,13 +149,5 @@ for (theme_num in 1:length(theme_names)){
         ggsave(filename = "EM-ClimatePriorityArea-velocity-585.png",
                plot = ggSol37, width = 21, height = 29.7, dpi = 300,
                path = "Figures/") # save plot
-        i = i+1
-      }
-    }
-  }
-  climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
-  layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_tos")
+      
   
-  saveRDS(layer, file.path("Output", 
-                           paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
-}
