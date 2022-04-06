@@ -84,7 +84,7 @@ UniformCost <- PUs %>%
 
 
 #clean environment
-rm(subset_aqua_sf, land)
+rm(subset_aqua_sf, land, CutOff)
 
 #
 theme_names <- c("climate_priority_area") #"feature", "penalty", "percentile"
@@ -92,7 +92,7 @@ scenario_names <- c("SSP126")#, "SSP245", "SSP585")
 model_names <- c("CanESM5")#, "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 metric_names <- c("tos")#, "phos", "o2os", "velocity")
 i <- 190
-
+gc()
 
 for (theme_num in 1:length(theme_names)){
   for (scenario_num in 1:length(scenario_names)){
@@ -105,7 +105,9 @@ for (theme_num in 1:length(theme_names)){
           ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = metric_names[metric_num], colname = "transformed", 
                                                    metric_df =  metric_dat)
           gc()#clear up space
-          rm(metric_dat)
+          RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
+          #rm(metric_dat)
+          
       }
     }
   }
