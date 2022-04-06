@@ -109,11 +109,14 @@ ClimateLayer_files <- list.files(ClimateLayer_path)
 
 if(reprocess) {
   for (i in 1:length(ClimateLayer_files)){
+    scenario <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
     climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
     layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_tos")
     
     saveRDS(layer, file.path("Output", 
                              paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
+    
+    print(paste0("Saved EM", ": ", scenario[i]))
   }
 
 } else {
@@ -171,7 +174,7 @@ if(reprocess) {
     for (j in 1:length(ClimateLayer_files)) {
       df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer",
                                               ClimateLayer_files[j], sep = "_")))
-      assign(x = paste(metric, model_list[j], scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      assign(x = paste(metric = "tos", model_list[j], scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
     }
   }
 }
@@ -207,11 +210,13 @@ ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/phos/"
 ClimateLayer_files <- list.files(ClimateLayer_path)
 if(reprocess) {
   for (i in 1:length(ClimateLayer_files)){
+    scenario <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
     climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
     layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_phos")
     
     saveRDS(layer, file.path("Output", 
                              paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
+    print(paste0("Saved EM", ": ", scenario[i]))
   }
 } else {
   scenario_object <- c("SSP126", "SSP245", "SSP585")
@@ -240,8 +245,8 @@ ggsave("Layer_RateofOceanAcidification_SSP585.png",
        path = "Figures/")
 
 #### Multi-Model Ensemble: Rate of Change of pH ####
-scenario_path <- c("SSP 1-2.6", "SSP 2-4.5") # , "SSP 5-8.5")
-scenario_object <- c("SSP126", "SSP245") # "SSP585")
+scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
+scenario_object <- c("SSP126", "SSP245", "SSP585")
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 path <- "Data/Climate/ClimateMetrics_Ensemble/phos"
 
@@ -268,7 +273,7 @@ if(reprocess) {
     for (j in 1:length(ClimateLayer_files)) {
       df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer",
                                               ClimateLayer_files[j], sep = "_")))
-      assign(x = paste(metric, model_list[j], scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      assign(x = paste(metric = "phos", model_list[j], scenario_object[i], sep = "_"), value = df, envir=.GlobalEnv)
     }
   }
 }
@@ -304,11 +309,13 @@ ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/o2os/"
 ClimateLayer_files <- list.files(ClimateLayer_path)
 if(reprocess) {
   for (i in 1:length(ClimateLayer_files)){
+    scenario <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
     climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
     layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_o2os")
     
     saveRDS(layer, file.path("Output", 
                              paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
+    print(paste0("Saved EM", ": ", scenario[i]))
   }
 } else {
   scenario_object <- c("SSP126", "SSP245", "SSP585")
@@ -337,8 +344,8 @@ ggsave("Layer_RateofDecliningOxygenConcentration_SSP585.png",
        path = "Figures/")
 
 #### Multi-Model Ensemble: Rate of Change of Oxygen Concentration ####
-scenario_path <- c("SSP 1-2.6", "SSP 2-4.5") # , "SSP 5-8.5")
-scenario_object <- c("SSP126", "SSP245") # "SSP585")
+scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
+scenario_object <- c("SSP126", "SSP245", "SSP585")
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 path <- "Data/Climate/ClimateMetrics_Ensemble/o2os"
 
@@ -365,7 +372,7 @@ if(reprocess) {
     for (j in 1:length(ClimateLayer_files)) {
       df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer",
                                               ClimateLayer_files[j], sep = "_")))
-      assign(x = paste(metric, model_list[j], scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      assign(x = paste(metric = "o2os", model_list[j], scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
     }
   }
 }
@@ -402,12 +409,15 @@ ggsave("Layer_RateofDecliningOxygenConcentration_NorESM2-MM_SSP585.png",
 ClimateLayer_path <- "Data/Climate/ClimateMetrics/ClimateVelocity/"
 ClimateLayer_files <- list.files(ClimateLayer_path)
 if(reprocess) {
+  scenario <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
   for (i in 1:length(ClimateLayer_files)){
     climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
     layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "velocity")
     
     saveRDS(layer, file.path("Output", 
                              paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
+    
+    print(paste0("Saved EM", ": ", scenario[i]))
   }
 } else {
   scenario_object <- c("SSP126", "SSP245", "SSP585")
@@ -436,8 +446,8 @@ ggsave("Layer_ClimateVelocity_SSP585.png",
        path = "Figures/")
 
 #### Multi-Model Ensemble: Climate Velocity ####
-scenario_path <- c("SSP 1-2.6", "SSP 2-4.5") # , "SSP 5-8.5")
-scenario_object <- c("SSP126", "SSP245") # "SSP585")
+scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
+scenario_object <- c("SSP126", "SSP245", "SSP585")
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 path <- "Data/Climate/ClimateMetrics_Ensemble/velocity"
 
@@ -464,7 +474,7 @@ if(reprocess) {
     for (j in 1:length(ClimateLayer_files)) {
       df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer",
                                               ClimateLayer_files[j], sep = "_")))
-      assign(x = paste(metric, model_list[j], scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      assign(x = paste(metric = "velocity", model_list[j], scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
     }
   }
 }

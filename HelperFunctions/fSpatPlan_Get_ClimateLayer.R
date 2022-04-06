@@ -41,20 +41,23 @@ fSpatPlan_Get_ClimateLayer <- function(PlanUnits,
   
   if (str_detect(metric, "velocity")) {
     vector <- as_vector(st_nearest_feature(PUs, ClimateLayer_sf %>% filter(!is.na(voccMag))))
+    filtered <- ClimateLayer_sf %>% filter(!is.na(voccMag))
     
     # mutate climate layer; replace NAs with values from nearest neighbor
     mutatedClimateLayer <- ClimateLayer_sf %>% 
       dplyr::mutate(transformed = ifelse(is.na(voccMag), 
-                                         yes = voccMag[vector[cellID]], 
+                                         yes = filtered$voccMag[vector[cellID]], 
                                          no = voccMag))
   } else if (str_detect(metric, "roc")) {
     vector <- as_vector(st_nearest_feature(PUs, ClimateLayer_sf %>% filter(!is.na(slpTrends))))
+    filtered <- ClimateLayer_sf %>% filter(!is.na(slpTrends))
     
     # mutate climate layer; replace NAs with values from nearest neighbor
     mutatedClimateLayer <- ClimateLayer_sf %>% 
       dplyr::mutate(transformed = ifelse(is.na(slpTrends), 
-                                         yes = slpTrends[vector[cellID]],
+                                         yes = filtered$slpTrends[vector[cellID]],
                                          no = slpTrends))
+
   } 
   
   return(mutatedClimateLayer)

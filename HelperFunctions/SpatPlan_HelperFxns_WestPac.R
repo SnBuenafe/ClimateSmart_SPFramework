@@ -288,7 +288,7 @@ create_ImportantFeatureLayer <- function(aqua_sf, metric_name, colname, metric_d
   
   # Commence Parallel Loop.
   
-  ncores <- detectCores() - 1 
+  ncores <- detectCores(logical = FALSE) - 1 
   cl <- makeCluster(ncores)
   registerDoParallel(cl)
   
