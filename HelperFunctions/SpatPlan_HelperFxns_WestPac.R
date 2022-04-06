@@ -351,7 +351,7 @@ create_RepresentationFeature <- function(df, aqua_sf) {
   
   # Commence Parallel Loop.
   
-  ncores <- detectCores() - 1 
+  ncores <- detectCores(logical = FALSE) - 1 
   cl <- makeCluster(ncores)
   registerDoParallel(cl)
   
