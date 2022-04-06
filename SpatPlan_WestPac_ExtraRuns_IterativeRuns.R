@@ -949,7 +949,7 @@ for(i in 1:length(solution)) {
   print(paste0("Saved figure: ", models[i]))
 }
 
-#### Ocean acidification (SSP 2-4.5)
+#### Ocean acidification (SSP 2-4.5) ####
 solution <- c("s87", "s88", "s89", "s90", "s91")
 models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 climateLayer <- list(phos_CanESM5_SSP245, `phos_CMCC-ESM2_SSP245`, `phos_GFDL-ESM4_SSP245`, `phos_IPSL-CM6A-LR_SSP245`, `phos_NorESM2-MM_SSP245`)
@@ -982,6 +982,159 @@ for(i in 1:length(solution)) {
     mutate(solution_1 = as.logical(solution_1))
   (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design: Ocean Acidification", subtitle = paste0("Percentile, SSP 2-4.5 (GCM:", models[i], ")")) + theme(axis.text = element_text(size = 25)))
   ggsave(filename = paste0("MM-", models[i], "-Percentile-phos-245.png"),
+         plot = ggSol, width = 21, height = 29.7, dpi = 300,
+         path = "Figures/") # save plot
+  
+  print(paste0("Saved figure: ", models[i]))
+}
+
+#### Declining oxygen concentration (SSP 1-2.6) ####
+solution <- c("s67", "s68", "s69", "s75", "s76")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(o2os_CanESM5_SSP126, `o2os_CMCC-ESM2_SSP126`, `o2os_GFDL-ESM4_SSP126`, `o2os_IPSL-CM6A-LR_SSP126`, `o2os_NorESM2-MM_SSP126`)
+
+for(i in 1:length(solution)) {
+  # Prepare climate layer
+  aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = climateLayer[[i]], PUs = PUs)
+  
+  # Get list of features
+  features <- aqua_percentile %>% 
+    as_tibble() %>% 
+    dplyr::select(-geometry) %>% 
+    names()
+  
+  # Set up the spatial planning problem
+  out_sf <- cbind(aqua_percentile, climateLayer[[i]], UniformCost)
+  p <- prioritizr::problem(out_sf, features, "cost") %>%
+    add_min_set_objective() %>%
+    add_relative_targets(30/35) %>%
+    add_binary_decisions() %>%
+    add_gurobi_solver(gap = 0, verbose = FALSE)
+  
+  # Solve the planning problem 
+  s <- prioritizr::solve(p)
+  saveRDS(s, paste0(output_solutions, solution[i], "-MM-", models[i], "-Percentile-o2os-126.rds")) # save solution
+  print(paste0("Saved solution: ", models[i]))
+  
+  # Plot the spatial design
+  s_plot <- s %>% 
+    mutate(solution_1 = as.logical(solution_1))
+  (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design: Declining Oxygen Concentration", subtitle = paste0("Percentile, SSP 1-2.6 (GCM:", models[i], ")")) + theme(axis.text = element_text(size = 25)))
+  ggsave(filename = paste0("MM-", models[i], "-Percentile-o2os-126.png"),
+         plot = ggSol, width = 21, height = 29.7, dpi = 300,
+         path = "Figures/") # save plot
+  
+  print(paste0("Saved figure: ", models[i]))
+}
+#### Declining oxygen concentration (SSP 2-4.5) ####
+solution <- c("s92", "s93", "s94", "s95", "s96")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(o2os_CanESM5_SSP245, `o2os_CMCC-ESM2_SSP245`, `o2os_GFDL-ESM4_SSP245`, `o2os_IPSL-CM6A-LR_SSP245`, `o2os_NorESM2-MM_SSP245`)
+
+for(i in 1:length(solution)) {
+  # Prepare climate layer
+  aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = climateLayer[[i]], PUs = PUs)
+  
+  # Get list of features
+  features <- aqua_percentile %>% 
+    as_tibble() %>% 
+    dplyr::select(-geometry) %>% 
+    names()
+  
+  # Set up the spatial planning problem
+  out_sf <- cbind(aqua_percentile, climateLayer[[i]], UniformCost)
+  p <- prioritizr::problem(out_sf, features, "cost") %>%
+    add_min_set_objective() %>%
+    add_relative_targets(30/35) %>%
+    add_binary_decisions() %>%
+    add_gurobi_solver(gap = 0, verbose = FALSE)
+  
+  # Solve the planning problem 
+  s <- prioritizr::solve(p)
+  saveRDS(s, paste0(output_solutions, solution[i], "-MM-", models[i], "-Percentile-o2os-245.rds")) # save solution
+  print(paste0("Saved solution: ", models[i]))
+  
+  # Plot the spatial design
+  s_plot <- s %>% 
+    mutate(solution_1 = as.logical(solution_1))
+  (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design: Declining Oxygen Concentration", subtitle = paste0("Percentile, SSP 2-4.5 (GCM:", models[i], ")")) + theme(axis.text = element_text(size = 25)))
+  ggsave(filename = paste0("MM-", models[i], "-Percentile-o2os-245.png"),
+         plot = ggSol, width = 21, height = 29.7, dpi = 300,
+         path = "Figures/") # save plot
+  
+  print(paste0("Saved figure: ", models[i]))
+}
+#### Climate velocity (SSP 1-2.6) ####
+solution <- c("s77", "s78", "s79", "s80", "s81")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(velocity_CanESM5_SSP126, `velocity_CMCC-ESM2_SSP126`, `velocity_GFDL-ESM4_SSP126`, `velocity_IPSL-CM6A-LR_SSP126`, `velocity_NorESM2-MM_SSP126`)
+
+for(i in 1:length(solution)) {
+  # Prepare climate layer
+  aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = climateLayer[[i]], PUs = PUs)
+  
+  # Get list of features
+  features <- aqua_percentile %>% 
+    as_tibble() %>% 
+    dplyr::select(-geometry) %>% 
+    names()
+  
+  # Set up the spatial planning problem
+  out_sf <- cbind(aqua_percentile, climateLayer[[i]], UniformCost)
+  p <- prioritizr::problem(out_sf, features, "cost") %>%
+    add_min_set_objective() %>%
+    add_relative_targets(30/35) %>%
+    add_binary_decisions() %>%
+    add_gurobi_solver(gap = 0, verbose = FALSE)
+  
+  # Solve the planning problem 
+  s <- prioritizr::solve(p)
+  saveRDS(s, paste0(output_solutions, solution[i], "-MM-", models[i], "-Percentile-velocity-126.rds")) # save solution
+  print(paste0("Saved solution: ", models[i]))
+  
+  # Plot the spatial design
+  s_plot <- s %>% 
+    mutate(solution_1 = as.logical(solution_1))
+  (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design: Climate velocity", subtitle = paste0("Percentile, SSP 1-2.6 (GCM:", models[i], ")")) + theme(axis.text = element_text(size = 25)))
+  ggsave(filename = paste0("MM-", models[i], "-Percentile-velocity-126.png"),
+         plot = ggSol, width = 21, height = 29.7, dpi = 300,
+         path = "Figures/") # save plot
+  
+  print(paste0("Saved figure: ", models[i]))
+}
+#### Climate velocity (SSP 2-4.5) ####
+solution <- c("s97", "s98", "s99", "s100", "s101")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(velocity_CanESM5_SSP245, `velocity_CMCC-ESM2_SSP245`, `velocity_GFDL-ESM4_SSP245`, `velocity_IPSL-CM6A-LR_SSP245`, `velocity_NorESM2-MM_SSP245`)
+
+for(i in 1:length(solution)) {
+  # Prepare climate layer
+  aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = climateLayer[[i]], PUs = PUs)
+  
+  # Get list of features
+  features <- aqua_percentile %>% 
+    as_tibble() %>% 
+    dplyr::select(-geometry) %>% 
+    names()
+  
+  # Set up the spatial planning problem
+  out_sf <- cbind(aqua_percentile, climateLayer[[i]], UniformCost)
+  p <- prioritizr::problem(out_sf, features, "cost") %>%
+    add_min_set_objective() %>%
+    add_relative_targets(30/35) %>%
+    add_binary_decisions() %>%
+    add_gurobi_solver(gap = 0, verbose = FALSE)
+  
+  # Solve the planning problem 
+  s <- prioritizr::solve(p)
+  saveRDS(s, paste0(output_solutions, solution[i], "-MM-", models[i], "-Percentile-velocity-245.rds")) # save solution
+  print(paste0("Saved solution: ", models[i]))
+  
+  # Plot the spatial design
+  s_plot <- s %>% 
+    mutate(solution_1 = as.logical(solution_1))
+  (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design: Climate velocity", subtitle = paste0("Percentile, SSP 2-4.5 (GCM:", models[i], ")")) + theme(axis.text = element_text(size = 25)))
+  ggsave(filename = paste0("MM-", models[i], "-Percentile-velocity-245.png"),
          plot = ggSol, width = 21, height = 29.7, dpi = 300,
          path = "Figures/") # save plot
   
