@@ -689,3 +689,35 @@ s61_plot <- s61 %>%
 ggsave(filename = "EM-Penalty-velocity-245.png",
        plot = ggSol61, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
+
+#### Multi-model ensemble approach ####
+#### Percentile approach runs ####
+#### Climate warming (SSP 1-2.6) ####
+# Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = tos_CanESM5_SSP126, PUs = PUs)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, roc_phos_SSP126, UniformCost)
+p40 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s40 <- prioritizr::solve(p40)
+saveRDS(s40, paste0(output_solutions, "s40-EM-Percentile-phos-126.rds")) # save solution
+
+# Plot the spatial design
+s40_plot <- s40 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol40 <- fSpatPlan_PlotSolution(s40_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Percentile-phos-126.png",
+       plot = ggSol40, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
