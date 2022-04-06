@@ -11,126 +11,68 @@ land <- ne_countries(scale = 'large', returnclass = 'sf') %>%
   fSpatPlan_Convert2PacificRobinson() # Land masses; needed for plotting
 
 ### Climate Metrics ####
-# 1. Rates of Climate Warming
-ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/tos/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
 
-roc_tos_SSP126 <- readRDS(file.path("Output", 
-                                    paste(save_name, "ClimateLayer", ClimateLayer_files[1], sep = "_")))
-roc_tos_SSP245 <- readRDS(file.path("Output", 
-                                    paste(save_name, "ClimateLayer", ClimateLayer_files[2], sep = "_")))
-roc_tos_SSP585 <- readRDS(file.path("Output", 
-                                    paste(save_name, "ClimateLayer", ClimateLayer_files[3], sep = "_")))
+#metric_list <- c("tos", "phos", "o2os", "velocity")
+model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 
-ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/tos/SSP 5-8.5/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
+# Call function for each metric
+fcallMetrics <- function(metric, 
+                         model = NA, # if model = NA, approach is ensemble mean
+                         path # path with / at the end
+                         ) {
+  
+  scenario_obj <- c("SSP126", "SSP245", "SSP585")
+  scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
+  
+  if(is.na(model)) {
+    if (metric == "velocity") {
+      files <- list.files(file.path(path))
+    } else {
+      files <- list.files(file.path(path, metric))
+    }
+    
+    for(i in 1:length(files)) {
+      df <- readRDS(file.path("Output",
+                              paste(save_name, "ClimateLayer", files[i], sep = "_")))
+      
+      if (metric == "velocity") {
+        assign(x = paste(metric, scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      } else {
+        assign(x = paste("roc", metric, scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      }
+      
+    }
+  }
+  else{
+    for (i in 1:length(scenario_path))
+    {
+      files <- list.files(file.path(path, metric, scenario_path[i]))
+      for(j in 1:length(files)) {
+        df <- readRDS(file.path("Output",
+                                paste(save_name, "ClimateLayer", files[j], sep = "_")))
+        assign(x = paste(metric, model[j], scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      }
+    }
+  }
 
-tos_CanESM5 <- readRDS(file.path("Output",
-                                 paste(save_name, "ClimateLayer", ClimateLayer_files[1], sep = "_")))
-`tos_CMCC-ESM2` <- readRDS(file.path("Output",
-                                     paste(save_name, "ClimateLayer", ClimateLayer_files[2], sep = "_")))
-`tos_GFDL-ESM4` <- readRDS(file.path("Output",
-                                     paste(save_name, "ClimateLayer", ClimateLayer_files[3], sep = "_")))
-`tos_IPSL-CM6A-LR` <- readRDS(file.path("Output",
-                                        paste(save_name, "ClimateLayer", ClimateLayer_files[4], sep = "_")))
-`tos_NorESM2-MM` <- readRDS(file.path("Output",
-                                      paste(save_name, "ClimateLayer", ClimateLayer_files[5], sep = "_")))
+}
+
+# 1. Rates of Climate warming
+fcallMetrics(metric = "tos", path = "Data/Climate/ClimateMetrics/RateOfChange") # ensemble mean
+fcallMetrics(metric = "tos", path = "Data/Climate/ClimateMetrics_Ensemble", model = model_list) # multimodel approach
 
 # 2. Rates of Ocean Acidification
-ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/phos/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
-
-roc_phos_SSP126 <- readRDS(file.path("Output", 
-                                     paste(save_name, "ClimateLayer", ClimateLayer_files[1], sep = "_")))
-roc_phos_SSP245 <- readRDS(file.path("Output", 
-                                     paste(save_name, "ClimateLayer", ClimateLayer_files[2], sep = "_")))
-roc_phos_SSP585 <- readRDS(file.path("Output", 
-                                     paste(save_name, "ClimateLayer", ClimateLayer_files[3], sep = "_")))
-
-ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/phos/SSP 5-8.5/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
-
-phos_CanESM5 <- readRDS(file.path("Output",
-                                 paste(save_name, "ClimateLayer",
-                                      ClimateLayer_files[1], sep = "_")))
-`phos_CMCC-ESM2` <- readRDS(file.path("Output",
-                                     paste(save_name, "ClimateLayer",
-                                           ClimateLayer_files[2], sep = "_")))
-`phos_GFDL-ESM4` <- readRDS(file.path("Output",
-                                     paste(save_name, "ClimateLayer",
-                                           ClimateLayer_files[3], sep = "_")))
-`phos_IPSL-CM6A-LR` <- readRDS(file.path("Output",
-                                        paste(save_name, "ClimateLayer",
-                                              ClimateLayer_files[4], sep = "_")))
-`phos_NorESM2-MM` <- readRDS(file.path("Output",
-                                      paste(save_name, "ClimateLayer",
-                                            ClimateLayer_files[5], sep = "_")))
+fcallMetrics(metric = "phos", path = "Data/Climate/ClimateMetrics/RateOfChange") # ensemble mean
+fcallMetrics(metric = "phos", path = "Data/Climate/ClimateMetrics_Ensemble", model = model_list) # multimodel approach
 
 # 3. Rates of Declining Oxygen Concentration
-ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/o2os/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
-
-roc_o2os_SSP126 <- readRDS(file.path("Output", 
-                                     paste(save_name, "ClimateLayer",
-                                           ClimateLayer_files[1], sep = "_")))
-roc_o2os_SSP245 <- readRDS(file.path("Output", 
-                                     paste(save_name, "ClimateLayer",
-                                           ClimateLayer_files[2], sep = "_")))
-roc_o2os_SSP585 <- readRDS(file.path("Output", 
-                                     paste(save_name, "ClimateLayer",
-                                           ClimateLayer_files[3], sep = "_")))
-
-ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/o2os/SSP 5-8.5/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
-
-o2os_CanESM5 <- readRDS(file.path("Output",
-                                 paste(save_name, "ClimateLayer",
-                                      ClimateLayer_files[1], sep = "_")))
-`o2os_CMCC-ESM2` <- readRDS(file.path("Output",
-                                     paste(save_name, "ClimateLayer",
-                                           ClimateLayer_files[2], sep = "_")))
-`o2os_GFDL-ESM4` <- readRDS(file.path("Output",
-                                     paste(save_name, "ClimateLayer",
-                                           ClimateLayer_files[3], sep = "_")))
-`o2os_IPSL-CM6A-LR` <- readRDS(file.path("Output",
-                                        paste(save_name, "ClimateLayer",
-                                              ClimateLayer_files[4], sep = "_")))
-`o2os_NorESM2-MM` <- readRDS(file.path("Output",
-                                      paste(save_name, "ClimateLayer",
-                                            ClimateLayer_files[5], sep = "_")))
-                                          
+fcallMetrics(metric = "o2os", path = "Data/Climate/ClimateMetrics/RateOfChange") # ensemble mean
+fcallMetrics(metric = "o2os", path = "Data/Climate/ClimateMetrics_Ensemble", model = model_list) # multimodel approach
+               
 # 4. Climate Velocity
-ClimateLayer_path <- "Data/Climate/ClimateMetrics/ClimateVelocity/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
+fcallMetrics(metric = "velocity", path = "Data/Climate/ClimateMetrics/ClimateVelocity") # ensemble mean
+fcallMetrics(metric = "velocity", path = "Data/Climate/ClimateMetrics_Ensemble", model = model_list) # multimodel
 
-velocity_SSP126 <- readRDS(file.path("Output", 
-                                     paste(save_name, "ClimateLayer",
-                                           ClimateLayer_files[1], sep = "_")))
-velocity_SSP245 <- readRDS(file.path("Output", 
-                                     paste(save_name, "ClimateLayer",
-                                           ClimateLayer_files[2], sep = "_")))
-velocity_SSP585 <- readRDS(file.path("Output", 
-                                     paste(save_name, "ClimateLayer",
-                                           ClimateLayer_files[3], sep = "_")))
-
-ClimateLayer_path <- "Data/Climate/ClimateMetrics_Ensemble/velocity/SSP 5-8.5/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
-
-velocity_CanESM5 <- readRDS(file.path("Output",
-                                 paste(save_name, "ClimateLayer",
-                                      ClimateLayer_files[1], sep = "_")))
-`velocity_CMCC-ESM2` <- readRDS(file.path("Output",
-                                     paste(save_name, "ClimateLayer",
-                                           ClimateLayer_files[2], sep = "_")))
-`velocity_GFDL-ESM4` <- readRDS(file.path("Output",
-                                     paste(save_name, "ClimateLayer",
-                                           ClimateLayer_files[3], sep = "_")))
-`velocity_IPSL-CM6A-LR` <- readRDS(file.path("Output",
-                                        paste(save_name, "ClimateLayer",
-                                              ClimateLayer_files[4], sep = "_")))
-`velocity_NorESM2-MM` <- readRDS(file.path("Output",
-                                      paste(save_name, "ClimateLayer",
-                                            ClimateLayer_files[5], sep = "_")))
 # 5. Annual marine heatwave intensity
 
 #### Conservation Features ####

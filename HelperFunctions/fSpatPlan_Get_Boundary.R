@@ -27,6 +27,7 @@ fSpatPlan_Get_Boundary <- function(Limits, cCRS){
       bind_rows(tibble(x = 180, y = seq(Limits["ymax"], Limits["ymin"], by = -1))) %>% 
       polygon()
     
+    #sf_use_s2(FALSE)
     Bndry <- st_union(Bndry1, Bndry2)
 
     return(Bndry)
@@ -54,9 +55,9 @@ fSpatPlan_Get_Boundary <- function(Limits, cCRS){
   
   # Added Western Pacific
   if (Limits == "WestPacific"){
-    source("SpatPlan_Extras.R")
-    source("fSpatPlan_Convert2PacificRobinson.R")
-    source("fSpatPlan_Get_MaskedPolygon.R")
+    source("HelperFunctions/SpatPlan_Extras.R")
+    source("HelperFunctions/fSpatPlan_Convert2PacificRobinson.R")
+    source("HelperFunctions/fSpatPlan_Get_MaskedPolygon.R")
     
     ocean_sf <- ne_download(scale = "large", category = "physical", type = "geography_marine_polys", returnclass = "sf") 
     
