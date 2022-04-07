@@ -1225,7 +1225,7 @@ scenario = "126"
 
 makeIterations_Feature(solutions, models, climateLayer, metric, scenario)
 #### Ocean Acidification (SSP 5-8.5) ####
-solutions <- c("s235", "s236", "s237", "s238", "s239")
+solutions <- c("s207", "s208", "s209", "s210", "s211")
 models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 climateLayer <- list(phos_CanESM5_SSP585, `phos_CMCC-ESM2_SSP585`, `phos_GFDL-ESM4_SSP585`, `phos_IPSL-CM6A-LR_SSP585`, `phos_NorESM2-MM_SSP585`)
 metric = "phos"
@@ -1250,6 +1250,15 @@ scenario = "245"
 
 makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
 
+#### Declining oxygen concentration (SSP 5-8.5) ####
+solutions <- c("s212", "s213", "s214", "s215", "s216")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(o2os_CanESM5_SSP585, `o2os_CMCC-ESM2_SSP585`, `o2os_GFDL-ESM4_SSP585`, `o2os_IPSL-CM6A-LR_SSP585`, `o2os_NorESM2-MM_SSP585`)
+metric = "o2os"
+scenario = "585"
+
+makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
+
 #### Climate velocity (SSP 1-2.6) ####
 solutions <- c("s157", "s158", "s159", "s160", "s161")
 models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
@@ -1269,10 +1278,155 @@ scenario = "245"
 makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
 
 #### Climate velocity (SSP 5-8.5) ####
-solutions <- c("s245", "s246", "s247", "s248", "s249")
+solutions <- c("s217", "s218", "s219", "s220", "s221")
 models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 climateLayers <- list(velocity_CanESM5_SSP585, `velocity_CMCC-ESM2_SSP585`, `velocity_GFDL-ESM4_SSP585`, `velocity_IPSL-CM6A-LR_SSP585`, `velocity_NorESM2-MM_SSP585`)
 metric = "velocity"
 scenario = "585"
 
 makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
+#### Penalty approach runs ####
+# TODO: Change this to a more inclusive function later on.
+makeIterations_Penalty <- function(solutions, # name of solutions
+                                   models, # name of models
+                                   climateLayers, # list of climate layers
+                                   metric,
+                                   scenario) {
+  
+  for(i in 1:length(solutions)) {
+    # Prepare climate layer
+    # Get scaling
+    scalingPenalty <- create_Scaling(UniformCost$cost, climateLayers[[i]]$transformed, metric)
+    
+    # Get list of features
+    features <- aqua_sf %>% 
+      as_tibble() %>% 
+      dplyr::select(-geometry) %>% 
+      names()
+    
+    # Set up the spatial planning problem
+    out_sf <- cbind(aqua_sf, climateLayers[[i]], UniformCost)
+    scaling <- scalingPenalty %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+    p <- prioritizr::problem(out_sf, features, "cost") %>%
+      add_min_set_objective() %>%
+      add_relative_targets(0.3) %>%
+      add_binary_decisions() %>%
+      add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+      add_linear_penalties(scaling, data = "transformed")
+    
+    # Solve the planning problem 
+    s <- prioritizr::solve(p)
+    saveRDS(s, paste0(output_solutions, solutions[i], "-MM-", models[i], "-Penalty-", metric, "-", scenario, ".rds")) # save solution
+    print(paste0("Saved solution: ", models[i]))
+    
+    # Plot the spatial design
+    s_plot <- s %>% 
+      mutate(solution_1 = as.logical(solution_1)) 
+    (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design", subtitle = paste0("Penalty, SSP ", scenario)) + theme(axis.text = element_text(size = 25)))
+    ggsave(filename = paste0("MM-", models[i], "-Penalty-", metric, "-", scenario, ".png"),
+           plot = ggSol, width = 21, height = 29.7, dpi = 300,
+           path = "Figures/") # save
+    print(paste0("Saved figure: ", models[i]))
+  }
+}
+
+#### Climate warming (SSP 1-2.6) ####
+solutions <- c("s102", "s103", "s104", "s105", "s106")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(tos_CanESM5_SSP126, `tos_CMCC-ESM2_SSP126`, `tos_GFDL-ESM4_SSP126`, `tos_IPSL-CM6A-LR_SSP126`, `tos_NorESM2-MM_SSP126`)
+metric = "tos"
+scenario = "126"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+#### Climate warming (SSP 2-4.5) ####
+solutions <- c("s122", "s123", "s124", "s125", "s126")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(tos_CanESM5_SSP245, `tos_CMCC-ESM2_SSP245`, `tos_GFDL-ESM4_SSP245`, `tos_IPSL-CM6A-LR_SSP245`, `tos_NorESM2-MM_SSP245`)
+metric = "tos"
+scenario = "245"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+#### Climate warming (SSP 5-8.5) ####
+solutions <- c("s182", "s183", "s184", "s185", "s186")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(tos_CanESM5_SSP585, `tos_CMCC-ESM2_SSP585`, `tos_GFDL-ESM4_SSP585`, `tos_IPSL-CM6A-LR_SSP585`, `tos_NorESM2-MM_SSP585`)
+metric = "tos"
+scenario = "585"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+#### Ocean acidification (SSP 1-2.6) ####
+solutions <- c("s107", "s108", "s109", "s110", "s111")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(phos_CanESM5_SSP126, `phos_CMCC-ESM2_SSP126`, `phos_GFDL-ESM4_SSP126`, `phos_IPSL-CM6A-LR_SSP126`, `phos_NorESM2-MM_SSP126`)
+metric = "phos"
+scenario = "126"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+#### Ocean acidification (SSP 2-4.5) ####
+solutions <- c("s127", "s128", "s129", "s130", "s131")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(phos_CanESM5_SSP245, `phos_CMCC-ESM2_SSP245`, `phos_GFDL-ESM4_SSP245`, `phos_IPSL-CM6A-LR_SSP245`, `phos_NorESM2-MM_SSP245`)
+metric = "phos"
+scenario = "245"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+#### Ocean acidification (SSP 5-8.5) ####
+solutions <- c("s187", "s188", "s189", "s190", "s191")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(phos_CanESM5_SSP585, `phos_CMCC-ESM2_SSP585`, `phos_GFDL-ESM4_SSP585`, `phos_IPSL-CM6A-LR_SSP585`, `phos_NorESM2-MM_SSP585`)
+metric = "phos"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+#### Declining oxygen concentration(SSP 1-2.6) ####
+solutions <- c("s112", "s113", "s114", "s115", "s116")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(o2os_CanESM5_SSP126, `o2os_CMCC-ESM2_SSP126`, `o2os_GFDL-ESM4_SSP126`, `o2os_IPSL-CM6A-LR_SSP126`, `o2os_NorESM2-MM_SSP126`)
+metric = "o2os"
+scenario = "126"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+
+#### Declining oxygen concentration (SSP 2-4.5) ####
+solutions <- c("s132", "s133", "s134", "s135", "s136")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(o2os_CanESM5_SSP245, `o2os_CMCC-ESM2_SSP245`, `o2os_GFDL-ESM4_SSP245`, `o2os_IPSL-CM6A-LR_SSP245`, `o2os_NorESM2-MM_SSP245`)
+metric = "o2os"
+scenario = "245"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+
+#### Declining oxygen concentration (SSP 5-8.5) ####
+solutions <- c("s192", "s193", "s194", "s195", "s196")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(o2os_CanESM5_SSP585, `o2os_CMCC-ESM2_SSP585`, `o2os_GFDL-ESM4_SSP585`, `o2os_IPSL-CM6A-LR_SSP585`, `o2os_NorESM2-MM_SSP585`)
+metric = "o2os"
+scenario = "585"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+
+#### Climate velocity (SSP 1-2.6) ####
+solutions <- c("s117", "s118", "s119", "s120", "s121")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(velocity_CanESM5_SSP126, `velocity_CMCC-ESM2_SSP126`, `velocity_GFDL-ESM4_SSP126`, `velocity_IPSL-CM6A-LR_SSP126`, `velocity_NorESM2-MM_SSP126`)
+metric = "velocity"
+scenario = "126"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+
+#### Climate velocity (SSP 2-4.5) ####
+solutions <- c("s137", "s138", "s139", "s140", "s141")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(velocity_CanESM5_SSP245, `velocity_CMCC-ESM2_SSP245`, `velocity_GFDL-ESM4_SSP245`, `velocity_IPSL-CM6A-LR_SSP245`, `velocity_NorESM2-MM_SSP245`)
+metric = "velocity"
+scenario = "245"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+
+#### Climate velocity (SSP 5-8.5) ####
+solutions <- c("s197", "s198", "s199", "s200", "s201")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(velocity_CanESM5_SSP585, `velocity_CMCC-ESM2_SSP585`, `velocity_GFDL-ESM4_SSP585`, `velocity_IPSL-CM6A-LR_SSP585`, `velocity_NorESM2-MM_SSP585`)
+metric = "velocity"
+scenario = "585"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
