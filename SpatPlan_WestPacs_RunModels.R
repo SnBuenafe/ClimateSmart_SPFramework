@@ -1,6 +1,17 @@
+# title: "Climate-smart methods paper runs"
+# author: "Sandra Neubert and Tin Buenafe"
+
+#### Run Models ####
+# Description
+# This script runs the models based on the climate priority area approach 
+#for each combination of metrics (4), climate model (5) and climate scenario (3).
+#To allow for keep the RStudio environment as empty as possible for parallel processing, 
+#necessary functions were extracted from the SpatPlan_Master_Preliminaries script.
+
+
 source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functions and libraries
 source("HelperFunctions/SpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
-output_solutions <- "Output/test/solutions/"
+output_solutions <- "Output/solutions/"
 output_summary <- "Output/summary/"
 output_lowregret <- "Output/lowregret/"
 
@@ -17,10 +28,9 @@ land <- ne_countries(scale = 'large', returnclass = 'sf') %>%
 
 ### Climate Metrics ####
 
-#metric_list <- c("tos", "phos", "o2os", "velocity")
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 
-# Call function for each metric
+# Call function for each metric (from Preliminaries script)
 fcallMetrics <- function(metric, 
                          model = NA, # if model = NA, approach is ensemble mean
                          path # path with / at the end
@@ -84,30 +94,31 @@ UniformCost <- PUs %>%
 
 
 #clean environment
-rm(subset_aqua_sf, land, CutOff)
+rm(subset_aqua_sf, CutOff, model_list)
 
-#
-theme_names <- c("climate_priority_area") #"feature", "penalty", "percentile"
-scenario_names <- c("SSP126")#, "SSP245", "SSP585")
-model_names <- c("CanESM5")#, "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
-metric_names <- c("tos")#, "phos", "o2os", "velocity")
-i <- 190
+
+# Initialise variables for loop
+theme_names <- c("ClimatePriorityArea") #"feature", "penalty", "percentile"
+scenario_names <- c("SSP126", "SSP245", "SSP585")
+model_names <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+metric_names <- c("tos", "phos", "o2os", "velocity")
+i <- 230 #ID starting location of CPA in Meta data file (excluding EM)
 gc()
 
-for (theme_num in 1:length(theme_names)){
+library(rlang)
+
+for (theme_num in 1:length(theme_names)){ #not really necessary anymore: too much computer power needed if all approaches in one loop
   for (scenario_num in 1:length(scenario_names)){
-    for (model_num in 1:length(model_names)){
-      for (metric_num in 1:length(metric_names)){
+    for (metric_num in 1:length(metric_names)){
+      for (model_num in 1:length(model_names)){
         # 1. Rates of Climate warming
           fcallMetrics(metric = metric_names[metric_num],path = "Data/Climate/ClimateMetrics_Ensemble", model = model_names) # ensemble mean
           metric_dat <- paste(metric_names[metric_num], model_names[model_num], scenario_names[scenario_num], sep = "_") #string at the moment: could be problem (https://stackoverflow.com/questions/6034655/convert-string-to-a-variable-name)
-          metric_dat <- eval(parse(text = metric_dat))
-          gc()
+          metric_dat <- eval_tidy(quo(!! sym(metric_dat)))
           ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = metric_names[metric_num], colname = "transformed", 
                                                    metric_df =  metric_dat)
           gc()#clear up space
           RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
-          #rm(metric_dat)
           gc()
           Features <- cbind(ImptFeat, RepFeat) %>% 
             dplyr::select(-geometry.1)
@@ -131,23 +142,28 @@ for (theme_num in 1:length(theme_names)){
           # 5. Solve the planning problem 
           s <- prioritizr::solve(p)
           ID <- paste("s", i, sep= "")
-          print(ID)
+          print(paste(ID, metric_names[metric_num], model_names[model_num], scenario_names[scenario_num], sep = ","))#to double-check 
           ID_long <- paste(ID,model_names[model_num], theme_names[theme_num], metric_names[metric_num], scenario_names[scenario_num], sep = "-")
           ID_save <- paste(ID_long, ".rds", sep = "")
           saveRDS(s, paste0(output_solutions, ID_save)) # save solution
-          i <- i+1
+          
+          # 6. Plot the spatial design
+          ID_plot <- paste(ID_long, ".png", sep = "")
+          s_plot <- s %>% 
+            mutate(solution_1 = as.logical(solution_1)) 
+          (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + theme(axis.text = element_text(size = 25)))
+          ggsave(filename = ID_plot,
+                 plot = ggSol, width = 21, height = 29.7, dpi = 300,
+                 path = "Figures/") # save plot
+          
+          #clean up environment
+          rm(ImptFeat, RepFeat)
+          gc()
+          
+          i <- i+1 #set counter to new ID number
           
       }
     }
   }
 }
-
-        # 6. Plot the spatial design
-        s37_plot <- s37 %>% 
-          mutate(solution_1 = as.logical(solution_1)) 
-        (ggSol37 <- fSpatPlan_PlotSolution(s37_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Important Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-        ggsave(filename = "EM-ClimatePriorityArea-velocity-585.png",
-               plot = ggSol37, width = 21, height = 29.7, dpi = 300,
-               path = "Figures/") # save plot
-      
   
