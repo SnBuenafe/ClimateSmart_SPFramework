@@ -1140,3 +1140,139 @@ for(i in 1:length(solution)) {
   
   print(paste0("Saved figure: ", models[i]))
 }
+
+#### Feature approach runs ####
+# TODO: Change this to a more inclusive function later on.
+makeIterations_Feature <- function(solutions, # name of solutions
+                                   models, # name of models
+                                   climateLayers, # list of climate layers
+                                   metric,
+                                   scenario) {
+  
+  for(i in 1:length(solutions)) {
+    # Prepare climate layer
+    ClimateFeature <- create_FeatureLayer(metric_name = metric, colname = "transformed", metric_df = climateLayer[[i]])
+    
+    # Get list of features
+    features <- aqua_sf %>% 
+      as_tibble() %>% 
+      dplyr::select(-geometry) %>% 
+      names()
+    features <- append(features, "climate_layer") # add "climate_layer" to features
+    
+    # Set up the spatial planning problem
+    out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
+    p <- prioritizr::problem(out_sf, features, "cost") %>%
+      add_min_set_objective() %>%
+      add_relative_targets(0.3) %>% 
+      add_binary_decisions() %>%
+      add_gurobi_solver(gap = 0, verbose = FALSE)
+    
+    # Solve the planning problem 
+    s <- prioritizr::solve(p)
+    saveRDS(s, paste0(output_solutions, solutions[i], "-MM-", models[i], "-Feature-", metric, "-", scenario, ".rds")) # save solution
+    print(paste0("Saved solution: ", models[i]))
+    
+    # Plot the spatial design
+    s_plot <- s %>% 
+      mutate(solution_1 = as.logical(solution_1)) 
+    (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle(paste0("Climate-smart design: ", metric), subtitle = paste0("Feature, SSP ", scenario, " (GCM: ", models[i], ")")) + theme(axis.text = element_text(size = 25)))
+    ggsave(filename = paste0("MM-", models[i], "-Feature-", metric, "-", scenario, ".png"),
+           plot = ggSol, width = 21, height = 29.7, dpi = 300,
+           path = "Figures/") # save
+    print(paste0("Saved figure: ", models[i]))
+  }
+  
+}
+#### Climate warming (SSP 1-2.6) ####
+solutions <- c("s142", "s143", "s144", "s145", "s146")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(tos_CanESM5_SSP126, `tos_CMCC-ESM2_SSP126`, `tos_GFDL-ESM4_SSP126`, `tos_IPSL-CM6A-LR_SSP126`, `tos_NorESM2-MM_SSP126`)
+metric = "tos"
+scenario = "126"
+
+makeIterations_Feature(solutions, models, climateLayer, metric, scenario)
+#### Climate warming (SSP 2-4.5) ####
+solutions <- c("s162", "s163", "s164", "s165", "s166")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(tos_CanESM5_SSP245, `tos_CMCC-ESM2_SSP245`, `tos_GFDL-ESM4_SSP245`, `tos_IPSL-CM6A-LR_SSP245`, `tos_NorESM2-MM_SSP245`)
+metric = "tos"
+scenario = "245"
+
+makeIterations_Feature(solutions, models, climateLayer, metric, scenario)
+#### Climate warming (SSP 5-8.5) ####
+solutions <- c("s202", "s203", "s204", "s205", "s206")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(tos_CanESM5_SSP585, `tos_CMCC-ESM2_SSP585`, `tos_GFDL-ESM4_SSP585`, `tos_IPSL-CM6A-LR_SSP585`, `tos_NorESM2-MM_SSP585`)
+metric = "tos"
+scenario = "585"
+
+makeIterations_Feature(solutions, models, climateLayer, metric, scenario)
+#### Ocean Acidification (SSP 1-2.6) ####
+solutions <- c("s147", "s148", "s149", "s150", "s151")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(phos_CanESM5_SSP126, `phos_CMCC-ESM2_SSP126`, `phos_GFDL-ESM4_SSP126`, `phos_IPSL-CM6A-LR_SSP126`, `phos_NorESM2-MM_SSP126`)
+metric = "phos"
+scenario = "126"
+
+makeIterations_Feature(solutions, models, climateLayer, metric, scenario)
+#### Ocean Acidification (SSP 2-4.5) ####
+solutions <- c("s167", "s168", "s169", "s170", "s171")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(phos_CanESM5_SSP245, `phos_CMCC-ESM2_SSP245`, `phos_GFDL-ESM4_SSP245`, `phos_IPSL-CM6A-LR_SSP245`, `phos_NorESM2-MM_SSP245`)
+metric = "phos"
+scenario = "126"
+
+makeIterations_Feature(solutions, models, climateLayer, metric, scenario)
+#### Ocean Acidification (SSP 5-8.5) ####
+solutions <- c("s235", "s236", "s237", "s238", "s239")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(phos_CanESM5_SSP585, `phos_CMCC-ESM2_SSP585`, `phos_GFDL-ESM4_SSP585`, `phos_IPSL-CM6A-LR_SSP585`, `phos_NorESM2-MM_SSP585`)
+metric = "phos"
+scenario = "585"
+
+makeIterations_Feature(solutions, models, climateLayer, metric, scenario)
+
+#### Declining oxygen concentration (SSP 1-2.6) ####
+solutions <- c("s152", "s153", "s154", "s155", "s156")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(o2os_CanESM5_SSP126, `o2os_CMCC-ESM2_SSP126`, `o2os_GFDL-ESM4_SSP126`, `o2os_IPSL-CM6A-LR_SSP126`, `o2os_NorESM2-MM_SSP126`)
+metric = "o2os"
+scenario = "126"
+
+makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
+#### Declining oxygen concentration (SSP 2-4.5) ####
+solutions <- c("s172", "s173", "s174", "s175", "s176")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(o2os_CanESM5_SSP245, `o2os_CMCC-ESM2_SSP245`, `o2os_GFDL-ESM4_SSP245`, `o2os_IPSL-CM6A-LR_SSP245`, `o2os_NorESM2-MM_SSP245`)
+metric = "o2os"
+scenario = "245"
+
+makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
+
+#### Climate velocity (SSP 1-2.6) ####
+solutions <- c("s157", "s158", "s159", "s160", "s161")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(velocity_CanESM5_SSP126, `velocity_CMCC-ESM2_SSP126`, `velocity_GFDL-ESM4_SSP126`, `velocity_IPSL-CM6A-LR_SSP126`, `velocity_NorESM2-MM_SSP126`)
+metric = "velocity"
+scenario = "126"
+
+makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
+
+#### Climate velocity (SSP 2-4.5) ####
+solutions <- c("s177", "s178", "s179", "s180", "s181")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(velocity_CanESM5_SSP245, `velocity_CMCC-ESM2_SSP245`, `velocity_GFDL-ESM4_SSP245`, `velocity_IPSL-CM6A-LR_SSP245`, `velocity_NorESM2-MM_SSP245`)
+metric = "velocity"
+scenario = "245"
+
+makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
+
+#### Climate velocity (SSP 5-8.5) ####
+solutions <- c("s245", "s246", "s247", "s248", "s249")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(velocity_CanESM5_SSP585, `velocity_CMCC-ESM2_SSP585`, `velocity_GFDL-ESM4_SSP585`, `velocity_IPSL-CM6A-LR_SSP585`, `velocity_NorESM2-MM_SSP585`)
+metric = "velocity"
+scenario = "585"
+
+makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
