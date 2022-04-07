@@ -11,7 +11,7 @@
 
 source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functions and libraries
 source("HelperFunctions/SpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
-output_solutions <- "Output/solutions/"
+output_solutions <- "Output/test/solutions/"
 output_summary <- "Output/summary/"
 output_lowregret <- "Output/lowregret/"
 
@@ -30,46 +30,53 @@ land <- ne_countries(scale = 'large', returnclass = 'sf') %>%
 
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 
-# Call function for each metric (from Preliminaries script)
-fcallMetrics <- function(metric, 
-                         model = NA, # if model = NA, approach is ensemble mean
-                         path # path with / at the end
+# Call function for each metric (adapted from Preliminaries script)
+fcallMetrics2 <- function(metric, 
+                          model = NA, # if model = NA, approach is ensemble mean
+                          path, # path with / at the end
+                          scenario = NA
 ) {
   
   scenario_obj <- c("SSP126", "SSP245", "SSP585")
   scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
   
   if(is.na(model)) {
-    if (metric == "velocity") {
-      files <- list.files(file.path(path))
-    } else {
-      files <- list.files(file.path(path, metric))
-    }
-    
-    for(i in 1:length(files)) {
-      df <- readRDS(file.path("Output",
-                              paste(save_name, "ClimateLayer", files[i], sep = "_")))
-      
+    if(is.na(scenario)){
       if (metric == "velocity") {
-        assign(x = paste(metric, scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+        files <- list.files(file.path(path))
       } else {
-        assign(x = paste("roc", metric, scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+        files <- list.files(file.path(path, metric))
       }
       
+      for(i in 1:length(files)) {
+        df <- readRDS(file.path("Output",
+                                paste(save_name, "ClimateLayer", files[i], sep = "_")))
+        
+        if (metric == "velocity") {
+          assign(x = paste(metric, scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+        } else {
+          assign(x = paste("roc", metric, scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+        }
+        
+      }
     }
   }
   else{
-    for (i in 1:length(scenario_path))
-    {
-      files <- list.files(file.path(path, metric, scenario_path[i]))
-      for(j in 1:length(files)) {
-        df <- readRDS(file.path("Output",
-                                paste(save_name, "ClimateLayer", files[j], sep = "_")))
-        assign(x = paste(metric, model[j], scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
-      }
+    if (scenario == "SSP126"){
+      scenario_path <- scenario_path[1]
+    } else if (scenario == "SSP245") {
+      scenario_path <- scenario_path[2]
+    } else if (scenario == "SSP585"){
+      scenario_path <- scenario_path[3]
+    }
+    
+    files <- list.files(file.path(path, metric, scenario_path))
+    for(j in 1:length(files)) {
+      df <- readRDS(file.path("Output",
+                              paste(save_name, "ClimateLayer", files[j], sep = "_")))
+      assign(x = paste(metric, model[j], scenario, sep = "_"), value = df, envir=.GlobalEnv)
     }
   }
-  
 }
 
 ### Conservation Features ####
@@ -112,7 +119,7 @@ for (theme_num in 1:length(theme_names)){ #not really necessary anymore: too muc
     for (metric_num in 1:length(metric_names)){
       for (model_num in 1:length(model_names)){
         # 1. Rates of Climate warming
-          fcallMetrics(metric = metric_names[metric_num],path = "Data/Climate/ClimateMetrics_Ensemble", model = model_names) # ensemble mean
+          fcallMetrics2(metric = metric_names[1],path = "Data/Climate/ClimateMetrics_Ensemble", model = model_names, scenario = scenario_names[1]) # ensemble mean
           metric_dat <- paste(metric_names[metric_num], model_names[model_num], scenario_names[scenario_num], sep = "_") #string at the moment: could be problem (https://stackoverflow.com/questions/6034655/convert-string-to-a-variable-name)
           metric_dat <- eval_tidy(quo(!! sym(metric_dat)))
           ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = metric_names[metric_num], colname = "transformed", 
@@ -157,7 +164,8 @@ for (theme_num in 1:length(theme_names)){ #not really necessary anymore: too muc
                  path = "Figures/") # save plot
           
           #clean up environment
-          rm(ImptFeat, RepFeat)
+          rm(ImptFeat, RepFeat, Features, features, targets)
+          rm(list=ls(pattern=paste0(metric_names[1], ".*")))
           gc()
           
           i <- i+1 #set counter to new ID number
@@ -167,4 +175,3 @@ for (theme_num in 1:length(theme_names)){ #not really necessary anymore: too muc
   }
   #if  ( i == 290 ) break;
 }
-  
