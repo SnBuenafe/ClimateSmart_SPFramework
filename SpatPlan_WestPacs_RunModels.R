@@ -106,20 +106,20 @@ rm(subset_aqua_sf, CutOff, model_list)
 
 # Initialise variables for loop
 theme_names <- c("ClimatePriorityArea") #"feature", "penalty", "percentile"
-scenario_names <- c("SSP126", "SSP245", "SSP585")
+scenario_names <- c("SSP126", "SSP245", "SSP585") 
 model_names <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 metric_names <- c("tos", "phos", "o2os", "velocity")
-i <- 230 #ID starting location of CPA in Meta data file (excluding EM)
+i <- 250 #ID starting location of CPA in Meta data file (excluding EM)
 gc()
 
 library(rlang)
 
 for (theme_num in 1:length(theme_names)){ #not really necessary anymore: too much computer power needed if all approaches in one loop
-  for (scenario_num in 1:length(scenario_names)){
+  for (scenario_num in 2:length(scenario_names)){
     for (metric_num in 1:length(metric_names)){
       for (model_num in 1:length(model_names)){
         # 1. Rates of Climate warming
-          fcallMetrics2(metric = metric_names[1],path = "Data/Climate/ClimateMetrics_Ensemble", model = model_names, scenario = scenario_names[1]) # ensemble mean
+          fcallMetrics2(metric = metric_names[metric_num],path = "Data/Climate/ClimateMetrics_Ensemble", model = model_names, scenario = scenario_names[scenario_num]) # ensemble mean
           metric_dat <- paste(metric_names[metric_num], model_names[model_num], scenario_names[scenario_num], sep = "_") #string at the moment: could be problem (https://stackoverflow.com/questions/6034655/convert-string-to-a-variable-name)
           metric_dat <- eval_tidy(quo(!! sym(metric_dat)))
           ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = metric_names[metric_num], colname = "transformed", 
@@ -165,7 +165,7 @@ for (theme_num in 1:length(theme_names)){ #not really necessary anymore: too muc
           
           #clean up environment
           rm(ImptFeat, RepFeat, Features, features, targets)
-          rm(list=ls(pattern=paste0(metric_names[1], ".*")))
+          rm(list=ls(pattern=paste0(metric_names[metric_num], ".*")))
           gc()
           
           i <- i+1 #set counter to new ID number
