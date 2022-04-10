@@ -187,7 +187,7 @@ fcallMetrics <- function(metric,
                          path # path with / at the end
 ) {
   
-  scenario_obj <- c("SSP126", "SSP245", "SSP585")
+  scenario_obj <- c("SSP126", "SSP245")#, "SSP585")
   scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
   
   if(is.na(model)) {
