@@ -109,13 +109,13 @@ theme_names <- c("ClimatePriorityArea") #"feature", "penalty", "percentile"
 scenario_names <- c("SSP126", "SSP245", "SSP585") 
 model_names <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 metric_names <- c("tos", "phos", "o2os", "velocity")
-i <- 250 #ID starting location of CPA in Meta data file (excluding EM)
+i <- 230 #ID starting location of CPA in Meta data file (excluding EM)
 gc()
 
 library(rlang)
 
 for (theme_num in 1:length(theme_names)){ #not really necessary anymore: too much computer power needed if all approaches in one loop
-  for (scenario_num in 2:length(scenario_names)){
+  for (scenario_num in 1:length(scenario_names)){
     for (metric_num in 1:length(metric_names)){
       for (model_num in 1:length(model_names)){
         # 1. Rates of Climate warming
