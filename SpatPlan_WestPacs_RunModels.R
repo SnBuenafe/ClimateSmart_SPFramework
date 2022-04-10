@@ -181,7 +181,7 @@ for (theme_num in 1:length(theme_names)){ #not really necessary anymore: too muc
 # Parameters:
 # Ensemble: Ensemble mean
 
-# Call function for each metric
+# Call function for each metric (from Preliminaries script)
 fcallMetrics <- function(metric, 
                          model = NA, # if model = NA, approach is ensemble mean
                          path # path with / at the end
@@ -225,8 +225,8 @@ fcallMetrics <- function(metric,
 
 # Initialise variables for loop
 theme_names <- c("ClimatePriorityArea") #"feature", "penalty", "percentile"
-scenario_names <- c("SSP126", "SSP245")#, "SSP585") 
-metric_names <- c("tos", "phos", "o2os", "velocity")
+scenario_names <- c("SSP126", "SSP245", "SSP585") 
+metric_names <- c("tos", "phos", "o2os", "velocity") # 
 i <- 222 #ID starting location of CPA in Meta data file (excluding EM)
 gc()
 
@@ -236,9 +236,16 @@ for (theme_num in 1:length(theme_names)){ #not really necessary anymore: too muc
   for (scenario_num in 1:length(scenario_names)){
     for (metric_num in 1:length(metric_names)){
         # 1. Rates of Climate warming
+      if (metric_names == "tos"| metric_names == "phos" | metric_names == "o2os") {
         fcallMetrics(metric = metric_names[metric_num], path = "Data/Climate/ClimateMetrics/RateOfChange") # ensemble mean
         metric_dat <- paste("roc", metric_names[metric_num], scenario_names[scenario_num], sep = "_") #string at the moment: could be problem (https://stackoverflow.com/questions/6034655/convert-string-to-a-variable-name)
         metric_dat <- eval_tidy(quo(!! sym(metric_dat)))
+      } else if (metric_names == "velocity") {
+        fcallMetrics(metric = "velocity", path = "Data/Climate/ClimateMetrics/ClimateVelocity") # ensemble mean
+        metric_dat <- paste("velocity", scenario_names[scenario_num], sep = "_") #string at the moment: could be problem (https://stackoverflow.com/questions/6034655/convert-string-to-a-variable-name)
+        metric_dat <- eval_tidy(quo(!! sym(metric_dat)))
+      }
+        
         ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = metric_names[metric_num], colname = "transformed", 
                                                  metric_df =  metric_dat)
         gc()#clear up space
@@ -280,12 +287,12 @@ for (theme_num in 1:length(theme_names)){ #not really necessary anymore: too muc
                plot = ggSol, width = 21, height = 29.7, dpi = 300,
                path = "Figures/") # save plot
         
-        #clean up environment
+        #clean up environment for RAM reasons
         rm(ImptFeat, RepFeat, Features, features, targets)
         rm(list=ls(pattern=paste0(metric_names[metric_num], ".*")))
         gc()
         
-        i <- i+1 #set counter to new ID number
+        i <- i+1#set counter to new ID number
         
     }
   }
