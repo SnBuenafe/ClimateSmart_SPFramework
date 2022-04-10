@@ -175,3 +175,120 @@ for (theme_num in 1:length(theme_names)){ #not really necessary anymore: too muc
   }
   #if  ( i == 290 ) break;
 }
+
+#### Supplementary: Climate priority area ####
+#### Climate Warming ####
+# Parameters:
+# Ensemble: Ensemble mean
+
+# Call function for each metric
+fcallMetrics <- function(metric, 
+                         model = NA, # if model = NA, approach is ensemble mean
+                         path # path with / at the end
+) {
+  
+  scenario_obj <- c("SSP126", "SSP245", "SSP585")
+  scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
+  
+  if(is.na(model)) {
+    if (metric == "velocity") {
+      files <- list.files(file.path(path))
+    } else {
+      files <- list.files(file.path(path, metric))
+    }
+    
+    for(i in 1:length(files)) {
+      df <- readRDS(file.path("Output",
+                              paste(save_name, "ClimateLayer", files[i], sep = "_")))
+      
+      if (metric == "velocity") {
+        assign(x = paste(metric, scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      } else {
+        assign(x = paste("roc", metric, scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      }
+      
+    }
+  }
+  else{
+    for (i in 1:length(scenario_path))
+    {
+      files <- list.files(file.path(path, metric, scenario_path[i]))
+      for(j in 1:length(files)) {
+        df <- readRDS(file.path("Output",
+                                paste(save_name, "ClimateLayer", files[j], sep = "_")))
+        assign(x = paste(metric, model[j], scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      }
+    }
+  }
+  
+}
+
+# Initialise variables for loop
+theme_names <- c("ClimatePriorityArea") #"feature", "penalty", "percentile"
+scenario_names <- c("SSP126", "SSP245")#, "SSP585") 
+metric_names <- c("tos", "phos", "o2os", "velocity")
+i <- 222 #ID starting location of CPA in Meta data file (excluding EM)
+gc()
+
+library(rlang)
+
+for (theme_num in 1:length(theme_names)){ #not really necessary anymore: too much computer power needed if all approaches in one loop
+  for (scenario_num in 1:length(scenario_names)){
+    for (metric_num in 1:length(metric_names)){
+        # 1. Rates of Climate warming
+        fcallMetrics(metric = metric_names[metric_num], path = "Data/Climate/ClimateMetrics/RateOfChange") # ensemble mean
+        metric_dat <- paste("roc", metric_names[metric_num], scenario_names[scenario_num], sep = "_") #string at the moment: could be problem (https://stackoverflow.com/questions/6034655/convert-string-to-a-variable-name)
+        metric_dat <- eval_tidy(quo(!! sym(metric_dat)))
+        ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = metric_names[metric_num], colname = "transformed", 
+                                                 metric_df =  metric_dat)
+        gc()#clear up space
+        RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
+        gc()
+        Features <- cbind(ImptFeat, RepFeat) %>% 
+          dplyr::select(-geometry.1)
+        # 2. Get list of features
+        features <- Features %>% 
+          as_tibble() %>% 
+          dplyr::select(-geometry) %>% 
+          names()
+        # 3. Differentiate targets for important features and representative features
+        targets <- features %>% as_tibble() %>% 
+          setNames(., "Species") %>% 
+          add_column(target = 1) %>% 
+          mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
+        # 4. Set up the spatial planning problem
+        out_sf <- cbind(Features, metric_dat, UniformCost)
+        p <- prioritizr::problem(out_sf, features, "cost") %>%
+          add_min_set_objective() %>%
+          add_relative_targets(targets$target) %>%
+          add_binary_decisions() %>%
+          add_gurobi_solver(gap = 0, verbose = FALSE)
+        # 5. Solve the planning problem 
+        s <- prioritizr::solve(p)
+        ID <- paste("s", i, sep= "")
+        print(paste(ID, "EM", metric_names[metric_num], scenario_names[scenario_num], sep = ","))#to double-check 
+        ID_long <- paste(ID,"EM", theme_names[theme_num], metric_names[metric_num], scenario_names[scenario_num], sep = "-")
+        ID_save <- paste(ID_long, ".rds", sep = "")
+        saveRDS(s, paste0(output_solutions, ID_save)) # save solution
+        
+        # 6. Plot the spatial design
+        ID_plot <- paste(ID_long, ".png", sep = "")
+        s_plot <- s %>% 
+          mutate(solution_1 = as.logical(solution_1)) 
+        (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + theme(axis.text = element_text(size = 25)))
+        ggsave(filename = ID_plot,
+               plot = ggSol, width = 21, height = 29.7, dpi = 300,
+               path = "Figures/") # save plot
+        
+        #clean up environment
+        rm(ImptFeat, RepFeat, Features, features, targets)
+        rm(list=ls(pattern=paste0(metric_names[metric_num], ".*")))
+        gc()
+        
+        i <- i+1 #set counter to new ID number
+        
+    }
+  }
+  #if  ( i == 290 ) break;
+}
+
