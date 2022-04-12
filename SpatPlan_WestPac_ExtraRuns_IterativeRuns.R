@@ -558,6 +558,39 @@ ggsave(filename = "EM-Penalty-phos-126.png",
        plot = ggSol56, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
 
+#### Ocean Acidification (SSP2-4.5) ####
+# Prepare climate layer
+# Get scaling
+scaling_PenaltyWarming <- create_Scaling(UniformCost$cost, roc_phos_SSP245$transformed, "phos")
+
+# Get list of features
+features <- aqua_sf %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_sf, roc_phos_SSP245, UniformCost)
+scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+p57 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(0.3) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+  add_linear_penalties(scaling, data = "transformed")
+
+# Solve the planning problem 
+s57 <- prioritizr::solve(p57)
+saveRDS(s57, paste0(output_solutions, "s57-EM-Penalty-phos-245.rds")) # save solution
+
+# Plot the spatial design
+s57_plot <- s57 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol57 <- fSpatPlan_PlotSolution(s57_plot, PUs, land) + ggtitle("Climate-smart design: Ocean Acidification", subtitle = "Penalty, SSP 2-4.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Penalty-phos-245.png",
+       plot = ggSol57, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save
+
 #### Declining Oxygen Concentration (SSP1-2.6) ####
 # Prepare climate layer
 # Get scaling
@@ -703,21 +736,697 @@ features <- aqua_percentile %>%
   names()
 
 # Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, roc_phos_SSP126, UniformCost)
-p40 <- prioritizr::problem(out_sf, features, "cost") %>%
+out_sf <- cbind(aqua_percentile, tos_CanESM5_SSP126, UniformCost)
+p70 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(30/35) %>%
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 
 # Solve the planning problem 
-s40 <- prioritizr::solve(p40)
-saveRDS(s40, paste0(output_solutions, "s40-EM-Percentile-phos-126.rds")) # save solution
+s70 <- prioritizr::solve(p70)
+saveRDS(s70, paste0(output_solutions, "s70-MM-CanESM5-Percentile-tos-126.rds")) # save solution
 
 # Plot the spatial design
-s40_plot <- s40 %>% 
+s70_plot <- s70 %>% 
   mutate(solution_1 = as.logical(solution_1))
-(ggSol40 <- fSpatPlan_PlotSolution(s40_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "EM-Percentile-phos-126.png",
-       plot = ggSol40, width = 21, height = 29.7, dpi = 300,
+(ggSol70 <- fSpatPlan_PlotSolution(s70_plot, PUs, land) + ggtitle("Climate-smart design: Climate Warming", subtitle = "Percentile, SSP 1-2.6 (GCM: CanESM5)") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "MM-CanESM5-Percentile-tos-126.png",
+       plot = ggSol70, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
+
+# Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = `tos_CMCC-ESM2_SSP126`, PUs = PUs)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, `tos_CMCC-ESM2_SSP126`, UniformCost)
+p71 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s71 <- prioritizr::solve(p71)
+saveRDS(s71, paste0(output_solutions, "s71-MM-CMCC_ESM2-Percentile-tos-126.rds")) # save solution
+
+# Plot the spatial design
+s71_plot <- s71 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol71 <- fSpatPlan_PlotSolution(s71_plot, PUs, land) + ggtitle("Climate-smart design: Climate Warming", subtitle = "Percentile, SSP 1-2.6 (GCM: CMCC-ESM2)") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "MM-CMCC_ESM2-Percentile-tos-126.png",
+       plot = ggSol71, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = `tos_GFDL-ESM4_SSP126`, PUs = PUs)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, `tos_GFDL-ESM4_SSP126`, UniformCost)
+p72 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s72 <- prioritizr::solve(p72)
+saveRDS(s72, paste0(output_solutions, "s72-MM-GFDL-ESM4-Percentile-tos-126.rds")) # save solution
+
+# Plot the spatial design
+s72_plot <- s72 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol72 <- fSpatPlan_PlotSolution(s72_plot, PUs, land) + ggtitle("Climate-smart design: Climate Warming", subtitle = "Percentile, SSP 1-2.6 (GCM: GFDL-ESM4)") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "MM-GFDL-ESM4-Percentile-tos-126.png",
+       plot = ggSol72, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = `tos_IPSL-CM6A-LR_SSP126`, PUs = PUs)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, `tos_IPSL-CM6A-LR_SSP126`, UniformCost)
+p73 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s73 <- prioritizr::solve(p73)
+saveRDS(s73, paste0(output_solutions, "s73-MM-IPSL-CM6A-LR-Percentile-tos-126.rds")) # save solution
+
+# Plot the spatial design
+s73_plot <- s73 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol73 <- fSpatPlan_PlotSolution(s73_plot, PUs, land) + ggtitle("Climate-smart design: Climate Warming", subtitle = "Percentile, SSP 1-2.6 (GCM: IPSL-CM6A-LR)") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "MM-IPSL-CM6A-LR-Percentile-tos-126.png",
+       plot = ggSol73, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = `tos_NorESM2-MM_SSP126`, PUs = PUs)
+
+# Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+
+# Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, `tos_NorESM2-MM_SSP126`, UniformCost)
+p74 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+
+# Solve the planning problem 
+s74 <- prioritizr::solve(p74)
+saveRDS(s74, paste0(output_solutions, "s74-MM-NorESM2_MM-Percentile-tos-126.rds")) # save solution
+
+# Plot the spatial design
+s74_plot <- s74 %>% 
+  mutate(solution_1 = as.logical(solution_1))
+(ggSol74 <- fSpatPlan_PlotSolution(s74_plot, PUs, land) + ggtitle("Climate-smart design: Climate Warming", subtitle = "Percentile, SSP 1-2.6 (GCM: NorESM2-MM)") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "MM-NorESM2_MM-Percentile-tos-126.png",
+       plot = ggSol74, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#### Climate warming (SSP 2-4.5) ####
+solution <- c("s82", "s83", "s84", "s85", "s86")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(tos_CanESM5_SSP245, `tos_CMCC-ESM2_SSP245`, `tos_GFDL-ESM4_SSP245`, `tos_IPSL-CM6A-LR_SSP245`, `tos_NorESM2-MM_SSP245`)
+
+for(i in 1:length(solution)) {
+  # Prepare climate layer
+  aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = climateLayer[[i]], PUs = PUs)
+  
+  # Get list of features
+  features <- aqua_percentile %>% 
+    as_tibble() %>% 
+    dplyr::select(-geometry) %>% 
+    names()
+  
+  # Set up the spatial planning problem
+  out_sf <- cbind(aqua_percentile, climateLayer[[i]], UniformCost)
+  p <- prioritizr::problem(out_sf, features, "cost") %>%
+    add_min_set_objective() %>%
+    add_relative_targets(30/35) %>%
+    add_binary_decisions() %>%
+    add_gurobi_solver(gap = 0, verbose = FALSE)
+  
+  # Solve the planning problem 
+  s <- prioritizr::solve(p)
+  saveRDS(s, paste0(output_solutions, solution[i], "-MM-", models[i], "-Percentile-tos-245.rds")) # save solution
+  print(paste0("Saved solution: ", models[i]))
+  
+  # Plot the spatial design
+  s_plot <- s %>% 
+    mutate(solution_1 = as.logical(solution_1))
+  (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design: Climate Warming", subtitle = paste0("Percentile, SSP 2-4.5 (GCM:", models[i], ")")) + theme(axis.text = element_text(size = 25)))
+  ggsave(filename = paste0("MM-", models[i], "-Percentile-tos-245.png"),
+         plot = ggSol, width = 21, height = 29.7, dpi = 300,
+         path = "Figures/") # save plot
+  
+  print(paste0("Saved figure: ", models[i]))
+}
+
+#### Ocean acidification (SSP 1-2.6) ####
+solution <- c("s62", "s63", "s64", "s65", "s66")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(phos_CanESM5_SSP126, `phos_CMCC-ESM2_SSP126`, `phos_GFDL-ESM4_SSP126`, `phos_IPSL-CM6A-LR_SSP126`, `phos_NorESM2-MM_SSP126`)
+
+for(i in 1:length(solution)) {
+  # Prepare climate layer
+  aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = climateLayer[[i]], PUs = PUs)
+  
+  # Get list of features
+  features <- aqua_percentile %>% 
+    as_tibble() %>% 
+    dplyr::select(-geometry) %>% 
+    names()
+  
+  # Set up the spatial planning problem
+  out_sf <- cbind(aqua_percentile, climateLayer[[i]], UniformCost)
+  p <- prioritizr::problem(out_sf, features, "cost") %>%
+    add_min_set_objective() %>%
+    add_relative_targets(30/35) %>%
+    add_binary_decisions() %>%
+    add_gurobi_solver(gap = 0, verbose = FALSE)
+  
+  # Solve the planning problem 
+  s <- prioritizr::solve(p)
+  saveRDS(s, paste0(output_solutions, solution[i], "-MM-", models[i], "-Percentile-phos-126.rds")) # save solution
+  print(paste0("Saved solution: ", models[i]))
+  
+  # Plot the spatial design
+  s_plot <- s %>% 
+    mutate(solution_1 = as.logical(solution_1))
+  (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design: Ocean Acidification", subtitle = paste0("Percentile, SSP 1-2.6 (GCM:", models[i], ")")) + theme(axis.text = element_text(size = 25)))
+  ggsave(filename = paste0("MM-", models[i], "-Percentile-phos-126.png"),
+         plot = ggSol, width = 21, height = 29.7, dpi = 300,
+         path = "Figures/") # save plot
+  
+  print(paste0("Saved figure: ", models[i]))
+}
+
+#### Ocean acidification (SSP 2-4.5) ####
+solution <- c("s87", "s88", "s89", "s90", "s91")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(phos_CanESM5_SSP245, `phos_CMCC-ESM2_SSP245`, `phos_GFDL-ESM4_SSP245`, `phos_IPSL-CM6A-LR_SSP245`, `phos_NorESM2-MM_SSP245`)
+
+for(i in 1:length(solution)) {
+  # Prepare climate layer
+  aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = climateLayer[[i]], PUs = PUs)
+  
+  # Get list of features
+  features <- aqua_percentile %>% 
+    as_tibble() %>% 
+    dplyr::select(-geometry) %>% 
+    names()
+  
+  # Set up the spatial planning problem
+  out_sf <- cbind(aqua_percentile, climateLayer[[i]], UniformCost)
+  p <- prioritizr::problem(out_sf, features, "cost") %>%
+    add_min_set_objective() %>%
+    add_relative_targets(30/35) %>%
+    add_binary_decisions() %>%
+    add_gurobi_solver(gap = 0, verbose = FALSE)
+  
+  # Solve the planning problem 
+  s <- prioritizr::solve(p)
+  saveRDS(s, paste0(output_solutions, solution[i], "-MM-", models[i], "-Percentile-phos-245.rds")) # save solution
+  print(paste0("Saved solution: ", models[i]))
+  
+  # Plot the spatial design
+  s_plot <- s %>% 
+    mutate(solution_1 = as.logical(solution_1))
+  (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design: Ocean Acidification", subtitle = paste0("Percentile, SSP 2-4.5 (GCM:", models[i], ")")) + theme(axis.text = element_text(size = 25)))
+  ggsave(filename = paste0("MM-", models[i], "-Percentile-phos-245.png"),
+         plot = ggSol, width = 21, height = 29.7, dpi = 300,
+         path = "Figures/") # save plot
+  
+  print(paste0("Saved figure: ", models[i]))
+}
+
+#### Declining oxygen concentration (SSP 1-2.6) ####
+solution <- c("s67", "s68", "s69", "s75", "s76")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(o2os_CanESM5_SSP126, `o2os_CMCC-ESM2_SSP126`, `o2os_GFDL-ESM4_SSP126`, `o2os_IPSL-CM6A-LR_SSP126`, `o2os_NorESM2-MM_SSP126`)
+
+for(i in 1:length(solution)) {
+  # Prepare climate layer
+  aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = climateLayer[[i]], PUs = PUs)
+  
+  # Get list of features
+  features <- aqua_percentile %>% 
+    as_tibble() %>% 
+    dplyr::select(-geometry) %>% 
+    names()
+  
+  # Set up the spatial planning problem
+  out_sf <- cbind(aqua_percentile, climateLayer[[i]], UniformCost)
+  p <- prioritizr::problem(out_sf, features, "cost") %>%
+    add_min_set_objective() %>%
+    add_relative_targets(30/35) %>%
+    add_binary_decisions() %>%
+    add_gurobi_solver(gap = 0, verbose = FALSE)
+  
+  # Solve the planning problem 
+  s <- prioritizr::solve(p)
+  saveRDS(s, paste0(output_solutions, solution[i], "-MM-", models[i], "-Percentile-o2os-126.rds")) # save solution
+  print(paste0("Saved solution: ", models[i]))
+  
+  # Plot the spatial design
+  s_plot <- s %>% 
+    mutate(solution_1 = as.logical(solution_1))
+  (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design: Declining Oxygen Concentration", subtitle = paste0("Percentile, SSP 1-2.6 (GCM:", models[i], ")")) + theme(axis.text = element_text(size = 25)))
+  ggsave(filename = paste0("MM-", models[i], "-Percentile-o2os-126.png"),
+         plot = ggSol, width = 21, height = 29.7, dpi = 300,
+         path = "Figures/") # save plot
+  
+  print(paste0("Saved figure: ", models[i]))
+}
+#### Declining oxygen concentration (SSP 2-4.5) ####
+solution <- c("s92", "s93", "s94", "s95", "s96")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(o2os_CanESM5_SSP245, `o2os_CMCC-ESM2_SSP245`, `o2os_GFDL-ESM4_SSP245`, `o2os_IPSL-CM6A-LR_SSP245`, `o2os_NorESM2-MM_SSP245`)
+
+for(i in 1:length(solution)) {
+  # Prepare climate layer
+  aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = climateLayer[[i]], PUs = PUs)
+  
+  # Get list of features
+  features <- aqua_percentile %>% 
+    as_tibble() %>% 
+    dplyr::select(-geometry) %>% 
+    names()
+  
+  # Set up the spatial planning problem
+  out_sf <- cbind(aqua_percentile, climateLayer[[i]], UniformCost)
+  p <- prioritizr::problem(out_sf, features, "cost") %>%
+    add_min_set_objective() %>%
+    add_relative_targets(30/35) %>%
+    add_binary_decisions() %>%
+    add_gurobi_solver(gap = 0, verbose = FALSE)
+  
+  # Solve the planning problem 
+  s <- prioritizr::solve(p)
+  saveRDS(s, paste0(output_solutions, solution[i], "-MM-", models[i], "-Percentile-o2os-245.rds")) # save solution
+  print(paste0("Saved solution: ", models[i]))
+  
+  # Plot the spatial design
+  s_plot <- s %>% 
+    mutate(solution_1 = as.logical(solution_1))
+  (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design: Declining Oxygen Concentration", subtitle = paste0("Percentile, SSP 2-4.5 (GCM:", models[i], ")")) + theme(axis.text = element_text(size = 25)))
+  ggsave(filename = paste0("MM-", models[i], "-Percentile-o2os-245.png"),
+         plot = ggSol, width = 21, height = 29.7, dpi = 300,
+         path = "Figures/") # save plot
+  
+  print(paste0("Saved figure: ", models[i]))
+}
+#### Climate velocity (SSP 1-2.6) ####
+solution <- c("s77", "s78", "s79", "s80", "s81")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(velocity_CanESM5_SSP126, `velocity_CMCC-ESM2_SSP126`, `velocity_GFDL-ESM4_SSP126`, `velocity_IPSL-CM6A-LR_SSP126`, `velocity_NorESM2-MM_SSP126`)
+
+for(i in 1:length(solution)) {
+  # Prepare climate layer
+  aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = climateLayer[[i]], PUs = PUs)
+  
+  # Get list of features
+  features <- aqua_percentile %>% 
+    as_tibble() %>% 
+    dplyr::select(-geometry) %>% 
+    names()
+  
+  # Set up the spatial planning problem
+  out_sf <- cbind(aqua_percentile, climateLayer[[i]], UniformCost)
+  p <- prioritizr::problem(out_sf, features, "cost") %>%
+    add_min_set_objective() %>%
+    add_relative_targets(30/35) %>%
+    add_binary_decisions() %>%
+    add_gurobi_solver(gap = 0, verbose = FALSE)
+  
+  # Solve the planning problem 
+  s <- prioritizr::solve(p)
+  saveRDS(s, paste0(output_solutions, solution[i], "-MM-", models[i], "-Percentile-velocity-126.rds")) # save solution
+  print(paste0("Saved solution: ", models[i]))
+  
+  # Plot the spatial design
+  s_plot <- s %>% 
+    mutate(solution_1 = as.logical(solution_1))
+  (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design: Climate velocity", subtitle = paste0("Percentile, SSP 1-2.6 (GCM:", models[i], ")")) + theme(axis.text = element_text(size = 25)))
+  ggsave(filename = paste0("MM-", models[i], "-Percentile-velocity-126.png"),
+         plot = ggSol, width = 21, height = 29.7, dpi = 300,
+         path = "Figures/") # save plot
+  
+  print(paste0("Saved figure: ", models[i]))
+}
+#### Climate velocity (SSP 2-4.5) ####
+solution <- c("s97", "s98", "s99", "s100", "s101")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(velocity_CanESM5_SSP245, `velocity_CMCC-ESM2_SSP245`, `velocity_GFDL-ESM4_SSP245`, `velocity_IPSL-CM6A-LR_SSP245`, `velocity_NorESM2-MM_SSP245`)
+
+for(i in 1:length(solution)) {
+  # Prepare climate layer
+  aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = climateLayer[[i]], PUs = PUs)
+  
+  # Get list of features
+  features <- aqua_percentile %>% 
+    as_tibble() %>% 
+    dplyr::select(-geometry) %>% 
+    names()
+  
+  # Set up the spatial planning problem
+  out_sf <- cbind(aqua_percentile, climateLayer[[i]], UniformCost)
+  p <- prioritizr::problem(out_sf, features, "cost") %>%
+    add_min_set_objective() %>%
+    add_relative_targets(30/35) %>%
+    add_binary_decisions() %>%
+    add_gurobi_solver(gap = 0, verbose = FALSE)
+  
+  # Solve the planning problem 
+  s <- prioritizr::solve(p)
+  saveRDS(s, paste0(output_solutions, solution[i], "-MM-", models[i], "-Percentile-velocity-245.rds")) # save solution
+  print(paste0("Saved solution: ", models[i]))
+  
+  # Plot the spatial design
+  s_plot <- s %>% 
+    mutate(solution_1 = as.logical(solution_1))
+  (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design: Climate velocity", subtitle = paste0("Percentile, SSP 2-4.5 (GCM:", models[i], ")")) + theme(axis.text = element_text(size = 25)))
+  ggsave(filename = paste0("MM-", models[i], "-Percentile-velocity-245.png"),
+         plot = ggSol, width = 21, height = 29.7, dpi = 300,
+         path = "Figures/") # save plot
+  
+  print(paste0("Saved figure: ", models[i]))
+}
+
+#### Feature approach runs ####
+# TODO: Change this to a more inclusive function later on.
+makeIterations_Feature <- function(solutions, # name of solutions
+                                   models, # name of models
+                                   climateLayers, # list of climate layers
+                                   metric,
+                                   scenario) {
+  
+  for(i in 1:length(solutions)) {
+    # Prepare climate layer
+    ClimateFeature <- create_FeatureLayer(metric_name = metric, colname = "transformed", metric_df = climateLayer[[i]])
+    
+    # Get list of features
+    features <- aqua_sf %>% 
+      as_tibble() %>% 
+      dplyr::select(-geometry) %>% 
+      names()
+    features <- append(features, "climate_layer") # add "climate_layer" to features
+    
+    # Set up the spatial planning problem
+    out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
+    p <- prioritizr::problem(out_sf, features, "cost") %>%
+      add_min_set_objective() %>%
+      add_relative_targets(0.3) %>% 
+      add_binary_decisions() %>%
+      add_gurobi_solver(gap = 0, verbose = FALSE)
+    
+    # Solve the planning problem 
+    s <- prioritizr::solve(p)
+    saveRDS(s, paste0(output_solutions, solutions[i], "-MM-", models[i], "-Feature-", metric, "-", scenario, ".rds")) # save solution
+    print(paste0("Saved solution: ", models[i]))
+    
+    # Plot the spatial design
+    s_plot <- s %>% 
+      mutate(solution_1 = as.logical(solution_1)) 
+    (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle(paste0("Climate-smart design: ", metric), subtitle = paste0("Feature, SSP ", scenario, " (GCM: ", models[i], ")")) + theme(axis.text = element_text(size = 25)))
+    ggsave(filename = paste0("MM-", models[i], "-Feature-", metric, "-", scenario, ".png"),
+           plot = ggSol, width = 21, height = 29.7, dpi = 300,
+           path = "Figures/") # save
+    print(paste0("Saved figure: ", models[i]))
+  }
+  
+}
+#### Climate warming (SSP 1-2.6) ####
+solutions <- c("s142", "s143", "s144", "s145", "s146")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(tos_CanESM5_SSP126, `tos_CMCC-ESM2_SSP126`, `tos_GFDL-ESM4_SSP126`, `tos_IPSL-CM6A-LR_SSP126`, `tos_NorESM2-MM_SSP126`)
+metric = "tos"
+scenario = "126"
+
+makeIterations_Feature(solutions, models, climateLayer, metric, scenario)
+#### Climate warming (SSP 2-4.5) ####
+solutions <- c("s162", "s163", "s164", "s165", "s166")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(tos_CanESM5_SSP245, `tos_CMCC-ESM2_SSP245`, `tos_GFDL-ESM4_SSP245`, `tos_IPSL-CM6A-LR_SSP245`, `tos_NorESM2-MM_SSP245`)
+metric = "tos"
+scenario = "245"
+
+makeIterations_Feature(solutions, models, climateLayer, metric, scenario)
+#### Climate warming (SSP 5-8.5) ####
+solutions <- c("s202", "s203", "s204", "s205", "s206")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(tos_CanESM5_SSP585, `tos_CMCC-ESM2_SSP585`, `tos_GFDL-ESM4_SSP585`, `tos_IPSL-CM6A-LR_SSP585`, `tos_NorESM2-MM_SSP585`)
+metric = "tos"
+scenario = "585"
+
+makeIterations_Feature(solutions, models, climateLayer, metric, scenario)
+#### Ocean Acidification (SSP 1-2.6) ####
+solutions <- c("s147", "s148", "s149", "s150", "s151")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(phos_CanESM5_SSP126, `phos_CMCC-ESM2_SSP126`, `phos_GFDL-ESM4_SSP126`, `phos_IPSL-CM6A-LR_SSP126`, `phos_NorESM2-MM_SSP126`)
+metric = "phos"
+scenario = "126"
+
+makeIterations_Feature(solutions, models, climateLayer, metric, scenario)
+#### Ocean Acidification (SSP 2-4.5) ####
+solutions <- c("s167", "s168", "s169", "s170", "s171")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(phos_CanESM5_SSP245, `phos_CMCC-ESM2_SSP245`, `phos_GFDL-ESM4_SSP245`, `phos_IPSL-CM6A-LR_SSP245`, `phos_NorESM2-MM_SSP245`)
+metric = "phos"
+scenario = "126"
+
+makeIterations_Feature(solutions, models, climateLayer, metric, scenario)
+#### Ocean Acidification (SSP 5-8.5) ####
+solutions <- c("s207", "s208", "s209", "s210", "s211")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayer <- list(phos_CanESM5_SSP585, `phos_CMCC-ESM2_SSP585`, `phos_GFDL-ESM4_SSP585`, `phos_IPSL-CM6A-LR_SSP585`, `phos_NorESM2-MM_SSP585`)
+metric = "phos"
+scenario = "585"
+
+makeIterations_Feature(solutions, models, climateLayer, metric, scenario)
+
+#### Declining oxygen concentration (SSP 1-2.6) ####
+solutions <- c("s152", "s153", "s154", "s155", "s156")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(o2os_CanESM5_SSP126, `o2os_CMCC-ESM2_SSP126`, `o2os_GFDL-ESM4_SSP126`, `o2os_IPSL-CM6A-LR_SSP126`, `o2os_NorESM2-MM_SSP126`)
+metric = "o2os"
+scenario = "126"
+
+makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
+#### Declining oxygen concentration (SSP 2-4.5) ####
+solutions <- c("s172", "s173", "s174", "s175", "s176")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(o2os_CanESM5_SSP245, `o2os_CMCC-ESM2_SSP245`, `o2os_GFDL-ESM4_SSP245`, `o2os_IPSL-CM6A-LR_SSP245`, `o2os_NorESM2-MM_SSP245`)
+metric = "o2os"
+scenario = "245"
+
+makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
+
+#### Declining oxygen concentration (SSP 5-8.5) ####
+solutions <- c("s212", "s213", "s214", "s215", "s216")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(o2os_CanESM5_SSP585, `o2os_CMCC-ESM2_SSP585`, `o2os_GFDL-ESM4_SSP585`, `o2os_IPSL-CM6A-LR_SSP585`, `o2os_NorESM2-MM_SSP585`)
+metric = "o2os"
+scenario = "585"
+
+makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
+
+#### Climate velocity (SSP 1-2.6) ####
+solutions <- c("s157", "s158", "s159", "s160", "s161")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(velocity_CanESM5_SSP126, `velocity_CMCC-ESM2_SSP126`, `velocity_GFDL-ESM4_SSP126`, `velocity_IPSL-CM6A-LR_SSP126`, `velocity_NorESM2-MM_SSP126`)
+metric = "velocity"
+scenario = "126"
+
+makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
+
+#### Climate velocity (SSP 2-4.5) ####
+solutions <- c("s177", "s178", "s179", "s180", "s181")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(velocity_CanESM5_SSP245, `velocity_CMCC-ESM2_SSP245`, `velocity_GFDL-ESM4_SSP245`, `velocity_IPSL-CM6A-LR_SSP245`, `velocity_NorESM2-MM_SSP245`)
+metric = "velocity"
+scenario = "245"
+
+makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
+
+#### Climate velocity (SSP 5-8.5) ####
+solutions <- c("s217", "s218", "s219", "s220", "s221")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(velocity_CanESM5_SSP585, `velocity_CMCC-ESM2_SSP585`, `velocity_GFDL-ESM4_SSP585`, `velocity_IPSL-CM6A-LR_SSP585`, `velocity_NorESM2-MM_SSP585`)
+metric = "velocity"
+scenario = "585"
+
+makeIterations_Feature(solutions, models, climateLayers, metric, scenario)
+#### Penalty approach runs ####
+# TODO: Change this to a more inclusive function later on.
+makeIterations_Penalty <- function(solutions, # name of solutions
+                                   models, # name of models
+                                   climateLayers, # list of climate layers
+                                   metric,
+                                   scenario) {
+  
+  for(i in 1:length(solutions)) {
+    # Prepare climate layer
+    # Get scaling
+    scalingPenalty <- create_Scaling(UniformCost$cost, climateLayers[[i]]$transformed, metric)
+    
+    # Get list of features
+    features <- aqua_sf %>% 
+      as_tibble() %>% 
+      dplyr::select(-geometry) %>% 
+      names()
+    
+    # Set up the spatial planning problem
+    out_sf <- cbind(aqua_sf, climateLayers[[i]], UniformCost)
+    scaling <- scalingPenalty %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+    p <- prioritizr::problem(out_sf, features, "cost") %>%
+      add_min_set_objective() %>%
+      add_relative_targets(0.3) %>%
+      add_binary_decisions() %>%
+      add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+      add_linear_penalties(scaling, data = "transformed")
+    
+    # Solve the planning problem 
+    s <- prioritizr::solve(p)
+    saveRDS(s, paste0(output_solutions, solutions[i], "-MM-", models[i], "-Penalty-", metric, "-", scenario, ".rds")) # save solution
+    print(paste0("Saved solution: ", models[i]))
+    
+    # Plot the spatial design
+    s_plot <- s %>% 
+      mutate(solution_1 = as.logical(solution_1)) 
+    (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + ggtitle("Climate-smart design", subtitle = paste0("Penalty, SSP ", scenario)) + theme(axis.text = element_text(size = 25)))
+    ggsave(filename = paste0("MM-", models[i], "-Penalty-", metric, "-", scenario, ".png"),
+           plot = ggSol, width = 21, height = 29.7, dpi = 300,
+           path = "Figures/") # save
+    print(paste0("Saved figure: ", models[i]))
+  }
+}
+
+#### Climate warming (SSP 1-2.6) ####
+solutions <- c("s102", "s103", "s104", "s105", "s106")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(tos_CanESM5_SSP126, `tos_CMCC-ESM2_SSP126`, `tos_GFDL-ESM4_SSP126`, `tos_IPSL-CM6A-LR_SSP126`, `tos_NorESM2-MM_SSP126`)
+metric = "tos"
+scenario = "126"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+#### Climate warming (SSP 2-4.5) ####
+solutions <- c("s122", "s123", "s124", "s125", "s126")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(tos_CanESM5_SSP245, `tos_CMCC-ESM2_SSP245`, `tos_GFDL-ESM4_SSP245`, `tos_IPSL-CM6A-LR_SSP245`, `tos_NorESM2-MM_SSP245`)
+metric = "tos"
+scenario = "245"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+#### Climate warming (SSP 5-8.5) ####
+solutions <- c("s182", "s183", "s184", "s185", "s186")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(tos_CanESM5_SSP585, `tos_CMCC-ESM2_SSP585`, `tos_GFDL-ESM4_SSP585`, `tos_IPSL-CM6A-LR_SSP585`, `tos_NorESM2-MM_SSP585`)
+metric = "tos"
+scenario = "585"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+#### Ocean acidification (SSP 1-2.6) ####
+solutions <- c("s107", "s108", "s109", "s110", "s111")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(phos_CanESM5_SSP126, `phos_CMCC-ESM2_SSP126`, `phos_GFDL-ESM4_SSP126`, `phos_IPSL-CM6A-LR_SSP126`, `phos_NorESM2-MM_SSP126`)
+metric = "phos"
+scenario = "126"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+#### Ocean acidification (SSP 2-4.5) ####
+solutions <- c("s127", "s128", "s129", "s130", "s131")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(phos_CanESM5_SSP245, `phos_CMCC-ESM2_SSP245`, `phos_GFDL-ESM4_SSP245`, `phos_IPSL-CM6A-LR_SSP245`, `phos_NorESM2-MM_SSP245`)
+metric = "phos"
+scenario = "245"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+#### Ocean acidification (SSP 5-8.5) ####
+solutions <- c("s187", "s188", "s189", "s190", "s191")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(phos_CanESM5_SSP585, `phos_CMCC-ESM2_SSP585`, `phos_GFDL-ESM4_SSP585`, `phos_IPSL-CM6A-LR_SSP585`, `phos_NorESM2-MM_SSP585`)
+metric = "phos"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+#### Declining oxygen concentration(SSP 1-2.6) ####
+solutions <- c("s112", "s113", "s114", "s115", "s116")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(o2os_CanESM5_SSP126, `o2os_CMCC-ESM2_SSP126`, `o2os_GFDL-ESM4_SSP126`, `o2os_IPSL-CM6A-LR_SSP126`, `o2os_NorESM2-MM_SSP126`)
+metric = "o2os"
+scenario = "126"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+
+#### Declining oxygen concentration (SSP 2-4.5) ####
+solutions <- c("s132", "s133", "s134", "s135", "s136")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(o2os_CanESM5_SSP245, `o2os_CMCC-ESM2_SSP245`, `o2os_GFDL-ESM4_SSP245`, `o2os_IPSL-CM6A-LR_SSP245`, `o2os_NorESM2-MM_SSP245`)
+metric = "o2os"
+scenario = "245"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+
+#### Declining oxygen concentration (SSP 5-8.5) ####
+solutions <- c("s192", "s193", "s194", "s195", "s196")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(o2os_CanESM5_SSP585, `o2os_CMCC-ESM2_SSP585`, `o2os_GFDL-ESM4_SSP585`, `o2os_IPSL-CM6A-LR_SSP585`, `o2os_NorESM2-MM_SSP585`)
+metric = "o2os"
+scenario = "585"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+
+#### Climate velocity (SSP 1-2.6) ####
+solutions <- c("s117", "s118", "s119", "s120", "s121")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(velocity_CanESM5_SSP126, `velocity_CMCC-ESM2_SSP126`, `velocity_GFDL-ESM4_SSP126`, `velocity_IPSL-CM6A-LR_SSP126`, `velocity_NorESM2-MM_SSP126`)
+metric = "velocity"
+scenario = "126"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+
+#### Climate velocity (SSP 2-4.5) ####
+solutions <- c("s137", "s138", "s139", "s140", "s141")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(velocity_CanESM5_SSP245, `velocity_CMCC-ESM2_SSP245`, `velocity_GFDL-ESM4_SSP245`, `velocity_IPSL-CM6A-LR_SSP245`, `velocity_NorESM2-MM_SSP245`)
+metric = "velocity"
+scenario = "245"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
+
+#### Climate velocity (SSP 5-8.5) ####
+solutions <- c("s197", "s198", "s199", "s200", "s201")
+models <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+climateLayers <- list(velocity_CanESM5_SSP585, `velocity_CMCC-ESM2_SSP585`, `velocity_GFDL-ESM4_SSP585`, `velocity_IPSL-CM6A-LR_SSP585`, `velocity_NorESM2-MM_SSP585`)
+metric = "velocity"
+scenario = "585"
+
+makeIterations_Penalty(solutions, models, climateLayers, metric, scenario)
