@@ -1,3 +1,6 @@
+# title: "Helper functions"
+# author: "Tin Buenafe"
+
 # Created Helper Functions to make running prioritizr easier.
 
 # This function extracts the percentage of each feature that is selected
