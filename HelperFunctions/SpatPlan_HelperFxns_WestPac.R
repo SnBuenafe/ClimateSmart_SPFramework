@@ -194,7 +194,7 @@ create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs
   
   # Commence Parallel Loop.
   
-  ncores <- detectCores() - 1 
+  ncores <- detectCores(logical= FALSE) - 1 
   cl <- makeCluster(ncores)
   registerDoParallel(cl)
   
