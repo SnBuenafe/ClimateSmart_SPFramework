@@ -16,6 +16,8 @@ output_solutions <- "Output/solutions/"
 output_summary <- "Output/summary/"
 output_lowregret <- "Output/lowregret/"
 
+library(rlang)
+
 # Load files
 source("03_SpatPlan_Master_Preliminaries.R")
 total_area = nrow(PUs) * PU_size
@@ -47,7 +49,7 @@ loopthrough_EM_Penalty(solution, metric_list, scenario_list)
 metric_list <- c("tos", "phos", "o2os", "velocity")
 scenario_list <- c("126", "245")
 
-solution <- c("s222", "s223", "s224", "s225", "s226", "s227", "s228", "s228")
+solution <- c("s322")#to not overwrite change ID for practice, "s223", "s224", "s225", "s226", "s227", "s228", "s228")
 loopthrough_EM_ClimatePriorityArea(solution, metric_list, scenario_list)
 
 

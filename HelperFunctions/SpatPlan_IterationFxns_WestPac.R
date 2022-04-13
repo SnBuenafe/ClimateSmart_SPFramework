@@ -8,7 +8,7 @@ loopthrough_EM_Percentile <- function(solution_list, metric_list, scenario_list)
   for(metric_num in 1:length(metric_list)) {
     for(scenario_num in 1:length(scenario_list)) {
 
-      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
       
       if(metric_list[metric_num] == "velocity") {
         metric_df <- paste0("velocity_SSP", scenario_list[scenario_num])
@@ -61,7 +61,7 @@ loopthrough_EM_Feature <- function(solution_list, metric_list, scenario_list) {
   for(metric_num in 1:length(metric_list)) {
     for(scenario_num in 1:length(scenario_list)) {
       
-      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
       
       if(metric_list[metric_num] == "velocity") {
         metric_df <- paste0("velocity_SSP", scenario_list[scenario_num])
@@ -116,7 +116,7 @@ loopthrough_EM_Penalty <- function(solution_list, metric_list, scenario_list) {
   for(metric_num in 1:length(metric_list)) {
     for(scenario_num in 1:length(scenario_list)) {
       
-      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
       
       # Prepare climate layer
       if(metric_list[metric_num] == "velocity") {
@@ -176,13 +176,15 @@ loopthrough_EM_ClimatePriorityArea <- function(solution_list, metric_list, scena
   for(scenario_num in 1:length(scenario_list)) {
     for(metric_num in 1:length(metric_list)) {
       
-      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
       
       if(metric_list[metric_num] == "velocity") {
         metric_df <- paste0("velocity_SSP", scenario_list[scenario_num])
       } else {
         metric_df <- paste0("roc_", metric_list[metric_num], "_SSP", scenario_list[scenario_num])
       }
+      
+      metric_df <- eval_tidy(quo(!! sym(metric_df)))
       
       # 1. Prepare the climate layers and features
       ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_list[metric_num], colname = "transformed", metric_df)
@@ -242,7 +244,7 @@ loopthrough_MM_Percentile <- function(solution_list, metric_list, scenario_list,
     for(metric_num in 1:length(metric_list)) {
       for(model_num in 1:length(model_list)) {
         
-        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
         
         # Create climate layer
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_SSP", scenario_list[scenario_num])
@@ -293,7 +295,7 @@ loopthrough_MM_Penalty <- function(solution_list, metric_list, scenario_list, mo
     for(metric_num in 1:length(metric_list)) {
       for(model_num in 1:length(model_list)) {
         
-        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
         
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_SSP", scenario_list[scenario_num])
       
@@ -348,7 +350,7 @@ loopthrough_MM_Feature <- function(solution_list, metric_list, scenario_list, mo
     for(metric_num in 1:length(metric_list)) {
       for(model_num in 1:length(model_list)) {
         
-        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
 
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_SSP", scenario_list[scenario_num])
         # Prepare climate layer
@@ -399,7 +401,7 @@ loopthrough_MM_ClimatePriorityArea <- function(solution_list, metric_list, scena
     for(metric_num in 1:length(metric_list)) {
       for(model_num in 1:length(model_list)) {
         
-        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
         
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_", "_SSP", scenario_list[scenario_num])
         
