@@ -4,20 +4,26 @@
 # Created loop functions for running iterations in `08_SpatPlan_WestPac_SuppRuns_Iterations.R`
 
 loopthrough_EM_Percentile <- function(solution_list, metric_list, scenario_list) {
+  
   i = 1
   for(metric_num in 1:length(metric_list)) {
     for(scenario_num in 1:length(scenario_list)) {
+      
+      if(scenario_list[scenario_num] == "126") {scenario_object <- "SSP 1-2.6"} else if (scenario_list[scenario_num] == "245") {scenario_object <- "SSP 2-4.5"} else if (scenario_list[scenario_num] == "585") {scenario_object <- "SSP 5-8.5"}
 
-      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
+      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_object)
       
       if(metric_list[metric_num] == "velocity") {
         metric_df <- paste0("velocity_SSP", scenario_list[scenario_num])
+      } else if (str_detect(metric_list[metric_num], pattern = "MHW")) {
+        metric_df <- paste0(metric_list[metric_num], "_SSP", scenario_list[scenario_num])
       } else {
         metric_df <- paste0("roc_", metric_list[metric_num], "_SSP", scenario_list[scenario_num])
       }
       
+      x = get(metric_df)
       
-      aqua_percentile <- create_PercentileLayer(aqua_sf, metric_name = metric_list[metric_num], colname = "transformed", !!sym(metric_df), PUs)
+      aqua_percentile <- create_PercentileLayer(aqua_sf, metric_name = metric_list[metric_num], colname = "transformed", x, PUs)
       
       # Get list of features
       features <- aqua_percentile %>% 
@@ -26,7 +32,7 @@ loopthrough_EM_Percentile <- function(solution_list, metric_list, scenario_list)
         names()
       
       # Set up the spatial planning problem
-      out_sf <- cbind(aqua_percentile, !!sym(metric_df), UniformCost)
+      out_sf <- cbind(aqua_percentile, x, UniformCost)
       p <- prioritizr::problem(out_sf, features, "cost") %>%
         add_min_set_objective() %>%
         add_relative_targets(30/35) %>%
@@ -35,7 +41,7 @@ loopthrough_EM_Percentile <- function(solution_list, metric_list, scenario_list)
       
       # Solve the planning problem 
       s <- prioritizr::solve(p)
-      saveRDS(s, paste0(output_solutions, solution_list[i], "-EM-Percentile-", metric_list[metric_num], "-", scenario_list[scenario_num], ".rds")) # save solution
+      saveRDS(s, paste0(output_solutions, solution_list[i], "-EM-Percentile-", metric_list[metric_num], "-SSP", scenario_list[scenario_num], ".rds")) # save solution
       
       # Plot the spatial design
       s_plot <- s %>% 
@@ -61,16 +67,22 @@ loopthrough_EM_Feature <- function(solution_list, metric_list, scenario_list) {
   for(metric_num in 1:length(metric_list)) {
     for(scenario_num in 1:length(scenario_list)) {
       
-      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
+      if(scenario_list[scenario_num] == "126") {scenario_object <- "SSP 1-2.6"} else if (scenario_list[scenario_num] == "245") {scenario_object <- "SSP 2-4.5"} else if (scenario_list[scenario_num] == "585") {scenario_object <- "SSP 5-8.5"}
       
       if(metric_list[metric_num] == "velocity") {
         metric_df <- paste0("velocity_SSP", scenario_list[scenario_num])
+      } else if (str_detect(metric_list[metric_num], pattern = "MHW")) {
+        metric_df <- paste0(metric_list[metric_num], "_SSP", scenario_list[scenario_num])
       } else {
         metric_df <- paste0("roc_", metric_list[metric_num], "_SSP", scenario_list[scenario_num])
       }
       
+      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_object)
+      
+      x = get(metric_df)
+      
       # Prepare climate layer
-      ClimateFeature <- create_FeatureLayer(metric_name = metric_list[metric_num], colname = "transformed", !!sym(metric_df))
+      ClimateFeature <- create_FeatureLayer(metric_name = metric_list[metric_num], colname = "transformed", x)
       
       # Get list of features
       features <- aqua_sf %>% 
@@ -89,7 +101,7 @@ loopthrough_EM_Feature <- function(solution_list, metric_list, scenario_list) {
       
       # Solve the planning problem 
       s <- prioritizr::solve(p)
-      saveRDS(s, paste0(output_solutions, paste0(solution_list[i], "-EM-Feature-", metric_list[metric_num], "-", scenario_list[scenario_num], ".rds"))) # save solution
+      saveRDS(s, paste0(output_solutions, paste0(solution_list[i], "-EM-Feature-", metric_list[metric_num], "-SSP", scenario_list[scenario_num], ".rds"))) # save solution
       
       # Plot the spatial design
       s_plot <- s %>% 
@@ -116,18 +128,24 @@ loopthrough_EM_Penalty <- function(solution_list, metric_list, scenario_list) {
   for(metric_num in 1:length(metric_list)) {
     for(scenario_num in 1:length(scenario_list)) {
       
-      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
+      if(scenario_list[scenario_num] == "126") {scenario_object <- "SSP 1-2.6"} else if (scenario_list[scenario_num] == "245") {scenario_object <- "SSP 2-4.5"} else if (scenario_list[scenario_num] == "585") {scenario_object <- "SSP 5-8.5"}
       
       # Prepare climate layer
       if(metric_list[metric_num] == "velocity") {
         metric_df <- paste0("velocity_SSP", scenario_list[scenario_num])
+      } else if (str_detect(metric_list[metric_num], pattern = "MHW")) {
+        metric_df <- paste0(metric_list[metric_num], "_SSP", scenario_list[scenario_num])
       } else {
         metric_df <- paste0("roc_", metric_list[metric_num], "_SSP", scenario_list[scenario_num])
       }
       
+      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_object)
+      
+      x = get(metric_df)
+      
       # Get scaling
       cost <- UniformCost$cost
-      vector <- !!sym(metric_df) %>% as_tibble() %>% dplyr::select(.data[[ "transformed" ]]) %>% pull()
+      vector <- x %>% as_tibble() %>% dplyr::select(.data[[ "transformed" ]]) %>% pull()
       scaling_PenaltyWarming <- create_Scaling(cost, vector, metric_list[metric_num])
       
       # Get list of features
@@ -137,7 +155,7 @@ loopthrough_EM_Penalty <- function(solution_list, metric_list, scenario_list) {
         names()
       
       # Set up the spatial planning problem
-      out_sf <- cbind(aqua_sf, !!sym(metric_df), UniformCost)
+      out_sf <- cbind(aqua_sf, x, UniformCost)
       scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
       p <- prioritizr::problem(out_sf, features, "cost") %>%
         add_min_set_objective() %>%
@@ -148,7 +166,7 @@ loopthrough_EM_Penalty <- function(solution_list, metric_list, scenario_list) {
       
       # Solve the planning problem 
       s <- prioritizr::solve(p)
-      saveRDS(s, paste0(output_solutions, solution_list[i], "-EM-Penalty-", metric_list[metric_num], "-", scenario_list[scenario_num], ".rds")) # save solution
+      saveRDS(s, paste0(output_solutions, solution_list[i], "-EM-Penalty-", metric_list[metric_num], "-SSP", scenario_list[scenario_num], ".rds")) # save solution
       
       # Plot the spatial design
       s_plot <- s %>% 
@@ -176,18 +194,22 @@ loopthrough_EM_ClimatePriorityArea <- function(solution_list, metric_list, scena
   for(scenario_num in 1:length(scenario_list)) {
     for(metric_num in 1:length(metric_list)) {
       
-      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
+      if(scenario_list[scenario_num] == "126") {scenario_object <- "SSP 1-2.6"} else if (scenario_list[scenario_num] == "245") {scenario_object <- "SSP 2-4.5"} else if (scenario_list[scenario_num] == "585") {scenario_object <- "SSP 5-8.5"}
       
       if(metric_list[metric_num] == "velocity") {
         metric_df <- paste0("velocity_SSP", scenario_list[scenario_num])
+      } else if (str_detect(metric_list[metric_num], pattern = "MHW")) {
+        metric_df <- paste0(metric_list[metric_num], "_SSP", scenario_list[scenario_num])
       } else {
         metric_df <- paste0("roc_", metric_list[metric_num], "_SSP", scenario_list[scenario_num])
       }
       
-      metric_df <- eval_tidy(quo(!! sym(metric_df)))
+      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_object)
+      
+      x <- get(metric_df)
       
       # 1. Prepare the climate layers and features
-      ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_list[metric_num], colname = "transformed", metric_df)
+      ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_list[metric_num], colname = "transformed", x)
       gc() # Clear space
       RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
       gc() # Clear space
@@ -207,7 +229,7 @@ loopthrough_EM_ClimatePriorityArea <- function(solution_list, metric_list, scena
         mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
       
       # 4. Set up the spatial planning problem
-      out_sf <- cbind(Features, metric_df, UniformCost)
+      out_sf <- cbind(Features, x, UniformCost)
       p <- prioritizr::problem(out_sf, features, "cost") %>%
         add_min_set_objective() %>%
         add_relative_targets(targets$target) %>%
@@ -216,7 +238,7 @@ loopthrough_EM_ClimatePriorityArea <- function(solution_list, metric_list, scena
       
       # 5. Solve the planning problem 
       s <- prioritizr::solve(p)
-      saveRDS(s, paste0(output_solutions, paste0(solution_list[i], "-EM-ClimatePriorityArea-", metric_list[metric_num], "-", scenario_list[scenario_num], ".rds"))) # save solution
+      saveRDS(s, paste0(output_solutions, paste0(solution_list[i], "-EM-ClimatePriorityArea-", metric_list[metric_num], "-SSP", scenario_list[scenario_num], ".rds"))) # save solution
       # 6. Plot the spatial design
       s_plot <- s %>% 
         mutate(solution_1 = as.logical(solution_1)) 
@@ -244,11 +266,15 @@ loopthrough_MM_Percentile <- function(solution_list, metric_list, scenario_list,
     for(metric_num in 1:length(metric_list)) {
       for(model_num in 1:length(model_list)) {
         
-        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
+        if(scenario_list[scenario_num] == "126") {scenario_object <- "SSP 1-2.6"} else if (scenario_list[scenario_num] == "245") {scenario_object <- "SSP 2-4.5"} else if (scenario_list[scenario_num] == "585") {scenario_object <- "SSP 5-8.5"}
+        
+        LoadClimateMetrics(metric = metric_list[metric_num], model = model_list[model_num], scenario = scenario_object)
+        
+        x = get(metric_df)
         
         # Create climate layer
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_SSP", scenario_list[scenario_num])
-        aqua_percentile <- create_PercentileLayer(aqua_sf, metric_name = metric_list[metric_num], colname = "transformed", !!sym(metric_df), PUs)
+        aqua_percentile <- create_PercentileLayer(aqua_sf, metric_name = metric_list[metric_num], colname = "transformed", x, PUs)
         
         # Get list of features
         features <- aqua_percentile %>% 
@@ -257,7 +283,7 @@ loopthrough_MM_Percentile <- function(solution_list, metric_list, scenario_list,
           names()
         
         # Set up the spatial planning problem
-        out_sf <- cbind(aqua_percentile, !!sym(metric_df), UniformCost)
+        out_sf <- cbind(aqua_percentile, x, UniformCost)
         p <- prioritizr::problem(out_sf, features, "cost") %>%
           add_min_set_objective() %>%
           add_relative_targets(30/35) %>%
@@ -266,7 +292,7 @@ loopthrough_MM_Percentile <- function(solution_list, metric_list, scenario_list,
         
         # Solve the planning problem 
         s <- prioritizr::solve(p)
-        saveRDS(s, paste0(output_solutions, solution_list[i], "-MM-", model_list[model_num], "-Percentile-", metric_list[metric_num], "-", scenario_list[scenario_num], ".rds")) # save solution
+        saveRDS(s, paste0(output_solutions, solution_list[i], "-MM-", model_list[model_num], "-Percentile-", metric_list[metric_num], "-SSP", scenario_list[scenario_num], ".rds")) # save solution
         
         # Plot the spatial design
         s_plot <- s %>% 
@@ -295,13 +321,17 @@ loopthrough_MM_Penalty <- function(solution_list, metric_list, scenario_list, mo
     for(metric_num in 1:length(metric_list)) {
       for(model_num in 1:length(model_list)) {
         
+        if(scenario_list[scenario_num] == "126") {scenario_object <- "SSP 1-2.6"} else if (scenario_list[scenario_num] == "245") {scenario_object <- "SSP 2-4.5"} else if (scenario_list[scenario_num] == "585") {scenario_object <- "SSP 5-8.5"}
+        
         LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
         
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_SSP", scenario_list[scenario_num])
+        
+        x <- get(metric_df)
       
         # Get scaling
         cost <- UniformCost$cost
-        vector <- !!sym(metric_df) %>% as_tibble() %>% dplyr::select(.data[[ "transformed" ]]) %>% pull()
+        vector <- x %>% as_tibble() %>% dplyr::select(.data[[ "transformed" ]]) %>% pull()
         scaling_PenaltyWarming <- create_Scaling(cost, vector, metric_list[metric_num])
         
         # Get list of features
@@ -311,7 +341,7 @@ loopthrough_MM_Penalty <- function(solution_list, metric_list, scenario_list, mo
           names()
         
         # Set up the spatial planning problem
-        out_sf <- cbind(aqua_sf, !!sym(metric_df), UniformCost)
+        out_sf <- cbind(aqua_sf, x, UniformCost)
         scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
         p <- prioritizr::problem(out_sf, features, "cost") %>%
           add_min_set_objective() %>%
@@ -322,7 +352,7 @@ loopthrough_MM_Penalty <- function(solution_list, metric_list, scenario_list, mo
         
         # Solve the planning problem 
         s <- prioritizr::solve(p)
-        saveRDS(s, paste0(output_solutions, solution_list[i], "-MM-", model_list[model_num], "-Penalty-", metric_list[metric_num], "-", scenario_list[scenario_num], ".rds")) # save solution
+        saveRDS(s, paste0(output_solutions, solution_list[i], "-MM-", model_list[model_num], "-Penalty-", metric_list[metric_num], "-SSP", scenario_list[scenario_num], ".rds")) # save solution
         
         # Plot the spatial design
         s_plot <- s %>% 
@@ -350,11 +380,16 @@ loopthrough_MM_Feature <- function(solution_list, metric_list, scenario_list, mo
     for(metric_num in 1:length(metric_list)) {
       for(model_num in 1:length(model_list)) {
         
+        if(scenario_list[scenario_num] == "126") {scenario_object <- "SSP 1-2.6"} else if (scenario_list[scenario_num] == "245") {scenario_object <- "SSP 2-4.5"} else if (scenario_list[scenario_num] == "585") {scenario_object <- "SSP 5-8.5"}
+        
         LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
 
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_SSP", scenario_list[scenario_num])
+        
+        x <- get(metric_df)
+        
         # Prepare climate layer
-        ClimateFeature <- create_FeatureLayer(metric_name = metric_list[metric_num], colname = "transformed", !!sym(metric_df))
+        ClimateFeature <- create_FeatureLayer(metric_name = metric_list[metric_num], colname = "transformed", x)
         
         # Get list of features
         features <- aqua_sf %>% 
@@ -373,7 +408,7 @@ loopthrough_MM_Feature <- function(solution_list, metric_list, scenario_list, mo
         
         # Solve the planning problem 
         s <- prioritizr::solve(p)
-        saveRDS(s, paste0(output_solutions, solution_list[i], "-MM-", model_list[model_num], "-Feature-", metric_list[metric_num], "-", scenario_list[scenario_num], ".rds")) # save solution
+        saveRDS(s, paste0(output_solutions, solution_list[i], "-MM-", model_list[model_num], "-Feature-", metric_list[metric_num], "-SSP", scenario_list[scenario_num], ".rds")) # save solution
         
         # Plot the spatial design
         s_plot <- s %>% 
@@ -401,9 +436,13 @@ loopthrough_MM_ClimatePriorityArea <- function(solution_list, metric_list, scena
     for(metric_num in 1:length(metric_list)) {
       for(model_num in 1:length(model_list)) {
         
+        if(scenario_list[scenario_num] == "126") {scenario_object <- "SSP 1-2.6"} else if (scenario_list[scenario_num] == "245") {scenario_object <- "SSP 2-4.5"} else if (scenario_list[scenario_num] == "585") {scenario_object <- "SSP 5-8.5"}
+        
         LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
         
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_", "_SSP", scenario_list[scenario_num])
+        
+        x <- get(metric_df)
         
         # 1. Prepare the climate layers and features
         ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_list[metric_num], colname = "transformed", metric_df)
@@ -428,17 +467,16 @@ loopthrough_MM_ClimatePriorityArea <- function(solution_list, metric_list, scena
           mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
         
         # 4. Set up the spatial planning problem
-        out_sf <- cbind(Features, metric_df, UniformCost)
+        out_sf <- cbind(Features, x, UniformCost)
         p <- prioritizr::problem(out_sf, features, "cost") %>%
           add_min_set_objective() %>%
           add_relative_targets(targets$target) %>%
           add_binary_decisions() %>%
           add_gurobi_solver(gap = 0, verbose = FALSE)
         
-        
         # Solve the planning problem 
         s <- prioritizr::solve(p)
-        saveRDS(s, paste0(output_solutions, solution_list[i], "-MM-", model_list[model_num], "-ClimatePriorityArea-", metric_list[metric_num], "-", scenario_list[scenario_num], ".rds")) # save solution
+        saveRDS(s, paste0(output_solutions, solution_list[i], "-MM-", model_list[model_num], "-ClimatePriorityArea-", metric_list[metric_num], "-SSP", scenario_list[scenario_num], ".rds")) # save solution
         
         # Plot the spatial design
         s_plot <- s %>% 

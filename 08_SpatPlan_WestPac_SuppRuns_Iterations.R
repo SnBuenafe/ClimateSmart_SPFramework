@@ -31,6 +31,17 @@ scenario_list <- c("126", "245")
 solution <- c("s40", "s41", "s42", "s43", "s44", "s45") # solution names, check metadata
 loopthrough_EM_Percentile(solution, metric_list, scenario_list)
 
+# Adding in MHW metrics
+metric_list <- c("MHW_num", "MHW_CumInt", "MHW_CumDur")
+scenario_list <- c("126", "245")
+
+solution <- seq(from = 317, to = 322, by = 1) # solution names, check metadata
+solution <-lapply(solution, function(x) {
+  y <- paste0("s", x)
+}) %>% unlist()
+
+loopthrough_EM_Percentile(solution, metric_list, scenario_list)
+
 # ----- Feature approach -----
 metric_list <- c("tos", "phos", "o2os", "velocity")
 scenario_list <- c("126", "245")
