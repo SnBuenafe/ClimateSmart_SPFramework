@@ -300,7 +300,7 @@ loopthrough_MM_Percentile <- function(solution_list, metric_list, scenario_list,
           mutate(solution_1 = as.logical(solution_1))
         (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + 
             ggtitle(paste0("Climate-smart design: ", metric_list[metric_num]), 
-                    subtitle = paste0("Percentile, SSP", scenario_list[scenario_num], " (GCM: ", model_list[model_num])) + 
+                    subtitle = paste0("Percentile, SSP", scenario_list[scenario_num], " (GCM: ", model_list[model_num], ")")) + 
             theme(axis.text = element_text(size = 25)))
         ggsave(filename = paste0("MM-", model_list[model_num], "-Percentile-", metric_list[metric_num], "-", scenario_list[scenario_num], ".png"),
                plot = ggSol, width = 21, height = 29.7, dpi = 300,
