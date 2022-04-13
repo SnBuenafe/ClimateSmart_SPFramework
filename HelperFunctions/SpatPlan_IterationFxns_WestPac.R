@@ -270,10 +270,11 @@ loopthrough_MM_Percentile <- function(solution_list, metric_list, scenario_list,
         
         LoadClimateMetrics(metric = metric_list[metric_num], model = model_list[model_num], scenario = scenario_object)
         
-        x = get(metric_df)
-        
         # Create climate layer
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_SSP", scenario_list[scenario_num])
+        x = get(metric_df)
+        
+        
         aqua_percentile <- create_PercentileLayer(aqua_sf, metric_name = metric_list[metric_num], colname = "transformed", x, PUs)
         
         # Get list of features

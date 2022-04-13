@@ -61,7 +61,12 @@
         path = file.path("Data/Climate/ClimateMetrics/RateOfChange", metric)
       }
     } else { # Multi-model ensemble approach
-      path = file.path("Data/Climate/ClimateMetrics_Ensemble", metric, scenario)
+      if (str_detect(metric, pattern = "MHW")) {
+        path = file.path("Data/Climate/ClimateMetrics_Ensemble/MHW", scenario)
+      } else{
+        path = file.path("Data/Climate/ClimateMetrics_Ensemble", metric, scenario)
+      }
+
     }
     
     # ----- Read RDS file -----
@@ -86,8 +91,11 @@
     } else { # Multi-model ensemble approach
       output <- paste0("Output/", save_name, "_ClimateLayer")
       
-      if (str_detect(metric, pattern = "MHW|velocity")) {
+      if (str_detect(metric, pattern = "velocity")) {
         df <- readRDS(paste(output, metric, model, scenario, "ensemble.rds", sep = "_"))
+        assign(x = paste(metric, model, scenario_obj, sep = "_"), value = df, envir = .GlobalEnv)
+      } else if (str_detect(metric, pattern = "MHW")) {
+        df <- readRDS(paste(output, metric, model, paste0(scenario, ".rds"), sep = "_"))
         assign(x = paste(metric, model, scenario_obj, sep = "_"), value = df, envir = .GlobalEnv)
       } else {
         metric_tmp = paste0("roc_", metric)
