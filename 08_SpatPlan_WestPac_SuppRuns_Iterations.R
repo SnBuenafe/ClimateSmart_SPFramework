@@ -49,6 +49,17 @@ scenario_list <- c("126", "245")
 solution <- c("s46", "s47", "s48", "s49", "s50", "s51", "s52", "s53") # solution names, check metadata
 loopthrough_EM_Feature(solution, metric_list, scenario_list)
 
+# Adding in MHW metrics
+metric_list <- c("MHW_num", "MHW_CumInt", "MHW_CumDur")
+scenario_list <- c("126", "245")
+
+solution <- seq(from = 353, to = 358, by = 1) # solution names, check metadata
+solution <-lapply(solution, function(x) {
+  y <- paste0("s", x)
+}) %>% unlist()
+
+loopthrough_EM_Feature(solution, metric_list, scenario_list)
+
 # ----- Penalty approach -----
 metric_list <- c("tos", "phos", "o2os", "velocity")
 scenario_list <- c("126", "245")
