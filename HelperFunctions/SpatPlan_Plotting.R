@@ -76,8 +76,12 @@ fSpatPlan_PlotClimate <- function(ClimateLayer, world, metric){
       palette = rev(brewer.pal(9, "YlGnBu"))
       expression = expression('Δ mol m'^"-3"*' yr'^"-1"*'')
       subtitle = "Rate of Change in Oxygen"
+    } 
+  } else if (str_detect(metric, "MHW")) {
+      palette = brewer.pal(9, "BuPu")
+      expression = expression('MHW yr'^"-1"*'')
+      subtitle = "MHW metrics"
     }
-  }
   
   gg <- ggplot() +
       geom_sf(data = ClimateLayer, aes(fill = transformed), color = NA, size = 0.1, show.legend = TRUE) +

@@ -7,12 +7,15 @@ loopthrough_EM_Percentile <- function(solution_list, metric_list, scenario_list)
   i = 1
   for(metric_num in 1:length(metric_list)) {
     for(scenario_num in 1:length(scenario_list)) {
+
+      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
       
       if(metric_list[metric_num] == "velocity") {
         metric_df <- paste0("velocity_SSP", scenario_list[scenario_num])
       } else {
         metric_df <- paste0("roc_", metric_list[metric_num], "_SSP", scenario_list[scenario_num])
       }
+      
       
       aqua_percentile <- create_PercentileLayer(aqua_sf, metric_name = metric_list[metric_num], colname = "transformed", !!sym(metric_df), PUs)
       
@@ -45,6 +48,8 @@ loopthrough_EM_Percentile <- function(solution_list, metric_list, scenario_list)
              plot = ggSol, width = 21, height = 29.7, dpi = 300,
              path = "Figures/") # save plot
       
+      gc()
+      rm(list = ls(pattern = metric_df))
       i = i + 1
     }
   }
@@ -55,6 +60,8 @@ loopthrough_EM_Feature <- function(solution_list, metric_list, scenario_list) {
   i = 1
   for(metric_num in 1:length(metric_list)) {
     for(scenario_num in 1:length(scenario_list)) {
+      
+      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
       
       if(metric_list[metric_num] == "velocity") {
         metric_df <- paste0("velocity_SSP", scenario_list[scenario_num])
@@ -95,6 +102,8 @@ loopthrough_EM_Feature <- function(solution_list, metric_list, scenario_list) {
              plot = ggSol, width = 21, height = 29.7, dpi = 300,
              path = "Figures/") # save plot
       
+      gc()
+      rm(list = ls(pattern = metric_df))
       i = i + 1
     }
   }
@@ -106,6 +115,9 @@ loopthrough_EM_Penalty <- function(solution_list, metric_list, scenario_list) {
   i = 1
   for(metric_num in 1:length(metric_list)) {
     for(scenario_num in 1:length(scenario_list)) {
+      
+      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+      
       # Prepare climate layer
       if(metric_list[metric_num] == "velocity") {
         metric_df <- paste0("velocity_SSP", scenario_list[scenario_num])
@@ -150,6 +162,8 @@ loopthrough_EM_Penalty <- function(solution_list, metric_list, scenario_list) {
              path = "Figures/") # save
     }
     
+    gc()
+    rm(list = ls(pattern = metric_df))
     i = i + 1
   }
 
@@ -158,8 +172,11 @@ loopthrough_EM_Penalty <- function(solution_list, metric_list, scenario_list) {
 loopthrough_EM_ClimatePriorityArea <- function(solution_list, metric_list, scenario_list) {
   
   i = 1
+  
   for(scenario_num in 1:length(scenario_list)) {
     for(metric_num in 1:length(metric_list)) {
+      
+      LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
       
       if(metric_list[metric_num] == "velocity") {
         metric_df <- paste0("velocity_SSP", scenario_list[scenario_num])
@@ -169,7 +186,9 @@ loopthrough_EM_ClimatePriorityArea <- function(solution_list, metric_list, scena
       
       # 1. Prepare the climate layers and features
       ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_list[metric_num], colname = "transformed", metric_df)
+      gc() # Clear space
       RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
+      gc() # Clear space
       Features <- cbind(ImptFeat, RepFeat) %>% 
         dplyr::select(-geometry.1)
       
@@ -207,6 +226,10 @@ loopthrough_EM_ClimatePriorityArea <- function(solution_list, metric_list, scena
              plot = ggSol, width = 21, height = 29.7, dpi = 300,
              path = "Figures/") # save
       
+      #clean up environment
+      rm(ImptFeat, RepFeat, Features, features, targets)
+      rm(list = ls(pattern = metric_df))
+      gc()
       i = i + 1
     }
   }
@@ -218,6 +241,8 @@ loopthrough_MM_Percentile <- function(solution_list, metric_list, scenario_list,
   for(scenario_num in 1:length(scenario_list)) {
     for(metric_num in 1:length(metric_list)) {
       for(model_num in 1:length(model_list)) {
+        
+        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
         
         # Create climate layer
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_SSP", scenario_list[scenario_num])
@@ -252,6 +277,8 @@ loopthrough_MM_Percentile <- function(solution_list, metric_list, scenario_list,
                plot = ggSol, width = 21, height = 29.7, dpi = 300,
                path = "Figures/") # save plot
         
+        gc()
+        rm(list = ls(pattern = metric_df))
         i = i + 1
         
       }
@@ -265,6 +292,8 @@ loopthrough_MM_Penalty <- function(solution_list, metric_list, scenario_list, mo
   for(scenario_num in 1:length(scenario_list)) {
     for(metric_num in 1:length(metric_list)) {
       for(model_num in 1:length(model_list)) {
+        
+        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
         
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_SSP", scenario_list[scenario_num])
       
@@ -304,6 +333,8 @@ loopthrough_MM_Penalty <- function(solution_list, metric_list, scenario_list, mo
                plot = ggSol, width = 21, height = 29.7, dpi = 300,
                path = "Figures/") # save plot
         
+        gc()
+        rm(list = ls(pattern = metric_df))
         i = i + 1
       }
     }
@@ -316,6 +347,8 @@ loopthrough_MM_Feature <- function(solution_list, metric_list, scenario_list, mo
   for(scenario_num in 1:length(scenario_list)) {
     for(metric_num in 1:length(metric_list)) {
       for(model_num in 1:length(model_list)) {
+        
+        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
 
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_SSP", scenario_list[scenario_num])
         # Prepare climate layer
@@ -351,6 +384,8 @@ loopthrough_MM_Feature <- function(solution_list, metric_list, scenario_list, mo
                plot = ggSol, width = 21, height = 29.7, dpi = 300,
                path = "Figures/") # save plot
         
+        gc()
+        rm(list = ls(pattern = metric_df))
         i = i + 1
       }
     }
@@ -364,11 +399,17 @@ loopthrough_MM_ClimatePriorityArea <- function(solution_list, metric_list, scena
     for(metric_num in 1:length(metric_list)) {
       for(model_num in 1:length(model_list)) {
         
+        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+        
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_", "_SSP", scenario_list[scenario_num])
         
         # 1. Prepare the climate layers and features
         ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_list[metric_num], colname = "transformed", metric_df)
+        gc()
+        
         RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
+        gc()
+        
         Features <- cbind(ImptFeat, RepFeat) %>% 
           dplyr::select(-geometry.1)
         
@@ -408,6 +449,10 @@ loopthrough_MM_ClimatePriorityArea <- function(solution_list, metric_list, scena
                plot = ggSol, width = 21, height = 29.7, dpi = 300,
                path = "Figures/") # save plot
         
+        #clean up environment
+        rm(ImptFeat, RepFeat, Features, features, targets)
+        rm(list = ls(pattern = metric_df))
+        gc()
         i = i + 1
       }
     }
