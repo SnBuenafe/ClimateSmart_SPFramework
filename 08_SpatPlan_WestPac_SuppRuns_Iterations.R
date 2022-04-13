@@ -16,7 +16,7 @@ output_solutions <- "Output/solutions/"
 output_summary <- "Output/summary/"
 output_lowregret <- "Output/lowregret/"
 
-library(rlang)
+#library(rlang)
 
 # Load files
 source("03_SpatPlan_Master_Preliminaries.R")
@@ -83,6 +83,18 @@ scenario_list <- c("126", "245")
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 
 solution <- seq(from = 62, to = 101, by = 1) # solution names, check metadata
+solution <-lapply(solution, function(x) {
+  y <- paste0("s", x)
+}) %>% unlist()
+
+loopthrough_MM_Percentile(solution, metric_list, scenario_list, model_list)
+
+# Adding in runs for MHW
+metric_list <- c("MHW_num", "MHW_CumInt", "MHW_CumDur")
+scenario_list <- c("126", "245")
+model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+
+solution <- seq(from = 323, to = 352, by = 1) # solution names, check metadata
 solution <-lapply(solution, function(x) {
   y <- paste0("s", x)
 }) %>% unlist()
