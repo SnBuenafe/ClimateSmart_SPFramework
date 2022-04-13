@@ -197,7 +197,7 @@ create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs
   
   # Commence Parallel Loop.
   
-  ncores <- detectCores(logical= FALSE) - 1 
+  ncores <- detectCores(logical = FALSE) - 1 
   cl <- makeCluster(ncores)
   registerDoParallel(cl)
   
@@ -213,7 +213,7 @@ create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs
       left_join(., metric_df, by = "cellID") %>% 
       dplyr::select(-cellID)
     
-    if (metric_name %in% c("tos", "velocity")) {
+    if (metric_name %in% c("tos", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")) {
       # Get 35th percentile of climate metric under the range of the species
       quantile <- df %>% 
         dplyr::filter(!!sym(spp[i]) == 1) %>%  # filter out those that have biodiversity values
@@ -231,11 +231,13 @@ create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs
       df %<>% dplyr::mutate(!!sym(spp[i]) := case_when(((!!sym(colname) >= quantile) & !!sym(spp[i]) == 1) ~ 1, TRUE ~ 0))
     }
     
-    if (metric_name %in% c("tos", "phos", "o2os")) {
-      list[[i]] <- df %>% dplyr::select(-slpTrends, -seTrends, -sigTrends, -transformed)
-    } else if (metric_name == "velocity") {
-      list[[i]] <- df %>% dplyr::select(-voccMag, -voccAng, -transformed)
-    }
+    
+    list[[i]] <- df %>%  dplyr::select(1) # always just select the species
+    #if (metric_name %in% c("tos", "phos", "o2os")) {
+    #  list[[i]] <- df %>% dplyr::select(-slpTrends, -seTrends, -sigTrends, -transformed)
+    #} else if (metric_name == "velocity") {
+    #  list[[i]] <- df %>% dplyr::select(-voccMag, -voccAng, -transformed)
+    #} 
     
   }
   stopCluster(cl)
@@ -253,7 +255,7 @@ create_FeatureLayer <- function(metric_name, colname, metric_df) {
   # colname = slpTrends / voccMag
   # metric_df = roc_tos_SSP585, ...
   
-  if (metric_name %in% c("tos", "velocity")) {
+  if (metric_name %in% c("tos", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")) {
     quantile <- metric_df %>% as_tibble() %>% 
       dplyr::select(!!sym(colname)) %>% 
       dplyr::summarize(quantile = quantile(.data[[ colname ]], 0.35)) %>% 
@@ -307,7 +309,7 @@ create_ImportantFeatureLayer <- function(aqua_sf, metric_name, colname, metric_d
       left_join(., metric_df, by = "cellID") %>% 
       dplyr::select(-cellID)
     
-    if (metric_name %in% c("tos", "velocity")) {
+    if (metric_name %in% c("tos", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")) {
       # Get 5th percentile of climate metric under the range of the species
       quantile <- df %>% 
         dplyr::filter(!!sym(spp[i]) == 1) %>%  # filter out those that have biodiversity values
@@ -325,11 +327,13 @@ create_ImportantFeatureLayer <- function(aqua_sf, metric_name, colname, metric_d
       df %<>% dplyr::mutate(!!sym(spp[i]) := case_when(((!!sym(colname) >= quantile) & !!sym(spp[i]) == 1) ~ 1, TRUE ~ 0))
     }
     
-    if (metric_name %in% c("tos", "phos", "o2os")) {
-      list[[i]] <- df %>% dplyr::select(-slpTrends, -seTrends, -sigTrends, -transformed)
-    } else if (metric_name == "velocity") {
-      list[[i]] <- df %>% dplyr::select(-voccMag, -voccAng, -transformed)
-    }
+    list[[i]] <- df %>% dplyr::select(1) 
+    
+    #if (metric_name %in% c("tos", "phos", "o2os")) {
+    #  list[[i]] <- df %>% dplyr::select(-slpTrends, -seTrends, -sigTrends, -transformed)
+    #} else if (metric_name == "velocity") {
+    #  list[[i]] <- df %>% dplyr::select(-voccMag, -voccAng, -transformed)
+    #}
     
   }
   stopCluster(cl)
@@ -526,7 +530,7 @@ create_Scaling <- function(cost, climate_metric, metric) {
   
   scaling <- tibble(scaling = numeric(), penalty_value = numeric())
   
-  if (metric %in% c("tos", "velocity")) {
+  if (metric %in% c("tos", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")) {
     for (i in 1:length(percentage)) {
       scaling %<>% add_row(scaling = percentage[i], penalty_value = x*percentage[i]/100)
     }
