@@ -20,7 +20,7 @@ output_summary <- "Output/summary/"
 output_lowregret <- "Output/lowregret/"
 
 # Load files
-source("03_SpatPlan_Master_Preliminaries.R")
+source("03_SpatPlan_Master_Preliminaries.R") # climate layers are loaded in the script
 total_area = nrow(PUs) * PU_size
 
 #### Climate-uninformed design ####
@@ -58,6 +58,9 @@ print(summary)
 write.csv(summary, paste0(output_summary, "Uninformed_Summary.csv")) # save
 
 #### "Ensemble mean" approach ####
+# ----- Load climate layer -----
+LoadClimateMetrics(metric = "tos", model = NA, scenario = "SSP 5-8.5")
+# ----- Create spatial plan -----
 # 1. Prepare climate layer
 aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585, PUs = PUs)
 # 2. Get list of features
@@ -95,8 +98,13 @@ print(summary)
 # Looking for mean rate of climate warming
 climate <- get_ClimateSummary(list(s2), list(roc_tos_SSP585), "tos", "585", "percentile", "EM_Percentile_tos_585")
 summary %<>% left_join(., climate, by = c("run"))
-
 #### "Multi-model ensemble" approach ####
+# ----- Load climate layers -----
+model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+for(model_num in 1:length(model_list)) {
+  LoadClimateMetrics(metric = "tos", model = model_list[model_num], scenario = "SSP 5-8.5")
+}
+# ----- Create spatial plans -----
 # A. CanESM5
 # 1. Prepare climate layer
 # Intersect this with climate layer, select only those <= 35th percentile. 
@@ -320,9 +328,16 @@ ggsave(filename = "MM-SelectionFrequency-tos-585.png",
        plot = ggSelFreq1, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
+
+# ----- Remove climate layers to conserve space -----
+rm(list = ls(pattern = "^tos_|^roc_tos_"))
 #### Supplementary Information: Multi-Model Ensemble Approach #### 
 
 #### "Ensemble mean" approach: Ocean Acidification (SSP 5-8.5) ####
+# ----- Load climate layers -----
+LoadClimateMetrics(metric = "phos", model = NA, scenario = "SSP 5-8.5")
+
+# ----- Create spatial plans -----
 # 1. Prepare climate layer
 aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP585, PUs = PUs)
 # 2. Get list of features
@@ -349,6 +364,12 @@ ggsave(filename = "EM-Percentile-phos-585.png",
        path = "Figures/") # save plot
 
 #### Multi-Model Ensemble Approach: Rate of Ocean Acidification (SSP 5-8.5) ####
+# ----- Load climate layers -----
+model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+for(model_num in 1:length(model_list)) {
+  LoadClimateMetrics(metric = "phos", model = model_list[model_num], scenario = "SSP 5-8.5")
+}
+# ----- Create spatial plans -----
 # A. CanESM5
 # 1. Prepare climate layer
 ensemble <- list(`phos_CanESM5_SSP585`, `phos_CMCC-ESM2_SSP585`, `phos_GFDL-ESM4_SSP585`, `phos_IPSL-CM6A-LR_SSP585`, `phos_NorESM2-MM_SSP585`)
@@ -577,7 +598,13 @@ ggsave(filename = "MM-SelectionFrequency-phos-585.png",
        path = "Figures/") # save plot
 
 
+# ----- Remove climate layers to conserve space -----
+rm(list = ls(pattern = "^phos_|^roc_phos_"))
 #### "Ensemble mean" approach: Declining Oxygen Concentration (SSP 5-8.5) ####
+# ----- Load climate layers -----
+LoadClimateMetrics(metric = "o2os", model = NA, scenario = "SSP 5-8.5")
+
+# ----- Create spatial plans -----
 # 1. Prepare climate layer
 aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP585, PUs = PUs)
 # 2. Get list of features
@@ -604,6 +631,12 @@ ggsave(filename = "EM-Percentile-o2os-585.png",
        path = "Figures/") # save plot
 
 #### Multi-Model Ensemble Approach: Declining Oxygen Concentration (SSP 5-8.5) ####
+# ----- Load climate layers -----
+model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+for(model_num in 1:length(model_list)) {
+  LoadClimateMetrics(metric = "o2os", model = model_list[model_num], scenario = "SSP 5-8.5")
+}
+# ----- Create spatial plans -----
 # A. CanESM5
 # 1. Prepare climate layer
 ensemble <- list(`o2os_CanESM5_SSP585`, `o2os_CMCC-ESM2_SSP585`, `o2os_GFDL-ESM4_SSP585`, `o2os_IPSL-CM6A-LR_SSP585`, `o2os_NorESM2-MM_SSP585`)
@@ -827,7 +860,12 @@ ggsave(filename = "MM-SelectionFrequency-o2os-585.png",
        plot = ggSelFreq3, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
+# ----- Remove climate layers to conserve space -----
+rm(list = ls(pattern = "^o2os_|^roc_o2os_"))
 #### "Ensemble mean" approach: Climate Velocity (SSP 5-8.5) ####
+# ----- Load climate layers -----
+LoadClimateMetrics(metric = "velocity", model = NA, scenario = "SSP 5-8.5")
+# ----- Create spatial plans -----
 # 1. Prepare climate layer
 aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP585, PUs = PUs)
 # 2. Get list of features
@@ -854,6 +892,12 @@ ggsave(filename = "EM-Percentile-velocity-585.png",
        path = "Figures/") # save plot
 
 #### Multi-Model Ensemble Approach: Climate Velocity (SSP 5-8.5) ####
+# ----- Load climate layers -----
+model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+for(model_num in 1:length(model_list)) {
+  LoadClimateMetrics(metric = "velocity", model = model_list[model_num], scenario = "SSP 5-8.5")
+}
+# ----- Create spatial plans -----
 # A. CanESM5
 # 1. Prepare climate layer
 ensemble <- list(`velocity_CanESM5_SSP585`, `velocity_CMCC-ESM2_SSP585`, `velocity_GFDL-ESM4_SSP585`, `velocity_IPSL-CM6A-LR_SSP585`, `velocity_NorESM2-MM_SSP585`)
@@ -1079,4 +1123,5 @@ ggsave(filename = "MM-SelectionFrequency-velocity-585.png",
        plot = ggSelFreq4, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
+rm(list = ls(pattern = "^velocity_"))
 #### TODO: Marine Heatwaves ####

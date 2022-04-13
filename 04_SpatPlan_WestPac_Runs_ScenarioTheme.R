@@ -22,6 +22,10 @@ output_lowregret <- "Output/lowregret/"
 
 # Load files
 source("03_SpatPlan_Master_Preliminaries.R")
+scenario_list = c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
+for(scenario_num in 1:length(scenario_list)) {
+  LoadClimateMetrics(metric = "tos", model = NA, scenario = scenario_list[scenario_num])
+}
 total_area = nrow(PUs) * PU_size
 
 #### SSP 1-2.6 #####

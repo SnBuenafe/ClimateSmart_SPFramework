@@ -24,6 +24,11 @@ source("03_SpatPlan_Master_Preliminaries.R")
 total_area = nrow(PUs) * PU_size
 
 #### Main Text: Percentile ####
+# ----- Load climate layers -----
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")
+for(metric_num in 1:length(metric_list)) {
+  LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+}
 # ----- Climate warming -----
 # 1. Prepare climate layer
 aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585, PUs = PUs)
@@ -219,7 +224,14 @@ ggsave(filename = "LR-Metric-Percentile.png",
 summary <- compute_summary(s2_LRplot, total_area, PU_size, "LR-Percentile-585", Cost = "cost")
 write.csv(summary, paste0(output_summary, "MetricTheme_Percentile_LowRegretSummary.csv")) # save
 
+# ----- Remove climate layers -----
+rm(list = ls(pattern = paste(metric_list, collapse = "|")))
 #### Supplementary: Feature ####
+# ----- Load climate layers -----
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")
+for(metric_num in 1:length(metric_list)) {
+  LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+}
 # using the climate layer as a feature with its own target
 # ----- Climate warming -----
 # 1. Prepare climate layer
@@ -409,7 +421,14 @@ ggsave(filename = "LR-Metric-Feature.png",
 summary <- compute_summary(s3_LRplot, total_area, PU_size, "LR-Feature-585", Cost = "cost")
 write.csv(summary, paste0(output_summary, "MetricTheme_Feature_LowRegretSummary.csv")) # save
 
+# ----- Remove climate layers -----
+rm(list = ls(pattern = paste(metric_list, collapse = "|")))
 #### Supplementary: Penalty ####
+# ----- Load climate layers -----
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")
+for(metric_num in 1:length(metric_list)) {
+  LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+}
 # using the climate layer as linear penalties
 # ----- Climate Warming -----
 # 1. Prepare climate layer
@@ -603,11 +622,14 @@ ggsave(filename = "LR-Metric-Penalty.png",
 summary <- compute_summary(s4_LRplot, total_area, PU_size, "LR-Penalty-585", Cost = "cost")
 write.csv(summary, paste0(output_summary, "MetricTheme_Penalty_LowRegretSummary.csv")) # save
 
+# ----- Remove climate layers -----
+rm(list = ls(pattern = paste(metric_list, collapse = "|")))
 #### Supplementary: Climate priority area ####
 # areas that are within the 5th percentile (or 95th percentile) are considered climate refugia/climate-smart
 # assign these areas with a high target (e.g. 100%)
 # the rest of the distribution are assigned a lower target
 # ----- Climate Warming -----
+LoadClimateMetrics(metric = "tos", model = NA, scenario = "SSP 5-8.5")
 # 1. Prepare the climate layers and features
 ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585)
 RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
@@ -640,8 +662,9 @@ s34_plot <- s34 %>%
 ggsave(filename = "EM-ClimatePriorityArea-tos-585.png",
       plot = ggSol34, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save
-
+rm(list = ls(pattern = "^roc_tos"))
 # ----- Ocean acidification -----
+LoadClimateMetrics(metric = "phos", model = NA, scenario = "SSP 5-8.5")
 # 1. Prepare the climate layers and features
 ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP585)
 RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
@@ -674,8 +697,9 @@ s35_plot <- s35 %>%
 ggsave(filename = "EM-ClimatePriorityArea-phos-585.png",
       plot = ggSol35, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
-
+rm(list = ls(pattern = "^roc_phos"))
 # ----- Declining Oxygen Concentration -----
+LoadClimateMetrics(metric = "o2os", model = NA, scenario = "SSP 5-8.5")
 # 1. Prepare the climate layers and features
 ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP585)
 RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
@@ -708,8 +732,9 @@ s36_plot <- s36 %>%
 ggsave(filename = "EM-ClimatePriorityArea-o2os-585.png",
       plot = ggSol36, width = 21, height = 29.7, dpi = 300,
       path = "Figures/")
-
+rm(list = ls(pattern = "^roc_o2os"))
 # ----- Climate Velocity -----
+LoadClimateMetrics(metric = "velocity", model = NA, scenario = "SSP 5-8.5")
 # 1. Prepare the climate layers and features
 ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP585)
 RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
@@ -742,8 +767,13 @@ s37_plot <- s37 %>%
 ggsave(filename = "EM-ClimatePriorityArea-velocity-585.png",
       plot = ggSol37, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
-
+rm(list = ls(pattern = "^velocity_"))
 #### Summary ####
+# ----- Load climate layers -----
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")
+for(metric_num in 1:length(metric_list)) {
+  LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+}
 # Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
 out_sf <- cbind(aqua_sf, UniformCost)
 features <- aqua_sf %>% 
@@ -833,3 +863,5 @@ ggsave(filename = "LR-Metric-ClimatePriorityArea.png",
 # Summary of low-regret
 summary <- compute_summary(s5_LRplot, total_area, PU_size, "LR-ClimatePriorityArea-585", Cost = "cost")
 write.csv(summary, paste0(output_summary, "MetricTheme_ClimatePriorityArea_LowRegretSummary.csv")) # save
+# ----- Remove climate layers -----
+rm(list = ls(pattern = paste(metric_list, collapse = "|")))

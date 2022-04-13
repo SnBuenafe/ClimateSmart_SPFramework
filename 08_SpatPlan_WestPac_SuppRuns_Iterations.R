@@ -17,7 +17,7 @@ output_summary <- "Output/summary/"
 output_lowregret <- "Output/lowregret/"
 
 # Load files
-source("SpatPlan_Master_Preliminaries.R")
+source("03_SpatPlan_Master_Preliminaries.R")
 total_area = nrow(PUs) * PU_size
 
 #### Ensemble mean approach ####
