@@ -116,14 +116,14 @@ ClimateLayer_files <- list.files(ClimateLayer_path)
 
 if(reprocess) {
   for (i in 1:length(ClimateLayer_files)){
-    scenario <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
+    scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
     climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
     layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_tos", colname = "slpTrends")
     
     saveRDS(layer, file.path("Output", 
                              paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
     
-    print(paste0("Saved EM", ": ", scenario[i]))
+    print(paste0("Saved EM", ": ", scenario_path[i]))
   }
 
 } else {
@@ -214,13 +214,13 @@ ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/phos/"
 ClimateLayer_files <- list.files(ClimateLayer_path)
 if(reprocess) {
   for (i in 1:length(ClimateLayer_files)){
-    scenario <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
+    scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
     climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
     layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_phos", colname = "slpTrends")
     
     saveRDS(layer, file.path("Output", 
                              paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
-    print(paste0("Saved EM", ": ", scenario[i]))
+    print(paste0("Saved EM", ": ", scenario_path[i]))
   }
 } else {
   scenario_object <- c("SSP126", "SSP245", "SSP585")
@@ -310,13 +310,13 @@ ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/o2os/"
 ClimateLayer_files <- list.files(ClimateLayer_path)
 if(reprocess) {
   for (i in 1:length(ClimateLayer_files)){
-    scenario <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
+    scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
     climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
     layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_o2os", colname = "slpTrends")
     
     saveRDS(layer, file.path("Output", 
                              paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
-    print(paste0("Saved EM", ": ", scenario[i]))
+    print(paste0("Saved EM", ": ", scenario_path[i]))
   }
 } else {
   scenario_object <- c("SSP126", "SSP245", "SSP585")
@@ -405,7 +405,7 @@ ggsave("Layer_RateofDecliningOxygenConcentration_NorESM2-MM_SSP585.png",
 ClimateLayer_path <- "Data/Climate/ClimateMetrics/ClimateVelocity/"
 ClimateLayer_files <- list.files(ClimateLayer_path)
 if(reprocess) {
-  scenario <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
+  scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
   for (i in 1:length(ClimateLayer_files)){
     climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
     layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "velocity", colname = "voccMag")
@@ -413,7 +413,7 @@ if(reprocess) {
     saveRDS(layer, file.path("Output", 
                              paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
     
-    print(paste0("Saved EM", ": ", scenario[i]))
+    print(paste0("Saved EM", ": ", scenario_path[i]))
   }
 } else {
   scenario_object <- c("SSP126", "SSP245", "SSP585")
@@ -514,7 +514,7 @@ ID %<>% add_row(column = "trend_n", metric = "MHW_num", save = "(Trend Num)") %>
   add_row(column = "sum_cum_int", metric = "MHW_SumCumInt", save = "(Sum Cumulative Intensity")
 
 if(reprocess) {
-  scenario <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
+  scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
   
   for (i in 1:length(ClimateLayer_files)){
     for (j in 1:nrow(ID)) {
@@ -522,9 +522,9 @@ if(reprocess) {
       layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "MHW", colname = ID$column[j])
       
       saveRDS(layer, file.path("Output", 
-                               paste(save_name, "ClimateLayer", ID$metric[j], paste0(scenario[i], ".rds"), sep = "_")))
+                               paste(save_name, "ClimateLayer", ID$metric[j], paste0(scenario_path[i], ".rds"), sep = "_")))
       
-      print(paste0("Saved EM", ": ", scenario[i], ID$save[j]))
+      print(paste0("Saved EM", ": ", scenario_path[i], ID$save[j]))
     }
     
   }
@@ -535,7 +535,7 @@ if(reprocess) {
     for(j in 1:nrow(ID)) {
       
       df <- readRDS(file.path("Output", 
-                              paste(save_name, "ClimateLayer", ID$metric[j], paste0(scenario[i], ".rds"), sep = "_")))
+                              paste(save_name, "ClimateLayer", ID$metric[j], paste0(scenario_path[i], ".rds"), sep = "_")))
       
       assign(x = paste0(ID$metric[j], "_", scenario_object[i]), value = df, envir = .GlobalEnv)
       
@@ -559,7 +559,7 @@ for(j in 1:length(scenario_object)) {
   }
 }
 
-#### Multi-Model Ensemble: Climate Velocity ####
+#### Multi-Model Ensemble: MHW metrics ####
 path <- "Data/Climate/ClimateMetrics_Ensemble/"
 model <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 
@@ -573,7 +573,7 @@ if(reprocess) {
         layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "MHW", colname = ID$column[k])
         
         saveRDS(layer, file.path("Output", 
-                                 paste(save_name, "ClimateLayer", ID$metric[k], model[j], paste0(scenario[i], ".rds"), sep = "_")))
+                                 paste(save_name, "ClimateLayer", ID$metric[k], model[j], paste0(scenario_path[i], ".rds"), sep = "_")))
         
         print(paste0("Saved MM: ", scenario_path[i], ": ", model_list[j], ID$save[k]))
       }
@@ -588,11 +588,30 @@ if(reprocess) {
       for (k in 1:nrow(ID)) {
         
         df <- readRDS(file.path("Output", 
-                                paste(save_name, "ClimateLayer", ID$metric[k], model[j], paste0(scenario[i], ".rds"), sep = "_")))
+                                paste(save_name, "ClimateLayer", ID$metric[k], model[j], paste0(scenario_path[i], ".rds"), sep = "_")))
         assign(x = paste(ID$metric[k], model[j], scenario_object[i], sep = "_"), value = df, envir=.GlobalEnv)
         
       }
     }
   }
       
+}
+
+# Plot MHW metrics
+scenario_object <- c("SSP126", "SSP245", "SSP585")
+
+for(k in 1:length(model_list)) {
+  for(j in 1:length(scenario_object)) {
+    for(i in 1:nrow(ID)) {
+      x <- get(paste0(ID$metric[i], "_", model_list[k], "_", scenario_object[j]))
+      gg_MHW <- fSpatPlan_PlotClimate(ClimateLayer = x, 
+                                      world = land,
+                                      metric = ID$metric[i]) +
+        theme(axis.text = element_text(size = 25))
+      ggsave(paste0(paste("Layer", ID$metric[i], model_list[k], scenario_object[j], sep="_"), ".png"),
+             plot = gg_MHW, width = 21, height = 29.7, dpi = 300,
+             path = "Figures/")
+    }
+}
+
 }
