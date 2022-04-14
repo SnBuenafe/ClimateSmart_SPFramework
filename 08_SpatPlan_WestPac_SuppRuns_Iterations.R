@@ -149,7 +149,7 @@ metric_list <- c("tos", "phos", "o2os", "velocity")
 scenario_list <- c("126", "245", "585")
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 
-solution <- seq(from = 222, to = 289, by = 1) # solution names, check metadata
+solution <- seq(from = 522, to = 524, by = 1) # solution names, check metadata
 solution <-lapply(solution, function(x) {
   y <- paste0("s", x)
 }) %>% unlist()

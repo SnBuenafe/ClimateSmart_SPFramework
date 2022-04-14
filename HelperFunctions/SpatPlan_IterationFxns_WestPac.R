@@ -324,7 +324,7 @@ loopthrough_MM_Penalty <- function(solution_list, metric_list, scenario_list, mo
         
         if(scenario_list[scenario_num] == "126") {scenario_object <- "SSP 1-2.6"} else if (scenario_list[scenario_num] == "245") {scenario_object <- "SSP 2-4.5"} else if (scenario_list[scenario_num] == "585") {scenario_object <- "SSP 5-8.5"}
         
-        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_object)
+        LoadClimateMetrics(metric = metric_list[metric_num], model = model_list[model_num], scenario = scenario_object)
         
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_SSP", scenario_list[scenario_num])
         
@@ -383,7 +383,7 @@ loopthrough_MM_Feature <- function(solution_list, metric_list, scenario_list, mo
         
         if(scenario_list[scenario_num] == "126") {scenario_object <- "SSP 1-2.6"} else if (scenario_list[scenario_num] == "245") {scenario_object <- "SSP 2-4.5"} else if (scenario_list[scenario_num] == "585") {scenario_object <- "SSP 5-8.5"}
         
-        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_list[scenario_num])
+        LoadClimateMetrics(metric = metric_list[metric_num], model = model_list[model_num], scenario = scenario_list[scenario_num])
 
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_SSP", scenario_object)
         
@@ -439,9 +439,9 @@ loopthrough_MM_ClimatePriorityArea <- function(solution_list, metric_list, scena
         
         if(scenario_list[scenario_num] == "126") {scenario_object <- "SSP 1-2.6"} else if (scenario_list[scenario_num] == "245") {scenario_object <- "SSP 2-4.5"} else if (scenario_list[scenario_num] == "585") {scenario_object <- "SSP 5-8.5"}
         
-        LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = scenario_object)
+        LoadClimateMetrics(metric = metric_list[metric_num], model = model_list[model_num], scenario = scenario_object)
         
-        metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_", "_SSP", scenario_list[scenario_num])
+        metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_", "SSP", scenario_list[scenario_num])
         
         x <- get(metric_df)
         
