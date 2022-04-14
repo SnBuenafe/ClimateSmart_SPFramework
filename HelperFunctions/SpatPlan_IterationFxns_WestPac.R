@@ -365,7 +365,6 @@ loopthrough_MM_Penalty <- function(solution_list, metric_list, scenario_list, mo
         ggsave(filename = paste0("MM-", model_list[model_num], "-Penalty-", metric_list[metric_num], "-", scenario_list[scenario_num], ".png"),
                plot = ggSol, width = 21, height = 29.7, dpi = 300,
                path = "Figures/") # save plot
-        
         gc()
         rm(list = ls(pattern = metric_df))
         i = i + 1
@@ -442,11 +441,11 @@ loopthrough_MM_ClimatePriorityArea <- function(solution_list, metric_list, scena
         LoadClimateMetrics(metric = metric_list[metric_num], model = model_list[model_num], scenario = scenario_object)
         
         metric_df <- paste0(metric_list[metric_num], "_", model_list[model_num], "_", "SSP", scenario_list[scenario_num])
-        
+        #metric_df <- eval_tidy(quo(!! sym(metric_df)))
         x <- get(metric_df)
         
         # 1. Prepare the climate layers and features
-        ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_list[metric_num], colname = "transformed", metric_df)
+        ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_list[metric_num], colname = "transformed", metric_df = x)
         gc()
         
         RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
@@ -478,17 +477,19 @@ loopthrough_MM_ClimatePriorityArea <- function(solution_list, metric_list, scena
         # Solve the planning problem 
         s <- prioritizr::solve(p)
         saveRDS(s, paste0(output_solutions, solution_list[i], "-MM-", model_list[model_num], "-ClimatePriorityArea-", metric_list[metric_num], "-SSP", scenario_list[scenario_num], ".rds")) # save solution
+        print(paste(i, metric_list[metric_num], model_list[model_num], scenario_list[scenario_num], sep = ","))#sanity check
         
         # Plot the spatial design
         s_plot <- s %>% 
           mutate(solution_1 = as.logical(solution_1))
         (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + 
-            ggtitle(paste0("Climate-smart design: ", metric_list[metric_num]), 
-                    subtitle = paste0("Feature, SSP", scenario_list[scenario_num]), " (GCM: ", model_list[model_num]) + 
+            #ggtitle(paste0("Climate-smart design: ", metric_list[metric_num]), 
+                    #subtitle = paste0("Feature, SSP", scenario_list[scenario_num]), " (GCM: ", model_list[model_num]) + 
             theme(axis.text = element_text(size = 25)))
         ggsave(filename = paste0("MM-", model_list[model_num], "-ClimatePriorityArea-", metric_list[metric_num], "-", scenario_list[scenario_num], ".png"),
                plot = ggSol, width = 21, height = 29.7, dpi = 300,
                path = "Figures/") # save plot
+        
         
         #clean up environment
         rm(ImptFeat, RepFeat, Features, features, targets)
