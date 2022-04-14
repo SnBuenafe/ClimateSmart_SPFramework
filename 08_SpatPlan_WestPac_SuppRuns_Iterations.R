@@ -8,6 +8,14 @@
 # Because runs use different iterations, we decided to create loops in this script as opposed to what has been done in `04-06_SpatPlan_WestPacific_Runs_` where we looked to show the exact ways the spatial planning problems were set up and how they were solved
 # WARNING: Loops take up a significant amount of memory, so it is not advisable to run them all at the same time (especially the "Climate Priority Area" approach). For weaker machines (< 32gb RAM), it may be best to run each iteration separately.
 
+# NOTE: Change the ff. parameters before running the loop functions below. Here are their possible values.
+# metric_list: tos (climate warming), phos (ocean acidification), o2os (deoxygenation), velocity (climate velocity),
+# MHW_num (annual # of MHWs), MHW_CumInt (annual cumulative intensity of MHWs), MHW_CumDur (annual cumulative duration of MHWs)
+# scenario_list: 126 (SSP 1-2.6), 245 (SSP 2-4.5), 585 (SSP 5-8.5)
+# model_list: CanESM5, CMCC-ESM2, GFDL-ESM4, IPSL-CM6A-LR, NorESM2-MM
+# solution: "s" + a number (please check metadata file)
+
+
 # Load functions
 source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functions and libraries
 source("HelperFunctions/SpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
