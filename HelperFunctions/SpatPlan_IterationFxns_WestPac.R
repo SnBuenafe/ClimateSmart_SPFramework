@@ -415,7 +415,7 @@ loopthrough_MM_Feature <- function(solution_list, metric_list, scenario_list, mo
           mutate(solution_1 = as.logical(solution_1))
         (ggSol <- fSpatPlan_PlotSolution(s_plot, PUs, land) + 
             ggtitle(paste0("Climate-smart design: ", metric_list[metric_num]), 
-                    subtitle = paste0("Feature, SSP", scenario_list[scenario_num]), " (GCM: ", model_list[model_num]) + 
+                    subtitle = paste0("Feature, SSP", scenario_list[scenario_num], " (GCM: ", model_list[model_num])) + 
             theme(axis.text = element_text(size = 25)))
         ggsave(filename = paste0("MM-", model_list[model_num], "-Feature-", metric_list[metric_num], "-", scenario_list[scenario_num], ".png"),
                plot = ggSol, width = 21, height = 29.7, dpi = 300,

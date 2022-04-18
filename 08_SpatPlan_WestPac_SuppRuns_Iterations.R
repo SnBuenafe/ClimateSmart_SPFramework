@@ -79,39 +79,19 @@ solution <-lapply(solution, function(x) {
 
 loopthrough_MM_Percentile(solution, metric_list, scenario_list, model_list)
 
-# Adding in runs for MHW
-metric_list <- c("MHW_num", "MHW_CumInt", "MHW_CumDur")
-scenario_list <- c("126", "245")
-model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
-
-solution <- seq(from = 323, to = 352, by = 1) # solution names, check metadata
-solution <-lapply(solution, function(x) {
-  y <- paste0("s", x)
-}) %>% unlist()
-
-loopthrough_MM_Percentile(solution, metric_list, scenario_list, model_list)
-
 # ----- Penalty approach runs -----
 # loop through the metric, scenario, and model lists
-metric_list <- c("tos", "phos", "o2os", "velocity")
-scenario_list <- c("126", "245")
+metric_list <- c("MHW_SumCumInt")
+scenario_list <- c("585", "126", "245")
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 
-solution <- seq(from = 102, to = 141, by = 1) # solution names, check metadata
+solution <- c(seq(from = 312, to = 316, by = 1), seq(from = 332, to = 336, by = 1), seq(from = 352, to = 356, by = 1)) # solution names, check metadata
 solution <-lapply(solution, function(x) {
   y <- paste0("s", x)
 }) %>% unlist()
 
 loopthrough_MM_Penalty(solution, metric_list, scenario_list, model_list)
 
-scenario_list <- c("585")
-
-solution <- seq(from = 182, to = 201, by = 1) # solution names, check metadata
-solution <-lapply(solution, function(x) {
-  y <- paste0("s", x)
-}) %>% unlist()
-
-loopthrough_MM_Penalty(solution, metric_list, scenario_list, model_list)
 # ----- Feature approach runs -----
 # loop through the metric, scenario, and model lists
 metric_list <- c("tos", "phos", "o2os", "velocity")
