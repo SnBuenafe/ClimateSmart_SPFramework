@@ -26,6 +26,11 @@ output_lowregret <- "Output/lowregret/"
 
 #library(rlang)
 
+#solution <- seq(from = 317, to = 322, by = 1) # solution names, check metadata
+#solution <-lapply(solution, function(x) {
+#  y <- paste0("s", x)
+#}) %>% unlist()
+
 # Load files
 source("03_SpatPlan_Master_Preliminaries.R")
 total_area = nrow(PUs) * PU_size
@@ -33,64 +38,41 @@ total_area = nrow(PUs) * PU_size
 #### Ensemble mean approach ####
 # ----- Percentile approach -----
 # loop through the metric and scenario lists
-metric_list <- c("phos", "o2os", "velocity")
+metric_list <- c("MHW_SumCumInt")
 scenario_list <- c("126", "245")
 
-solution <- c("s40", "s41", "s42", "s43", "s44", "s45") # solution names, check metadata
-loopthrough_EM_Percentile(solution, metric_list, scenario_list)
-
-# Adding in MHW metrics
-metric_list <- c("MHW_num", "MHW_CumInt", "MHW_CumDur")
-scenario_list <- c("126", "245")
-
-solution <- seq(from = 317, to = 322, by = 1) # solution names, check metadata
-solution <-lapply(solution, function(x) {
-  y <- paste0("s", x)
-}) %>% unlist()
-
+solution <- c("s299", "s303") # solution names, check metadata
 loopthrough_EM_Percentile(solution, metric_list, scenario_list)
 
 # ----- Feature approach -----
-metric_list <- c("tos", "phos", "o2os", "velocity")
+metric_list <- c("MHW_SumCumInt")
 scenario_list <- c("126", "245")
 
-solution <- c("s46", "s47", "s48", "s49", "s50", "s51", "s52", "s53") # solution names, check metadata
-loopthrough_EM_Feature(solution, metric_list, scenario_list)
-
-# Adding in MHW metrics
-metric_list <- c("MHW_num", "MHW_CumInt", "MHW_CumDur")
-scenario_list <- c("126", "245")
-
-solution <- seq(from = 353, to = 358, by = 1) # solution names, check metadata
-solution <-lapply(solution, function(x) {
-  y <- paste0("s", x)
-}) %>% unlist()
-
+solution <- c("s300", "s304") # solution names, check metadata
 loopthrough_EM_Feature(solution, metric_list, scenario_list)
 
 # ----- Penalty approach -----
-metric_list <- c("tos", "phos", "o2os", "velocity")
+metric_list <- c("MHW_SumCumInt")
 scenario_list <- c("126", "245")
 
-solution <- c("s54", "s55", "s56", "s57", "s58", "s59", "s60", "s61") # solution names, check metadata
+solution <- c("s301", "s305") # solution names, check metadata
 loopthrough_EM_Penalty(solution, metric_list, scenario_list)
 
 # ----- Climate priority area approach -----
-metric_list <- c("tos", "phos", "o2os", "velocity")
+metric_list <- c("MHW_SumCumInt")
 scenario_list <- c("126", "245")
 
-solution <- c("s322")#to not overwrite change ID for practice, "s223", "s224", "s225", "s226", "s227", "s228", "s228")
+solution <- c("s302", "s306") # solution names, check metadata
 loopthrough_EM_ClimatePriorityArea(solution, metric_list, scenario_list)
-
 
 #### Multi-model ensemble approach ####
 # ----- Percentile approach -----
 # loop through the metric, scenario, and model lists
-metric_list <- c("tos", "phos", "o2os", "velocity")
+metric_list <- c("MHW_SumCumInt")
 scenario_list <- c("126", "245")
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 
-solution <- seq(from = 62, to = 101, by = 1) # solution names, check metadata
+solution <- c(seq(from = 322, to = 326, by = 1), seq(from = 342, to = 346, by = 1)) # solution names, check metadata
 solution <-lapply(solution, function(x) {
   y <- paste0("s", x)
 }) %>% unlist()

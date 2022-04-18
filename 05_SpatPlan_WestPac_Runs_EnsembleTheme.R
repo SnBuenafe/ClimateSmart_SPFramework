@@ -224,10 +224,10 @@ ggsave(filename = "MM-NorESM2_MM-Percentile-tos-585.png",
 #### Climate warming: ensemble mean vs multi-model ensemble approaches ####
 # Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
 dummy_problem = p1
-problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem)
+problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem)
 
-solution_list <- list(s14, s15, s16, s17, s18)
-climateLayer_list <- list(`tos_CanESM5_SSP585`, `tos_CMCC-ESM2_SSP585`, `tos_GFDL-ESM4_SSP585`, `tos_IPSL-CM6A-LR_SSP585`, `tos_NorESM2-MM_SSP585`)
+solution_list <- list(s2, s14, s15, s16, s17, s18)
+climateLayer_list <- list(roc_tos_SSP585, `tos_CanESM5_SSP585`, `tos_CMCC-ESM2_SSP585`, `tos_GFDL-ESM4_SSP585`, `tos_IPSL-CM6A-LR_SSP585`, `tos_NorESM2-MM_SSP585`)
 
 # ----- Feature representation ----- 
 names <- c("MM-CanESM5_Percentile_tos_585", "MM-CMCC-ESM2_Percentile_tos_585", "MM-GFDL-ESM4_Percentile_tos_585", "MM-IPSL-CM6A-LR_Percentile_tos_585", "MM-NorESM2-MM_Percentile_tos_585")
@@ -1114,7 +1114,7 @@ ggsave(filename = "ClimateVelocityDist-EnsembleTheme-Percentile-velocity.png",
 
 # ----- Create low-regret climate-model solution -----
 solution_list <- list(s29, s30, s31, s32, s33)
-col_names <- c("velocity_CanESM5", "o2os_CMCC-ESM2", "o2os_GFDL-ESM4", "o2os_IPSL-CM6A-LR", "o2os_NorESM2-MM")
+col_names <- c("velocity_CanESM5", "velocity_CMCC-ESM2", "velocity_GFDL-ESM4", "velocity_IPSL-CM6A-LR", "velocity_NorESM2-MM")
 s4_MMplot <- create_LowRegretSf(solution_list, col_names, PUs)
 saveRDS(s4_MMplot, paste0(output_lowregret, "s4-MM-SelectionFrequency-Percentile-velocity-585.rds")) # save solution
 
@@ -1126,7 +1126,7 @@ ggsave(filename = "MM-SelectionFrequency-velocity-585.png",
 rm(list = ls(pattern = "^velocity_"))
 #### "Ensemble mean" approach: Sum of Cumulative MHW Intensity (SSP 5-8.5) ####
 # ----- Load climate layers -----
-LoadClimateMetrics(metric = "MHW", model = NA, scenario = "SSP 5-8.5")
+LoadClimateMetrics(metric = "MHW_SumCumInt", model = NA, scenario = "SSP 5-8.5")
 # ----- Create spatial plans -----
 # 1. Prepare climate layer
 aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "MHW_SumCumInt", colname = "transformed", metric_df = MHW_SumCumInt_SSP585, PUs = PUs)
@@ -1289,3 +1289,99 @@ s298_plot <- s298 %>%
 ggsave(filename = "MM-NorESM2-MM-Percentile-MHW_SumCumInt-585.png",
        plot = ggSol298, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
+
+#### Sum of Cumulative MHW Intensity: ensemble mean vs multi-model ensemble approaches ####
+# Same problem_list as above.
+solution_list <- list(s290, s294, s295, s296, s297, s298)
+climateLayer_list <- list(MHW_SumCumInt_SSP585, `MHW_SumCumInt_CanESM5_SSP585`, `MHW_SumCumInt_CMCC-ESM2_SSP585`, `MHW_SumCumInt_GFDL-ESM4_SSP585`, `MHW_SumCumInt_IPSL-CM6A-LR_SSP585`, `MHW_SumCumInt_NorESM2-MM_SSP585`)
+
+# ----- Feature representation -----
+names <- c("EM_Percentile_MHW_SumCumInt_585", "MM-CanESM5_Percentile_MHW_SumCumInt_585", "MM-CMCC-ESM2_Percentile_MHW_SumCumInt_585", "MM-GFDL-ESM4_Percentile_MHW_SumCumInt_585", "MM-IPSL-CM6A-LR_Percentile_MHW_SumCumInt_585", "MM-NorESM2-MM_Percentile_MHW_SumCumInt_585")
+feat_rep <- tibble(feature = character()) # empty tibble
+for(i in 1:length(names)) {
+  df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
+  feat_rep <- left_join(df, feat_rep, by = "feature")
+}
+write.csv(feat_rep, paste0(output_summary, "EnsembleTheme_MHW_SumCumInt_FeatureRepresentation.csv")) # save
+
+# ----- Kernel distribution plots of targets -----
+x <- feat_rep %>% 
+  pivot_longer(!feature, names_to = "ensemble", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = ensemble, group = ensemble, fill = ensemble),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_Percentile_MHW_SumCumInt_585` = "#FAF7B7",
+                               `MM-CanESM5_Percentile_MHW_SumCumInt_585` = "#E6C173",
+                               `MM-CMCC-ESM2_Percentile_MHW_SumCumInt_585` = "#855600",
+                               `MM-GFDL-ESM4_Percentile_MHW_SumCumInt_585` = "#5075BA",
+                               `MM-IPSL-CM6A-LR_Percentile_MHW_SumCumInt_585` = "#81B0CC",
+                               `MM-NorESM2-MM_Percentile_MHW_SumCumInt_585` = "#5A9E67")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-EnsembleTheme-MHW_SumCumInt.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
+
+# ----- Summary statistics -----
+df <- tibble(run = character()) # empty tibble
+for(i in 1:length(names)) {
+  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  df <- rbind(statistics, df)
+}
+climate <- get_ClimateSummary(solution_list, climateLayer_list, "MHW_SumCumInt", col_scenario = "585", col_approach = "percentile", col_run = names)
+
+summary <- left_join(climate, df, by = "run")
+
+write.csv(summary, paste0(output_summary, "EnsembleTheme_MHW_SumCumInt_Summary.csv")) # save
+
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "ensemble") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-MM-Percentile-MHW_SumCumInt-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
+# ----- Kappa Correlation Matrix -----
+list <- c("EnsembleMean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+object_list <- list() # empty list
+solution_list <- list(s290, s294, s295, s296, s297, s298)
+for (i in 1:length(list)) {
+  obj <- select_solution(solution_list[[i]], list[i])
+  object_list[[i]] <- obj
+}
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
+# ----- Measuring how climate-smart solutions are using Kernel Density plots
+list <- list() # empty list
+names <- c("EnsembleMean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+group_name = "ensemble"
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name)
+}
+df <- do.call(rbind, list)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = ensemble, group = ensemble, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('total degree days'), option = "G") +
+  geom_vline(xintercept = climate$mean_sum_cumulative_intensity,
+             linetype = "dashed", color = "khaki3", size = 0.5) +
+  theme_classic()
+ggsave(filename = "MHWSumCumIntDist-EnsembleTheme-Percentile-MHW_SumCumInt.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
+
+# ----- Create low-regret climate-model solution -----
+solution_list <- list(s294, s295, s296, s297, s298)
+col_names <- c("MHW_SumCumInt_CanESM5", "MHW_SumCumInt_CMCC-ESM2", "MHW_SumCumInt_GFDL-ESM4", "MHW_SumCumInt_IPSL-CM6A-LR", "MHW_SumCumInt_NorESM2-MM")
+s5_MMplot <- create_LowRegretSf(solution_list, col_names, PUs)
+saveRDS(s5_MMplot, paste0(output_lowregret, "s5-MM-SelectionFrequency-Percentile-MHW_SumCumInt-585.rds")) # save solution
+
+(ggSelFreq5 <- plot_SelectionFrequency(s5_MMplot, land) + ggtitle("Selection Frequency: Sum of Cumulative MHW Intensity", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "MM-SelectionFrequency-MHW_SumCumInt-585.png",
+       plot = ggSelFreq5, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+rm(list = ls(pattern = "^MHW_"))

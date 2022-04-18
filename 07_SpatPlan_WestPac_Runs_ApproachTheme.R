@@ -53,8 +53,12 @@ summary <- rbind(LRFeature_summary, LRPercentile_summary, LRPenalty_summary, LRC
 # ----- Summary statistics of low-regret climate-approach solutions -----
 solution_list <- list(LRFeature, LRPercentile, LRPenalty, LRClimatePriorityArea)
 run_list <- c("LRFeature", "LRPercentile", "LRPenalty", "LRClimatePriorityArea")
-climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585)
-metric_list <- c("tos", "phos", "o2os", "velocity")
+# Load climate metrics
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_SumCumInt")
+for(i in 1:length(metric_list)) {
+  LoadClimateMetrics(metric_list[i], model = NA, scenario = "SSP 5-8.5")
+}
+climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585, MHW_SumCumInt_SSP585)
 # ----- Total area -----
 ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach")  + theme(axis.text = element_text(size = 25))
 ggsave(filename = "Area-ApproachTheme-Approaches-585.png",
@@ -63,7 +67,7 @@ ggsave(filename = "Area-ApproachTheme-Approaches-585.png",
 
 # ----- Kappa Correlation Matrix -----
 object_list <- list() # empty list
-for (i in 1:length(names)) {
+for (i in 1:length(run_list)) {
   obj <- select_solution(solution_list[[i]], run_list[i])
   object_list[[i]] <- obj
 }
@@ -76,12 +80,12 @@ for (i in 1:length(names)) {
 climate <- lowRegret_ClimateSummary(solution = solution_list, 
                                     run = run_list, metric = metric_list,
                                     climate = climateLayer_list, scenario = "585",
-                                    approach = names)
+                                    approach = run_list)
 write_csv(climate, paste0(output_summary, "ApproachTheme_Approaches_LowRegretClimateSummary.csv"))
 
 # ----- Intersection of all low-regret climate-approach solutions -----
 intersection <- intersect_lowregret(solution_list, run_list) %>% 
-  dplyr::mutate(solution_1 = ifelse(selection == (length(run_list)*4), yes = 1, no = 0)) #*4 because 4 metrics TODO: Change it to 5 once including marine heatwaves
+  dplyr::mutate(solution_1 = ifelse(selection == (length(run_list)*5), yes = 1, no = 0))
 
 summary <- compute_summary(intersection, total_area, PU_size, run_name = "LR-Approaches", Cost = "cost")
 
@@ -165,6 +169,22 @@ ggsave(filename = "ClimateVelocityDist-ApproachThemeLR-velocity.png",
        plot = ggRidge, width = 10, height = 6, dpi = 300,
        path = "Figures/") # save plot
 
+# ----- Sum of Cumulative MHW Intensity -----
+list <- list() # empty list
+for(i in 1:length(run_list)) {
+  list[[i]] <- make_kernel(solution_list[[i]], run_list[i], group_name, metric = MHW_SumCumInt_SSP585)
+}
+df <- do.call(rbind, list)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('total degree days'), option = "G") +
+  geom_vline(xintercept = climate$mean_sum_cumulative_intensity,
+             linetype = "dashed", color = "khaki3", size = 0.5) +
+  theme_classic()
+ggsave(filename = "MHWSumCumIntDist-ApproachThemeLR-MHW_SumCumInt.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
 
 #### Comparing individual solutions across metrics and approaches (climate-smart aspect) ####
 names <- c("Feature", "Percentile", "Penalty", "Climate Priority Area")
@@ -270,6 +290,30 @@ ggsave(filename = "ClimateVelocityDist-ApproachTheme-velocity.png",
        plot = ggRidge, width = 10, height = 6, dpi = 300,
        path = "Figures/") # save plot
 
+# ----- Kernel density plots showing sum of cumulative MHW intensity of solutions created using 'metric: Sum of Cumulative MHW Intensity' -----
+solution_list <- list(s291, s290, s292, s293)
+list <- list() # empty list
+for(i in 1:length(names)) {
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = MHW_SumCumInt_SSP585)
+}
+df <- do.call(rbind, list)
+
+feature <- read_csv(paste0(output_summary, "MetricTheme_Feature_Summary.csv")) %>% dplyr::filter(grepl("MHW", run)) %>% dplyr::select(mean_sum_cumulative_intensity, run)
+percentile <- read_csv(paste0(output_summary, "MetricTheme_Percentile_Summary.csv")) %>% dplyr::filter(grepl("MHW", run)) %>% dplyr::select(mean_sum_cumulative_intensity, run)
+penalty <- read_csv(paste0(output_summary, "MetricTheme_Penalty_Summary.csv")) %>% dplyr::filter(grepl("MHW", run)) %>% dplyr::select(mean_sum_cumulative_intensity, run)
+climatePriorityArea <- read_csv(paste0(output_summary, "MetricTheme_ClimatePriorityArea_Summary.csv")) %>% dplyr::filter(grepl("MHW", run)) %>% dplyr::select(mean_sum_cumulative_intensity, run)
+
+climate <- bind_rows(feature, percentile, penalty, climatePriorityArea)
+
+ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3) +
+  scale_fill_viridis_c(name = expression('total degree days'), option = "G") +
+  geom_vline(xintercept = climate$mean_sum_cumulative_intensity,
+             linetype = "dashed", color = "khaki3", size = 0.5) +
+  theme_classic()
+ggsave(filename = "MHWSumCumIntDist-ApproachTheme-MHW_SumCumInt.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot
 #### Comparing individual solutions across metrics and approaches (targets) ####
 # ----- Kernel density plots showing the % distribution of all features in solutions created using 'metric: climate warming' -----
 x <- feat_rep %>% 
@@ -351,6 +395,25 @@ ggsave(filename = "TargetDist-ApproachTheme-velocity.png",
        plot = ggRidge, width = 15, height = 10, dpi = 300,
        path = "Figures/") # save plot
 
+# ----- Kernel density plost showing the % distribution of all features in solutions created using 'metric: sum of cumulative MHW intensity -----
+x <- feat_rep %>% 
+  dplyr::select(feature, contains("MHW")) %>% 
+  pivot_longer(!feature, names_to = "approach", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = approach, group = approach, fill = approach),
+                      scale = 2) +
+  scale_fill_manual(values = c(`EM_ClimatePriorityArea_MHW_SumCumInt_585` = "#E6BA7E",
+                               `EM_Feature_MHW_SumCumInt_585` = "#4D3B2A",
+                               `EM_Penalty_MHW_SumCumInt_585` = "#6984BF",
+                               `EM_Percentile_MHW_SumCumInt_585` = "#2B8142")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  xlim(c(min(x$percent), NA)) +
+  theme_classic()
+ggsave(filename = "TargetDist-ApproachTheme-MHW_SumCumInt.png",
+       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       path = "Figures/") # save plot
 #### Comparing low-regret climate-metric solutions ####
 #### Climate warming ####
 # ----- Create low-regret solution -----
@@ -519,10 +582,53 @@ for (i in 1:length(list)) {
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
 
+#### Sum of Cumulative MHW Intensity ####
+# ----- Create low-regret solution -----
+solution_list <- list(s290, s291, s292, s293)
+names <- c("EM_Percentile_MHW_SumCumInt_585", "EM_Feature_MHW_SumCumInt_585", "EM_Penalty_MHW_SumCumInt_585", "EM_ClimatePriorityArea_MHW_SumCumInt_585")
+s10_LRplot <- create_LowRegretSf(solution_list, names, PUs)
+saveRDS(s10_LRplot, paste0(output_lowregret, "s10-EM-LowRegret-MHW_SumCumInt-585.rds")) # save low-regret solution
+(ggLowRegret10 <- plot_lowregret(s10_LRplot, land) + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "LR-Approach-MHW_SumCumInt.png",
+       plot = ggLowRegret10, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# ----- Summary statistics -----
+df <- tibble(run = character()) # empty tibble
+for(i in 1:length(names)) {
+  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  df <- rbind(statistics, df)
+}
+
+approach_list <- c("percentile", "feature", "penalty", "climate priority area")
+climate <- get_ClimateSummary(solution_list, climate_layer = MHW_SumCumInt_SSP585, metric = "MHW_SumCumInt", col_scenario = "585", col_approach = approach_list, col_run = names, climateLayer = "single")
+
+summary <- left_join(climate, df, by = "run")
+write.csv(summary, paste0(output_summary, "ApproachTheme_MHW_SumCumInt_Summary.csv")) # save
+
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach") +
+  theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-ApproachTheme-MHW_SumCumInt-585.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
+       path = "Figures/") # save plot
+
+# ----- Get Kappa Correlation Matrix -----
+object_list <- list() # empty list
+for (i in 1:length(approach_list)) {
+  obj <- select_solution(solution_list[[i]], approach_list[i])
+  object_list[[i]] <- obj
+}
+
+# manually save corrplot
+(matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list)))
+
+
 # ----- Intersection of all low-regret climate-metric solutions -----
-solution_list <- list(s6_LRplot, s7_LRplot, s8_LRplot, s9_LRplot)
+run_list <- c("LR-tos", "LR-phos", "LR-o2os", "LR-velocity", "LR-MHWSumCumInt")
+solution_list <- list(s6_LRplot, s7_LRplot, s8_LRplot, s9_LRplot, s10_LRplot)
 intersection <- intersect_lowregret(solution_list, run_list) %>% 
-  dplyr::mutate(solution_1 = ifelse(selection == (length(run_list)*4), yes = 1, no = 0)) #*4 because 4 metrics TODO: Change it to 5 once including marine heatwaves
+  dplyr::mutate(solution_1 = ifelse(selection == (length(run_list)*4), yes = 1, no = 0))
 
 #### Summary statistics of low-regret climate-metric solutions ####
 # ----- Load Low-regret areas -----
@@ -530,13 +636,14 @@ LR_tos <- readRDS("Output/lowregret/s6-EM-LowRegret-tos-585.rds")
 LR_phos <- readRDS("Output/lowregret/s7-EM-LowRegret-phos-585.rds")
 LR_o2os <- readRDS("Output/lowregret/s8-EM-LowRegret-o2os-585.rds")
 LR_velocity <- readRDS("Output/lowregret/s9-EM-LowRegret-velocity-585.rds")
+LR_MHW_SumCumInt <- readRDS("Output/lowregret/s10-EM-LowRegret-MHW_SumCumInt-585.rds")
 
 # ----- Create summaries -----
-solution_list <- list(LR_tos, LR_phos, LR_o2os, LR_velocity)
-cols <- c("LR-tos", "LR-phos", "LR-o2os", "LR-velocity")
+solution_list <- list(LR_tos, LR_phos, LR_o2os, LR_velocity, LR_MHW_SumCumInt)
+cols <- c("LR-tos", "LR-phos", "LR-o2os", "LR-velocity", "LR-MHW_SumCumInt")
 
 df <- list() # empty list
-for(i in 1:length(names)) {
+for(i in 1:length(cols)) {
   df[[i]] <- compute_summary(solution_list[[i]], total_area, PU_size, cols[i], Cost = "cost")
 }
 summary <- do.call(rbind, df)
@@ -549,7 +656,7 @@ ggsave(filename = "Area-ApproachTheme-Metrics-585.png",
 
 # ----- Cohen's Kappa Correlation Matrix -----
 object_list <- list() # empty list
-for (i in 1:length(names)) {
+for (i in 1:length(cols)) {
   obj <- select_solution(solution_list[[i]], cols[i])
   object_list[[i]] <- obj
 }
