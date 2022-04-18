@@ -25,7 +25,7 @@ total_area = nrow(PUs) * PU_size
 
 #### Main Text: Percentile ####
 # ----- Load climate layers -----
-metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_SumCumInt")
 for(metric_num in 1:length(metric_list)) {
   LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
 }
@@ -133,16 +133,16 @@ ggsave(filename = "EM-Percentile-velocity-585.png",
        plot = ggSol5, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Number of marine heatwaves -----
+# ----- Sum of the cumulative MHW intensity -----
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "MHW_num", colname = "transformed", metric_df = MHW_num_SSP585, PUs = PUs)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "MHW_SumCumInt", colname = "transformed", metric_df = MHW_SumCumInt_SSP585, PUs = PUs)
 # 2. Get list of features
 features <- aqua_percentile %>% 
   as_tibble() %>% 
   dplyr::select(-geometry) %>% 
   names()
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, MHW_num_SSP585, UniformCost)
+out_sf <- cbind(aqua_percentile, MHW_SumCumInt_SSP585, UniformCost)
 p290 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(30/35) %>% 
@@ -150,65 +150,14 @@ p290 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 # 4. Solve the planning problem 
 s290 <- prioritizr::solve(p290)
-saveRDS(s290, paste0(output_solutions, "s290-EM-Percentile-MHW_num-585.rds")) # save solution
+saveRDS(s290, paste0(output_solutions, "s290-EM-Percentile-MHW_SumCumInt-585.rds")) # save solution
 # 5. Plot the spatial design
 s290_plot <- s290 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol290 <- fSpatPlan_PlotSolution(s290_plot, PUs, land) + ggtitle("Climate-smart design: # MHWs", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "EM-Percentile-MHW_num-585.png",
+(ggSol290 <- fSpatPlan_PlotSolution(s290_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Percentile-MHW_SumCumInt-585.png",
        plot = ggSol290, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
-# ----- Cumulative intensity of MHWs -----
-# 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "MHW_CumInt", colname = "transformed", metric_df = MHW_CumInt_SSP585, PUs = PUs)
-# 2. Get list of features
-features <- aqua_percentile %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
-  names()
-# 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, MHW_CumInt_SSP585, UniformCost)
-p291 <- prioritizr::problem(out_sf, features, "cost") %>%
-  add_min_set_objective() %>%
-  add_relative_targets(30/35) %>% 
-  add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
-# 4. Solve the planning problem 
-s291 <- prioritizr::solve(p291)
-saveRDS(s291, paste0(output_solutions, "s291-EM-Percentile-MHW_CumInt-585.rds")) # save solution
-# 5. Plot the spatial design
-s291_plot <- s291 %>% 
-  mutate(solution_1 = as.logical(solution_1)) 
-(ggSol291 <- fSpatPlan_PlotSolution(s291_plot, PUs, land) + ggtitle("Climate-smart design: Cumulative Intensity", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "EM-Percentile-MHW_CumInt-585.png",
-       plot = ggSol291, width = 21, height = 29.7, dpi = 300,
-       path = "Figures/") # save plot
-# ----- Cumulative duration of MHWs -----
-# 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "MHW_CumDur", colname = "transformed", metric_df = MHW_CumDur_SSP585, PUs = PUs)
-# 2. Get list of features
-features <- aqua_percentile %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
-  names()
-# 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, MHW_CumDur_SSP585, UniformCost)
-p292 <- prioritizr::problem(out_sf, features, "cost") %>%
-  add_min_set_objective() %>%
-  add_relative_targets(30/35) %>% 
-  add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
-# 4. Solve the planning problem 
-s292 <- prioritizr::solve(p292)
-saveRDS(s292, paste0(output_solutions, "s292-EM-Percentile-MHW_CumDur-585.rds")) # save solution
-# 5. Plot the spatial design
-s292_plot <- s292 %>% 
-  mutate(solution_1 = as.logical(solution_1)) 
-(ggSol292 <- fSpatPlan_PlotSolution(s292_plot, PUs, land) + ggtitle("Climate-smart design: Cumulative Duration", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "EM-Percentile-MHW_CumDur-585.png",
-       plot = ggSol292, width = 21, height = 29.7, dpi = 300,
-       path = "Figures/") # save plot
-
 #### Summary ####
 # Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
 out_sf <- cbind(aqua_sf, UniformCost)
@@ -222,13 +171,13 @@ dummy_problem <- prioritizr::problem(out_sf, features, "cost") %>%
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 
-problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem)
+problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem)
 
-solution_list <- list(s2, s3, s4, s5)
-climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585)
-metric_list <- c("tos", "phos", "o2os", "velocity")
+solution_list <- list(s2, s3, s4, s5, s290)
+climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585, MHW_SumCumInt_SSP585)
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_SumCumInt")
 # ----- Feature representation -----
-names <- c("EM_Percentile_tos_585", "EM_Percentile_phos_585", "EM_Percentile_o2os_585", "EM_Percentile_velocity_585")
+names <- c("EM_Percentile_tos_585", "EM_Percentile_phos_585", "EM_Percentile_o2os_585", "EM_Percentile_velocity_585", "EM_Percentile_MHW_SumCumInt_585")
 feat_rep <- tibble(feature = character()) # empty tibble
 for(i in 1:length(names)) {
   df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
@@ -247,7 +196,8 @@ ggRidge <- ggplot(data = x) +
   scale_fill_manual(values = c(`EM_Percentile_tos_585` = "#289E3D",
                                `EM_Percentile_phos_585` = "#E6C173",
                                `EM_Percentile_o2os_585` = "#81B0CC",
-                               `EM_Percentile_velocity_585` = "#855600")) +
+                               `EM_Percentile_velocity_585` = "#855600",
+                               `EM_Percentile_MHW_SumCumInt_585` = "#3C6342")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
   xlim(c(30, NA)) +
   theme_classic()
@@ -279,7 +229,7 @@ ggsave(filename = "Area-MetricTheme-Percentile-585.png",
 
 # ----- Get Kappa Correlation Matrix -----
 object_list <- list() # empty list
-for (i in 1:length(list)) {
+for (i in 1:length(metric_list)) {
   obj <- select_solution(solution_list[[i]], metric_list[i])
   object_list[[i]] <- obj
 }
@@ -299,11 +249,12 @@ ggsave(filename = "LR-Metric-Percentile.png",
 summary <- compute_summary(s2_LRplot, total_area, PU_size, "LR-Percentile-585", Cost = "cost")
 write.csv(summary, paste0(output_summary, "MetricTheme_Percentile_LowRegretSummary.csv")) # save
 
-# ----- Remove climate layers -----
+# ----- Remove layers -----
 rm(list = ls(pattern = paste(metric_list, collapse = "|")))
+rm(s2, s3, s4, s5, s290, p2, p3, p4, p5, p290)
 #### Supplementary: Feature ####
 # ----- Load climate layers -----
-metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_SumCumInt")
 for(metric_num in 1:length(metric_list)) {
   LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
 }
@@ -416,9 +367,9 @@ ggsave(filename = "EM-Feature-velocity-585.png",
       plot = ggSol9, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
-# ----- Number of marine heatwaves -----
+# ----- Sum of the cumulative MHW intensity -----
 # 1. Prepare climate layer
-ClimateFeature <- create_FeatureLayer(metric_name = "MHW_num", colname = "transformed", metric_df = MHW_num_SSP585)
+ClimateFeature <- create_FeatureLayer(metric_name = "MHW_SumCumInt", colname = "transformed", metric_df = MHW_SumCumInt_SSP585)
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
@@ -427,80 +378,28 @@ features <- aqua_sf %>%
 features <- append(features, "climate_layer") # add "climate_layer" to features
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
-p308 <- prioritizr::problem(out_sf, features, "cost") %>%
+p291 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% 
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 # 4. Solve the planning problem 
-s308 <- prioritizr::solve(p308)
-saveRDS(s308, paste0(output_solutions, "s308-EM-Feature-MHW_num-585.rds")) # save solution
+s291 <- prioritizr::solve(p291)
+saveRDS(s291, paste0(output_solutions, "s291-EM-Feature-MHW_SumCumInt-585.rds")) # save solution
 # 5. Plot the spatial design
-s308_plot <- s308 %>% 
+s291_plot <- s291 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol308 <- fSpatPlan_PlotSolution(s308_plot, PUs, land) + ggtitle("Climate-smart design: # of MHWs", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "EM-Feature-MHW_num-585.png",
-       plot = ggSol308, width = 21, height = 29.7, dpi = 300,
-       path = "Figures/") # save plot
-# ----- Cumulative intensity of MHWs -----
-# 1. Prepare climate layer
-ClimateFeature <- create_FeatureLayer(metric_name = "MHW_CumInt", colname = "transformed", metric_df = MHW_CumInt_SSP585)
-# 2. Get list of features
-features <- aqua_sf %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
-  names()
-features <- append(features, "climate_layer") # add "climate_layer" to features
-# 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
-p309 <- prioritizr::problem(out_sf, features, "cost") %>%
-  add_min_set_objective() %>%
-  add_relative_targets(0.3) %>% 
-  add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
-# 4. Solve the planning problem 
-s309 <- prioritizr::solve(p309)
-saveRDS(s309, paste0(output_solutions, "s309-EM-Feature-MHW_CumInt-585.rds")) # save solution
-# 5. Plot the spatial design
-s309_plot <- s309 %>% 
-  mutate(solution_1 = as.logical(solution_1)) 
-(ggSol309 <- fSpatPlan_PlotSolution(s309_plot, PUs, land) + ggtitle("Climate-smart design: Cumulative Intensity", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "EM-Feature-MHW_CumInt-585.png",
-       plot = ggSol309, width = 21, height = 29.7, dpi = 300,
-       path = "Figures/") # save plot
-# ----- Cumulative duration of MHWs -----
-# 1. Prepare climate layer
-ClimateFeature <- create_FeatureLayer(metric_name = "MHW_CumDur", colname = "transformed", metric_df = MHW_CumDur_SSP585)
-# 2. Get list of features
-features <- aqua_sf %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
-  names()
-features <- append(features, "climate_layer") # add "climate_layer" to features
-# 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
-p310 <- prioritizr::problem(out_sf, features, "cost") %>%
-  add_min_set_objective() %>%
-  add_relative_targets(0.3) %>% 
-  add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
-# 4. Solve the planning problem 
-s310 <- prioritizr::solve(p310)
-saveRDS(s310, paste0(output_solutions, "s310-EM-Feature-MHW_CumDur-585.rds")) # save solution
-# 5. Plot the spatial design
-s310_plot <- s310 %>% 
-  mutate(solution_1 = as.logical(solution_1)) 
-(ggSol310 <- fSpatPlan_PlotSolution(s310_plot, PUs, land) + ggtitle("Climate-smart design: Cumulative Duration", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "EM-Feature-MHW_CumDur-585.png",
-       plot = ggSol310, width = 21, height = 29.7, dpi = 300,
+(ggSol291 <- fSpatPlan_PlotSolution(s291_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Feature-MHW_SumCumInt-585.png",
+       plot = ggSol291, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 #### Summary ####
-problem_list <- list(p6, p7, p8, p9)
-solution_list <- list(s6, s7, s8, s9)
-climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585)
-metric_list <- c("tos", "phos", "o2os", "velocity")
+problem_list <- list(p6, p7, p8, p9, p291)
+solution_list <- list(s6, s7, s8, s9, s291)
+climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585, MHW_SumCumInt_SSP585)
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_SumCumInt")
 # ----- Feature representation -----
-names <- c("EM_Feature_tos_585", "EM_Feature_phos_585", "EM_Feature_o2os_585", "EM_Feature_velocity_585")
+names <- c("EM_Feature_tos_585", "EM_Feature_phos_585", "EM_Feature_o2os_585", "EM_Feature_velocity_585", "EM_Feature_MHW_SumCumInt_585")
 feat_rep <- tibble(feature = character()) # empty tibble
 for(i in 1:length(names)) {
   df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
@@ -509,8 +408,9 @@ for(i in 1:length(names)) {
 write.csv(feat_rep, paste0(output_summary, "MetricTheme_Feature_FeatureRepresentation.csv")) # save
 
 # ----- Kernel distribution plots of targets -----
-x <- feat_rep %>% 
+x <- feat_rep %>%
   pivot_longer(!feature, names_to = "metric", values_to = "percent") %>% 
+  drop_na(percent) %>% 
   dplyr::mutate(row_number = row_number(feature))
 
 ggRidge <- ggplot(data = x) +
@@ -519,7 +419,8 @@ ggRidge <- ggplot(data = x) +
   scale_fill_manual(values = c(`EM_Feature_tos_585` = "#289E3D",
                                `EM_Feature_phos_585` = "#E6C173",
                                `EM_Feature_o2os_585` = "#81B0CC",
-                               `EM_Feature_velocity_585` = "#855600")) +
+                               `EM_Feature_velocity_585` = "#855600",
+                               `EM_Feature_MHW_SumCumInt_585` = "#3C6342")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
   xlim(min(x$percent), 100) +
   theme_classic()
@@ -551,9 +452,9 @@ ggsave(filename = "Area-MetricTheme-Feature-585.png",
        path = "Figures/") # save plot
 
 # Get Kappa Correlation Matrix
-list <- c("tos", "phos", "o2os", "velocity")
+list <- c("tos", "phos", "o2os", "velocity", "MHW_SumCumInt")
 object_list <- list() # empty list
-solution_list <- list(s6, s7, s8, s9)
+solution_list <- list(s6, s7, s8, s9, s291)
 for (i in 1:length(list)) {
   obj <- select_solution(solution_list[[i]], list[i])
   object_list[[i]] <- obj
@@ -576,9 +477,10 @@ write.csv(summary, paste0(output_summary, "MetricTheme_Feature_LowRegretSummary.
 
 # ----- Remove climate layers -----
 rm(list = ls(pattern = paste(metric_list, collapse = "|")))
+rm(s6, s7, s8, s9, s291, p6, p7, p8, p9, p291)
 #### Supplementary: Penalty ####
 # ----- Load climate layers -----
-metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_SumCumInt")
 for(metric_num in 1:length(metric_list)) {
   LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
 }
@@ -696,94 +598,40 @@ ggsave(filename = "EM-Penalty-velocity-585.png",
       plot = ggSol13, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 
-# ----- Number of MHWs -----
+# ----- Sum of the cumulative MHW intensity -----
 # 1. Prepare climate layer
-scaling_PenaltyVelocity <- create_Scaling(UniformCost$cost, MHW_num_SSP585$transformed, "MHW_num")
+scaling_PenaltyVelocity <- create_Scaling(UniformCost$cost, MHW_SumCumInt_SSP585$transformed, "MHW_SumCumInt")
 # 2. Get list of features
 features <- aqua_sf %>% 
   as_tibble() %>% 
   dplyr::select(-geometry) %>% 
   names()
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_sf, MHW_num_SSP585, UniformCost)
+out_sf <- cbind(aqua_sf, MHW_SumCumInt_SSP585, UniformCost)
 scaling <- scaling_PenaltyVelocity %>% filter(scaling == 30) %>% pull() # get scaling for 30%
-p311 <- prioritizr::problem(out_sf, features, "cost") %>%
+p292 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% # target is 30% for all features.
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
   add_linear_penalties(scaling, data = "transformed")
 # 4. Solve the planning problem
-s311 <- prioritizr::solve(p311)
-saveRDS(s311, paste0(output_solutions, "s311-EM-Penalty-MHW_num-585.rds")) # save solution
+s292 <- prioritizr::solve(p292)
+saveRDS(s292, paste0(output_solutions, "s292-EM-Penalty-MHW_SumCumInt-585.rds")) # save solution
 # 5. Plot the spatial design
-s311_plot <- s311 %>% 
+s292_plot <- s292 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol311 <- fSpatPlan_PlotSolution(s311_plot, PUs, land) + ggtitle("Climate-smart design: # MHWs", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "EM-Penalty-MHW_num-585.png",
-       plot = ggSol311, width = 21, height = 29.7, dpi = 300,
-       path = "Figures/") # save plot
-# ----- Cumulative Intensity of MHWs -----
-# 1. Prepare climate layer
-scaling_PenaltyVelocity <- create_Scaling(UniformCost$cost, MHW_CumInt_SSP585$transformed, "MHW_CumInt")
-# 2. Get list of features
-features <- aqua_sf %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
-  names()
-# 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_sf, MHW_CumInt_SSP585, UniformCost)
-scaling <- scaling_PenaltyVelocity %>% filter(scaling == 30) %>% pull() # get scaling for 30%
-p312 <- prioritizr::problem(out_sf, features, "cost") %>%
-  add_min_set_objective() %>%
-  add_relative_targets(0.3) %>% # target is 30% for all features.
-  add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
-  add_linear_penalties(scaling, data = "transformed")
-# 4. Solve the planning problem
-s312 <- prioritizr::solve(p312)
-saveRDS(s312, paste0(output_solutions, "s312-EM-Penalty-MHW_CumInt-585.rds")) # save solution
-# 5. Plot the spatial design
-s312_plot <- s312 %>% 
-  mutate(solution_1 = as.logical(solution_1)) 
-(ggSol312 <- fSpatPlan_PlotSolution(s312_plot, PUs, land) + ggtitle("Climate-smart design: Cumulative Intensity", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "EM-Penalty-MHW_CumInt-585.png",
-       plot = ggSol312, width = 21, height = 29.7, dpi = 300,
-       path = "Figures/") # save plot
-# ----- Cumulative Duration of MHWs -----
-# 1. Prepare climate layer
-scaling_PenaltyVelocity <- create_Scaling(UniformCost$cost, MHW_CumDur_SSP585$transformed, "MHW_CumDur")
-# 2. Get list of features
-features <- aqua_sf %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
-  names()
-# 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_sf, MHW_CumDur_SSP585, UniformCost)
-scaling <- scaling_PenaltyVelocity %>% filter(scaling == 30) %>% pull() # get scaling for 30%
-p313 <- prioritizr::problem(out_sf, features, "cost") %>%
-  add_min_set_objective() %>%
-  add_relative_targets(0.3) %>% # target is 30% for all features.
-  add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
-  add_linear_penalties(scaling, data = "transformed")
-# 4. Solve the planning problem
-s313 <- prioritizr::solve(p313)
-saveRDS(s313, paste0(output_solutions, "s313-EM-Penalty-MHW_CumDur-585.rds")) # save solution
-# 5. Plot the spatial design
-s313_plot <- s313 %>% 
-  mutate(solution_1 = as.logical(solution_1)) 
-(ggSol313 <- fSpatPlan_PlotSolution(s313_plot, PUs, land) + ggtitle("Climate-smart design: Cumulative Duration", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "EM-Penalty-MHW_CumDur-585.png",
-       plot = ggSol313, width = 21, height = 29.7, dpi = 300,
+(ggSol292 <- fSpatPlan_PlotSolution(s292_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Penalty-MHW_SumCumInt-585.png",
+       plot = ggSol292, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 #### Summary ####
-problem_list <- list(p10, p11, p12, p13)
-solution_list <- list(s10, s11, s12, s13)
-climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585)
-metric_list <- c("tos", "phos", "o2os", "velocity")
+problem_list <- list(p10, p11, p12, p13, p292)
+solution_list <- list(s10, s11, s12, s13, s292)
+climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585, MHW_SumCumInt_SSP585)
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_SumCumInt")
 # ----- Feature representation -----
-names <- c("EM_Penalty_tos_585", "EM_Penalty_phos_585", "EM_Penalty_o2os_585", "EM_Penalty_velocity_585")
+names <- c("EM_Penalty_tos_585", "EM_Penalty_phos_585", "EM_Penalty_o2os_585", "EM_Penalty_velocity_585", "EM_Penalty_MHW_SumCumInt_585")
 feat_rep <- tibble(feature = character()) # empty tibble
 for (i in 1:length(names)) {
   df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
@@ -803,7 +651,8 @@ ggRidge <- ggplot(data = x) +
   scale_fill_manual(values = c(`EM_Penalty_tos_585` = "#289E3D",
                                `EM_Penalty_phos_585` = "#E6C173",
                                `EM_Penalty_o2os_585` = "#81B0CC",
-                               `EM_Penalty_velocity_585` = "#855600")) +
+                               `EM_Penalty_velocity_585` = "#855600",
+                               `EM_Penalty_MHW_SumCumInt_585` = "#3C6342")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
   xlim(min(x$percent), 100) +
   theme_classic()
@@ -836,7 +685,7 @@ ggsave(filename = "Area-MetricTheme-Penalty-585.png",
 
 # ----- Get Kappa Correlation Matrix -----
 object_list <- list() # empty list
-for (i in 1:length(list)) {
+for (i in 1:length(metric_list)) {
   obj <- select_solution(solution_list[[i]], metric_list[i])
   object_list[[i]] <- obj
 }
@@ -856,7 +705,8 @@ ggsave(filename = "LR-Metric-Penalty.png",
 summary <- compute_summary(s4_LRplot, total_area, PU_size, "LR-Penalty-585", Cost = "cost")
 write.csv(summary, paste0(output_summary, "MetricTheme_Penalty_LowRegretSummary.csv")) # save
 
-# ----- Remove climate layers -----
+# ----- Remove layers -----
+rm(p10, p11, p12, p13, p292, s10, s11, s12, s13, s292)
 rm(list = ls(pattern = paste(metric_list, collapse = "|")))
 #### Supplementary: Climate priority area ####
 # areas that are within the 5th percentile (or 95th percentile) are considered climate refugia/climate-smart
@@ -1002,10 +852,10 @@ ggsave(filename = "EM-ClimatePriorityArea-velocity-585.png",
       plot = ggSol37, width = 21, height = 29.7, dpi = 300,
       path = "Figures/") # save plot
 rm(list = ls(pattern = "^velocity_"))
-# ----- Number of MHWs -----
-LoadClimateMetrics(metric = "MHW_num", model = NA, scenario = "SSP 5-8.5")
+# ----- Sum of the cumulative MHW intensity -----
+LoadClimateMetrics(metric = "MHW_SumCumInt", model = NA, scenario = "SSP 5-8.5")
 # 1. Prepare the climate layers and features
-ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "MHW_num", colname = "transformed", metric_df = MHW_num_SSP585)
+ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "MHW_SumCumInt", colname = "transformed", metric_df = MHW_SumCumInt_SSP585)
 RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
 Features <- cbind(ImptFeat, RepFeat) %>% 
   dplyr::select(-geometry.1)
@@ -1020,96 +870,26 @@ targets <- features %>% as_tibble() %>%
   add_column(target = 1) %>% 
   mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
 # 4. Set up the spatial planning problem
-out_sf <- cbind(Features, MHW_num_SSP585, UniformCost)
-p314 <- prioritizr::problem(out_sf, features, "cost") %>%
+out_sf <- cbind(Features, MHW_SumCumInt_SSP585, UniformCost)
+p293 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>%
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 # 5. Solve the planning problem 
-s314 <- prioritizr::solve(p314)
-saveRDS(s314, paste0(output_solutions, "s314-EM-ClimatePriorityArea-MHW_num-585.rds")) # save solution
+s293 <- prioritizr::solve(p293)
+saveRDS(s293, paste0(output_solutions, "s293-EM-ClimatePriorityArea-MHW_SumCumInt-585.rds")) # save solution
 # 6. Plot the spatial design
-s314_plot <- s314 %>% 
+s293_plot <- s293 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol314 <- fSpatPlan_PlotSolution(s314_plot, PUs, land) + ggtitle("Climate-smart design: # MHWs", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "EM-ClimatePriorityArea-MHW_num-585.png",
-       plot = ggSol314, width = 21, height = 29.7, dpi = 300,
-       path = "Figures/") # save plot
-rm(list = ls(pattern = "^MHW_num_"))
-# ----- Cumulative Intensity of MHWs -----
-LoadClimateMetrics(metric = "MHW_CumInt", model = NA, scenario = "SSP 5-8.5")
-# 1. Prepare the climate layers and features
-ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "MHW_CumInt", colname = "transformed", metric_df = MHW_CumInt_SSP585)
-RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
-Features <- cbind(ImptFeat, RepFeat) %>% 
-  dplyr::select(-geometry.1)
-# 2. Get list of features
-features <- Features %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
-  names()
-# 3. Differentiate targets for important features and representative features
-targets <- features %>% as_tibble() %>% 
-  setNames(., "Species") %>% 
-  add_column(target = 1) %>% 
-  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
-# 4. Set up the spatial planning problem
-out_sf <- cbind(Features, MHW_CumInt_SSP585, UniformCost)
-p315 <- prioritizr::problem(out_sf, features, "cost") %>%
-  add_min_set_objective() %>%
-  add_relative_targets(targets$target) %>%
-  add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
-# 5. Solve the planning problem 
-s315 <- prioritizr::solve(p315)
-saveRDS(s315, paste0(output_solutions, "s315-EM-ClimatePriorityArea-MHW_CumInt-585.rds")) # save solution
-# 6. Plot the spatial design
-s315_plot <- s315 %>% 
-  mutate(solution_1 = as.logical(solution_1)) 
-(ggSol315 <- fSpatPlan_PlotSolution(s315_plot, PUs, land) + ggtitle("Climate-smart design: Cumulative Intensity of MHWs", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "EM-ClimatePriorityArea-MHW_CumInt-585.png",
-       plot = ggSol315, width = 21, height = 29.7, dpi = 300,
-       path = "Figures/") # save plot
-rm(list = ls(pattern = "^MHW_CumInt_"))
-# ----- Cumulative Duration of MHWs -----
-LoadClimateMetrics(metric = "MHW_CumDur", model = NA, scenario = "SSP 5-8.5")
-# 1. Prepare the climate layers and features
-ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "MHW_CumDur", colname = "transformed", metric_df = MHW_CumDur_SSP585)
-RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
-Features <- cbind(ImptFeat, RepFeat) %>% 
-  dplyr::select(-geometry.1)
-# 2. Get list of features
-features <- Features %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
-  names()
-# 3. Differentiate targets for important features and representative features
-targets <- features %>% as_tibble() %>% 
-  setNames(., "Species") %>% 
-  add_column(target = 1) %>% 
-  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
-# 4. Set up the spatial planning problem
-out_sf <- cbind(Features, MHW_CumDur_SSP585, UniformCost)
-p316 <- prioritizr::problem(out_sf, features, "cost") %>%
-  add_min_set_objective() %>%
-  add_relative_targets(targets$target) %>%
-  add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
-# 5. Solve the planning problem 
-s316 <- prioritizr::solve(p316)
-saveRDS(s316, paste0(output_solutions, "s316-EM-ClimatePriorityArea-MHW_CumDur-585.rds")) # save solution
-# 6. Plot the spatial design
-s316_plot <- s316 %>% 
-  mutate(solution_1 = as.logical(solution_1)) 
-(ggSol316 <- fSpatPlan_PlotSolution(s316_plot, PUs, land) + ggtitle("Climate-smart design: Cumulative Duration of MHWs", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "EM-ClimatePriorityArea-MHW_CumDur-585.png",
-       plot = ggSol316, width = 21, height = 29.7, dpi = 300,
+(ggSol293 <- fSpatPlan_PlotSolution(s293_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative MHW Intensity", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-ClimatePriorityArea-MHW_SumCumInt-585.png",
+       plot = ggSol293, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 rm(list = ls(pattern = "^MHW_CumInt_"))
 #### Summary ####
 # ----- Load climate layers -----
-metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_SumCumInt")
 for(metric_num in 1:length(metric_list)) {
   LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
 }
@@ -1125,13 +905,13 @@ dummy_problem <- prioritizr::problem(out_sf, features, "cost") %>%
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 
-problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem)
+problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem)
 
-solution_list <- list(s34, s35, s36, s37)
-climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585)
-metric_list <- c("tos", "phos", "o2os", "velocity")
+solution_list <- list(s34, s35, s36, s37, s293)
+climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585, MHW_SumCumInt_SSP585)
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_SumCumInt")
 # ----- Feature representation -----
-names <- c("EM_ClimatePriorityArea_tos_585", "EM_ClimatePriorityArea_phos_585", "EM_ClimatePriorityArea_o2os_585", "EM_ClimatePriorityArea_velocity_585")
+names <- c("EM_ClimatePriorityArea_tos_585", "EM_ClimatePriorityArea_phos_585", "EM_ClimatePriorityArea_o2os_585", "EM_ClimatePriorityArea_velocity_585", "EM_ClimatePriorityArea_MHW_SumCumInt_585")
 feat_rep <- tibble(feature = character()) # empty tibble
 for (i in 1:length(names)) {
   df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
@@ -1150,7 +930,8 @@ ggRidge <- ggplot(data = x) +
   scale_fill_manual(values = c(`EM_ClimatePriorityArea_tos_585` = "#289E3D",
                                `EM_ClimatePriorityArea_phos_585` = "#E6C173",
                                `EM_ClimatePriorityArea_o2os_585` = "#81B0CC",
-                               `EM_ClimatePriorityArea_velocity_585` = "#855600")) +
+                               `EM_ClimatePriorityArea_velocity_585` = "#855600",
+                               `EM_ClimatePriorityArea_MHW_SumCumInt_585` = "#3C6342")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
   xlim(min(x$percent), 100) +
   theme_classic()
@@ -1183,7 +964,7 @@ ggsave(filename = "Area-MetricTheme-ClimatePriorityArea-585.png",
 
 # ----- Get Kappa Correlation Matrix -----
 object_list <- list() # empty list
-for (i in 1:length(list)) {
+for (i in 1:length(metric_list)) {
   obj <- select_solution(solution_list[[i]], metric_list[i])
   object_list[[i]] <- obj
 }
@@ -1202,5 +983,6 @@ ggsave(filename = "LR-Metric-ClimatePriorityArea.png",
 # Summary of low-regret
 summary <- compute_summary(s5_LRplot, total_area, PU_size, "LR-ClimatePriorityArea-585", Cost = "cost")
 write.csv(summary, paste0(output_summary, "MetricTheme_ClimatePriorityArea_LowRegretSummary.csv")) # save
-# ----- Remove climate layers -----
+# ----- Remove layers -----
 rm(list = ls(pattern = paste(metric_list, collapse = "|")))
+rm(s34, s35, s36, s37, s293, p34, p35, p36, p37, p293)

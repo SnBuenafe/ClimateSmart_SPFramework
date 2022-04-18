@@ -98,7 +98,7 @@ plot_statistics <- function(summary, col_name, y_axis, theme) {
     color_legend <- c("126" = "#289E3D", "245" = "#E6C173", "585" = "#855600")
     string <- "as.factor(scenario)"
   } else if (theme == "metric") {
-    color_legend <- c("#289E3D", "#E6C173", "#81B0CC", "#855600")
+    color_legend <- c("#3C6342", "#289E3D", "#E6C173", "#81B0CC", "#855600")
     string <- "as.factor(run)"
   } else if (theme == "LR-approach"){
     color_legend = c("#E6BA7E", "#4D3B2A", "#6984BF", "#2B8142")
@@ -418,6 +418,8 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
     } else if (metric == "velocity") {
       df[[i]] %<>% summarize(median_velocity = median(transformed),
                              mean_log_velocity = mean(log(transformed)))
+    } else if (metric == "MHW_SumCumInt") {
+      df[[i]] %<>% summarize(mean_sum_cumulative_intensity = mean(transformed))
     }
     
     if (length(col_scenario) > 1) {

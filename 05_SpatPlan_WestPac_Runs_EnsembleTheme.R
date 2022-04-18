@@ -1124,4 +1124,168 @@ ggsave(filename = "MM-SelectionFrequency-velocity-585.png",
        path = "Figures/") # save plot
 
 rm(list = ls(pattern = "^velocity_"))
-#### TODO: Marine Heatwaves ####
+#### "Ensemble mean" approach: Sum of Cumulative MHW Intensity (SSP 5-8.5) ####
+# ----- Load climate layers -----
+LoadClimateMetrics(metric = "MHW", model = NA, scenario = "SSP 5-8.5")
+# ----- Create spatial plans -----
+# 1. Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "MHW_SumCumInt", colname = "transformed", metric_df = MHW_SumCumInt_SSP585, PUs = PUs)
+# 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+# 3. Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, MHW_SumCumInt_SSP585, UniformCost)
+p290 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>% 
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+# 4. Solve the planning problem 
+s290 <- prioritizr::solve(p290)
+saveRDS(s290, paste0(output_solutions, "s290-EM-Percentile-MHW_SumCumInt-585.rds")) # save solution
+# 5. Plot the spatial design
+s290_plot <- s290 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol290 <- fSpatPlan_PlotSolution(s290_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "EM-Percentile-MHW_SumCumInt-585.png",
+       plot = ggSol290, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+#### "Multi-model ensemble" approach: Sum of Cumulative MHW Intensity (SSP 5-8.5) ####
+# ----- Load climate layers -----
+model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+for(model_num in 1:length(model_list)) {
+  LoadClimateMetrics(metric = "MHW_SumCumInt", model = model_list[model_num], scenario = "SSP 5-8.5")
+}
+# ----- Create spatial plans -----
+# A. CanESM5
+# 1. Prepare climate layer
+ensemble <- list(`MHW_SumCumInt_CanESM5_SSP585`, `MHW_SumCumInt_CMCC-ESM2_SSP585`, `MHW_SumCumInt_GFDL-ESM4_SSP585`, `MHW_SumCumInt_IPSL-CM6A-LR_SSP585`, `MHW_SumCumInt_NorESM2-MM_SSP585`)
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "MHW_SumCumInt", colname = "transformed", metric_df = ensemble[[1]], PUs = PUs)
+# 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+# 3. Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, MHW_SumCumInt_CanESM5_SSP585, UniformCost)
+p294 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+# 4. Solve the planning problem 
+s294 <- prioritizr::solve(p294)
+saveRDS(s294, paste0(output_solutions, "s294-MM-CanESM5-Percentile-MHW_SumCumInt-585.rds")) # save solution
+# 5. Plot the spatial design
+s294_plot <- s294 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol294 <- fSpatPlan_PlotSolution(s294_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative MHW Intensity", subtitle = "Percentile, SSP 5-8.5 (GCM: CanESM5)") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "MM-CanESM5-Percentile-MHW_SumCumInt-585.png",
+       plot = ggSol294, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# B. CMCC-ESM2
+# 1. Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "MHW_SumCumInt", colname = "transformed", metric_df = ensemble[[2]], PUs = PUs)
+# 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+# 3. Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, `MHW_SumCumInt_CMCC-ESM2_SSP585`, UniformCost)
+p295 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+# 4. Solve the planning problem 
+s295 <- prioritizr::solve(p295)
+saveRDS(s295, paste0(output_solutions, "s295-MM-CMCC_ESM2-Percentile-MHW_SumCumInt-585.rds")) # save solution
+# 5. Plot the spatial design
+s295_plot <- s295 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol295 <- fSpatPlan_PlotSolution(s295_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative MHW Intensity", subtitle = "Percentile, SSP 5-8.5 (GCM: CMCC-ESM2)") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "MM-CMCC_ESM2-Percentile-MHW_SumCumInt-585.png",
+       plot = ggSol295, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# C. GFDL-ESM4
+# 1. Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "MHW_SumCumInt", colname = "transformed", metric_df = ensemble[[3]], PUs = PUs)
+# 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+# 3. Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, `MHW_SumCumInt_GFDL-ESM4_SSP585`, UniformCost)
+p296 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+# 4. Solve the planning problem 
+s296 <- prioritizr::solve(p296)
+saveRDS(s296, paste0(output_solutions, "s296-MM-GFDL-ESM4-Percentile-MHW_SumCumInt-585.rds")) # save solution
+# 5. Plot the spatial design
+s296_plot <- s296 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol296 <- fSpatPlan_PlotSolution(s296_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative MHW Intensity", subtitle = "Percentile, SSP 5-8.5 (GCM: GFDL-ESM4)") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "MM-GFDL_ESM4-Percentile-MHW_SumCumInt-585.png",
+       plot = ggSol296, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# D. IPSL-CM6A-LR
+# 1. Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "MHW_SumCumInt", colname = "transformed", metric_df = ensemble[[4]], PUs = PUs)
+# 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+# 3. Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, `MHW_SumCumInt_IPSL-CM6A-LR_SSP585`, UniformCost)
+p297 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+# 4. Solve the planning problem 
+s297 <- prioritizr::solve(p297)
+saveRDS(s297, paste0(output_solutions, "s297-MM-IPSL-CM6A-LR-Percentile-MHW_SumCumInt-585.rds")) # save solution
+# 5. Plot the spatial design
+s297_plot <- s297 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol297 <- fSpatPlan_PlotSolution(s297_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative MHW Intensity", subtitle = "Percentile, SSP 5-8.5 (GCM: IPSL-CM6A-LR)") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "MM-IPSL-CM6A-LR-Percentile-MHW_SumCumInt-585.png",
+       plot = ggSol297, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# E. NorESM2-MM
+# 1. Prepare climate layer
+aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "MHW_SumCumInt", colname = "transformed", metric_df = ensemble[[5]], PUs = PUs)
+# 2. Get list of features
+features <- aqua_percentile %>% 
+  as_tibble() %>% 
+  dplyr::select(-geometry) %>% 
+  names()
+# 3. Set up the spatial planning problem
+out_sf <- cbind(aqua_percentile, `MHW_SumCumInt_NorESM2-MM_SSP585`, UniformCost)
+p298 <- prioritizr::problem(out_sf, features, "cost") %>%
+  add_min_set_objective() %>%
+  add_relative_targets(30/35) %>%
+  add_binary_decisions() %>%
+  add_gurobi_solver(gap = 0, verbose = FALSE)
+# 4. Solve the planning problem 
+s298 <- prioritizr::solve(p298)
+saveRDS(s298, paste0(output_solutions, "s298-MM-NorESM2-MM-Percentile-MHW_SumCumInt-585.rds")) # save solution
+# 5. Plot the spatial design
+s298_plot <- s298 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+(ggSol298 <- fSpatPlan_PlotSolution(s298_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative MHW Intensity", subtitle = "Percentile, SSP 5-8.5 (GCM: NorESM2-MM)") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "MM-NorESM2-MM-Percentile-MHW_SumCumInt-585.png",
+       plot = ggSol298, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot

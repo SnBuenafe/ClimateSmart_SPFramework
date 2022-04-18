@@ -511,7 +511,8 @@ ID %<>% add_row(column = "trend_n", metric = "MHW_num", save = "(Trend Num)") %>
   add_row(column = "trend_cum_int", metric = "MHW_CumInt", save = "(Cumulative Intensity") %>% 
   add_row(column = "trend_dur", metric = "MHW_Dur", save = "(Mean Duration)") %>% 
   add_row(column = "trend_cum_dur", metric = "MHW_CumDur", save = "(Cumulative Duration)") %>% 
-  add_row(column = "sum_cum_int", metric = "MHW_SumCumInt", save = "(Sum Cumulative Intensity")
+  add_row(column = "sum_cum_int", metric = "MHW_SumCumInt", save = "(Sum Cumulative Intensity)") %>% 
+  add_row(column = "sum_cum_dur", metric = "MHW_SumCumDur", save = "(Sum Cumulative Duration)")
 
 if(reprocess) {
   scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
@@ -575,7 +576,7 @@ if(reprocess) {
         saveRDS(layer, file.path("Output", 
                                  paste(save_name, "ClimateLayer", ID$metric[k], model[j], paste0(scenario_path[i], ".rds"), sep = "_")))
         
-        print(paste0("Saved MM: ", scenario_path[i], ": ", model_list[j], ID$save[k]))
+        print(paste0("Saved MM: ", scenario_path[i], ": ", model[j], ID$save[k]))
       }
     }
   }
