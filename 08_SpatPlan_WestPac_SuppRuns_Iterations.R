@@ -115,11 +115,11 @@ solution <-lapply(solution, function(x) {
 loopthrough_MM_Feature(solution, metric_list, scenario_list, model_list)
 # ----- Climate priority area approach runs -----
 # loop through the metric, scenario, and model lists
-metric_list <- c("MHW_num", "MHW_CumInt", "MHW_CumDur")
-scenario_list <- c("126", "245", "585")
+metric_list <- c("MHW_SumCumInt")
+scenario_list <- c("585")#"126", "245", 
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 
-solution <- seq(from = 525, to = 526, by = 1) # solution names, check metadata
+solution <- seq(from = 317, to = 321, by = 1) # solution names, check metadata
 solution <-lapply(solution, function(x) {
   y <- paste0("s", x)
 }) %>% unlist()
