@@ -1,8 +1,10 @@
 #install.packages("pacman")
-# devtools::install_github("JorGarMol/VoCC", dependencies = TRUE, build_vignettes = TRUE)
+#devtools::install_github("JorGarMol/VoCC", dependencies = TRUE, build_vignettes = TRUE)
 
-pacman::p_load(sf, terra, tidyverse, rnaturalearth, prioritizr, stars, patchwork, proj4, magrittr, doParallel, ggridges, viridis,
-               BiocManager, ncdf4, PCICt, ncdf4.helpers, VoCC, RColorBrewer)
+#install.packages("remotes")
+#remotes::install_github("jfq3/ggordiplots", force = TRUE)
+
+pacman::p_load(sf, terra, tidyverse, rnaturalearth, prioritizr, stars, patchwork, proj4, magrittr, doParallel, ggridges, viridis, vegan, irr, vegan, BiocManager, ncdf4, PCICt, ncdf4.helpers, VoCC, RColorBrewer, ggordiplots)
 
 longlat <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
 

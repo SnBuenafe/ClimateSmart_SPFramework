@@ -14,7 +14,11 @@
 # scenario_list: 126 (SSP 1-2.6), 245 (SSP 2-4.5), 585 (SSP 5-8.5)
 # model_list: CanESM5, CMCC-ESM2, GFDL-ESM4, IPSL-CM6A-LR, NorESM2-MM
 # solution: "s" + a number (please check metadata file)
-
+# How to set up solutions (e.g.):
+#solution <- seq(from = 317, to = 322, by = 1) # solution names, check metadata
+#solution <-lapply(solution, function(x) {
+#  y <- paste0("s", x)
+#}) %>% unlist()
 
 # Load functions
 source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functions and libraries
@@ -23,13 +27,6 @@ source("HelperFunctions/SpatPlan_IterationFxns_WestPac.R") # Load loop functions
 output_solutions <- "Output/solutions/"
 output_summary <- "Output/summary/"
 output_lowregret <- "Output/lowregret/"
-
-#library(rlang)
-
-#solution <- seq(from = 317, to = 322, by = 1) # solution names, check metadata
-#solution <-lapply(solution, function(x) {
-#  y <- paste0("s", x)
-#}) %>% unlist()
 
 # Load files
 source("03_SpatPlan_Master_Preliminaries.R")

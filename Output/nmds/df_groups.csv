@@ -1,0 +1,361 @@
+﻿solutions,scenario,model,metric,approach
+s2,SSP5-8.5,EM,tos,percentile
+s3,SSP5-8.5,EM,phos,percentile
+s4,SSP5-8.5,EM,o2os,percentile
+s5,SSP5-8.5,EM,velocity,percentile
+s6,SSP5-8.5,EM,tos,feature
+s7,SSP5-8.5,EM,phos,feature
+s8,SSP5-8.5,EM,o2os,feature
+s9,SSP5-8.5,EM,velocity,feature
+s10,SSP5-8.5,EM,tos,penalty
+s11,SSP5-8.5,EM,phos,penalty
+s12,SSP5-8.5,EM,o2os,penalty
+s13,SSP5-8.5,EM,velocity,penalty
+s14,SSP5-8.5,CanESM5,tos,percentile
+s15,SSP5-8.5,CMCC-ESM2,tos,percentile
+s16,SSP5-8.5,GFDL-ESM4,tos,percentile
+s17,SSP5-8.5,IPSL-CM6A-LR,tos,percentile
+s18,SSP5-8.5,NorESM2-MM,tos,percentile
+s19,SSP5-8.5,CanESM5,phos,percentile
+s20,SSP5-8.5,CMCC-ESM2,phos,percentile
+s21,SSP5-8.5,GFDL-ESM4,phos,percentile
+s22,SSP5-8.5,IPSL-CM6A-LR,phos,percentile
+s23,SSP5-8.5,NorESM2-MM,phos,percentile
+s24,SSP5-8.5,CanESM5,o2os,percentile
+s25,SSP5-8.5,CMCC-ESM2,o2os,percentile
+s26,SSP5-8.5,GFDL-ESM4,o2os,percentile
+s27,SSP5-8.5,IPSL-CM6A-LR,o2os,percentile
+s28,SSP5-8.5,NorESM2-MM,o2os,percentile
+s29,SSP5-8.5,CanESM5,velocity,percentile
+s30,SSP5-8.5,CMCC-ESM2,velocity,percentile
+s31,SSP5-8.5,GFDL-ESM4,velocity,percentile
+s32,SSP5-8.5,IPSL-CM6A-LR,velocity,percentile
+s33,SSP5-8.5,NorESM2-MM,velocity,percentile
+s34,SSP5-8.5,EM,tos,climate priority area
+s35,SSP5-8.5,EM,phos,climate priority area
+s36,SSP5-8.5,EM,o2os,climate priority area
+s37,SSP5-8.5,EM,velocity,climate priority area
+s38,SSP1-2.6,EM,tos,percentile
+s39,SSP2-4.5,EM,tos,percentile
+s40,SSP1-2.6,EM,phos,percentile
+s41,SSP2-4.5,EM,phos,percentile
+s42,SSP1-2.6,EM,o2os,percentile
+s43,SSP2-4.5,EM,o2os,percentile
+s44,SSP1-2.6,EM,velocity,percentile
+s45,SSP2-4.5,EM,velocity,percentile
+s46,SSP1-2.6,EM,tos,feature
+s47,SSP2-4.5,EM,tos,feature
+s48,SSP1-2.6,EM,phos,feature
+s49,SSP2-4.5,EM,phos,feature
+s50,SSP1-2.6,EM,o2os,feature
+s51,SSP2-4.5,EM,o2os,feature
+s52,SSP1-2.6,EM,velocity,feature
+s53,SSP2-4.5,EM,velocity,feature
+s54,SSP1-2.6,EM,tos,penalty
+s55,SSP2-4.5,EM,tos,penalty
+s56,SSP1-2.6,EM,phos,penalty
+s57,SSP2-4.5,EM,phos,penalty
+s58,SSP1-2.6,EM,o2os,penalty
+s59,SSP2-4.5,EM,o2os,penalty
+s60,SSP1-2.6,EM,velocity,penalty
+s61,SSP2-4.5,EM,velocity,penalty
+s62,SSP1-2.6,CanESM5,tos,percentile
+s63,SSP1-2.6,CMCC-ESM2,tos,percentile
+s64,SSP1-2.6,GFDL-ESM4,tos,percentile
+s65,SSP1-2.6,IPSL-CM6A-LR,tos,percentile
+s66,SSP1-2.6,NorESM2-MM,tos,percentile
+s67,SSP1-2.6,CanESM5,phos,percentile
+s68,SSP1-2.6,CMCC-ESM2,phos,percentile
+s69,SSP1-2.6,GFDL-ESM4,phos,percentile
+s70,SSP1-2.6,IPSL-CM6A-LR,phos,percentile
+s71,SSP1-2.6,NorESM2-MM,phos,percentile
+s72,SSP1-2.6,CanESM5,o2os,percentile
+s73,SSP1-2.6,CMCC-ESM2,o2os,percentile
+s74,SSP1-2.6,GFDL-ESM4,o2os,percentile
+s75,SSP1-2.6,IPSL-CM6A-LR,o2os,percentile
+s76,SSP1-2.6,NorESM2-MM,o2os,percentile
+s77,SSP1-2.6,CanESM5,velocity,percentile
+s78,SSP1-2.6,CMCC-ESM2,velocity,percentile
+s79,SSP1-2.6,GFDL-ESM4,velocity,percentile
+s80,SSP1-2.6,IPSL-CM6A-LR,velocity,percentile
+s81,SSP1-2.6,NorESM2-MM,velocity,percentile
+s82,SSP2-4.5,CanESM5,tos,percentile
+s83,SSP2-4.5,CMCC-ESM2,tos,percentile
+s84,SSP2-4.5,GFDL-ESM4,tos,percentile
+s85,SSP2-4.5,IPSL-CM6A-LR,tos,percentile
+s86,SSP2-4.5,NorESM2-MM,tos,percentile
+s87,SSP2-4.5,CanESM5,phos,percentile
+s88,SSP2-4.5,CMCC-ESM2,phos,percentile
+s89,SSP2-4.5,GFDL-ESM4,phos,percentile
+s90,SSP2-4.5,IPSL-CM6A-LR,phos,percentile
+s91,SSP2-4.5,NorESM2-MM,phos,percentile
+s92,SSP2-4.5,CanESM5,o2os,percentile
+s93,SSP2-4.5,CMCC-ESM2,o2os,percentile
+s94,SSP2-4.5,GFDL-ESM4,o2os,percentile
+s95,SSP2-4.5,IPSL-CM6A-LR,o2os,percentile
+s96,SSP2-4.5,NorESM2-MM,o2os,percentile
+s97,SSP2-4.5,CanESM5,velocity,percentile
+s98,SSP2-4.5,CMCC-ESM2,velocity,percentile
+s99,SSP2-4.5,GFDL-ESM4,velocity,percentile
+s100,SSP2-4.5,IPSL-CM6A-LR,velocity,percentile
+s101,SSP2-4.5,NorESM2-MM,velocity,percentile
+s102,SSP1-2.6,CanESM5,tos,penalty
+s103,SSP1-2.6,CMCC-ESM2,tos,penalty
+s104,SSP1-2.6,GFDL-ESM4,tos,penalty
+s105,SSP1-2.6,IPSL-CM6A-LR,tos,penalty
+s106,SSP1-2.6,NorESM2-MM,tos,penalty
+s107,SSP1-2.6,CanESM5,phos,penalty
+s108,SSP1-2.6,CMCC-ESM2,phos,penalty
+s109,SSP1-2.6,GFDL-ESM4,phos,penalty
+s110,SSP1-2.6,IPSL-CM6A-LR,phos,penalty
+s111,SSP1-2.6,NorESM2-MM,phos,penalty
+s112,SSP1-2.6,CanESM5,o2os,penalty
+s113,SSP1-2.6,CMCC-ESM2,o2os,penalty
+s114,SSP1-2.6,GFDL-ESM4,o2os,penalty
+s115,SSP1-2.6,IPSL-CM6A-LR,o2os,penalty
+s116,SSP1-2.6,NorESM2-MM,o2os,penalty
+s117,SSP1-2.6,CanESM5,velocity,penalty
+s118,SSP1-2.6,CMCC-ESM2,velocity,penalty
+s119,SSP1-2.6,GFDL-ESM4,velocity,penalty
+s120,SSP1-2.6,IPSL-CM6A-LR,velocity,penalty
+s121,SSP1-2.6,NorESM2-MM,velocity,penalty
+s122,SSP2-4.5,CanESM5,tos,penalty
+s123,SSP2-4.5,CMCC-ESM2,tos,penalty
+s124,SSP2-4.5,GFDL-ESM4,tos,penalty
+s125,SSP2-4.5,IPSL-CM6A-LR,tos,penalty
+s126,SSP2-4.5,NorESM2-MM,tos,penalty
+s127,SSP2-4.5,CanESM5,phos,penalty
+s128,SSP2-4.5,CMCC-ESM2,phos,penalty
+s129,SSP2-4.5,GFDL-ESM4,phos,penalty
+s130,SSP2-4.5,IPSL-CM6A-LR,phos,penalty
+s131,SSP2-4.5,NorESM2-MM,phos,penalty
+s132,SSP2-4.5,CanESM5,o2os,penalty
+s133,SSP2-4.5,CMCC-ESM2,o2os,penalty
+s134,SSP2-4.5,GFDL-ESM4,o2os,penalty
+s135,SSP2-4.5,IPSL-CM6A-LR,o2os,penalty
+s136,SSP2-4.5,NorESM2-MM,o2os,penalty
+s137,SSP2-4.5,CanESM5,velocity,penalty
+s138,SSP2-4.5,CMCC-ESM2,velocity,penalty
+s139,SSP2-4.5,GFDL-ESM4,velocity,penalty
+s140,SSP2-4.5,IPSL-CM6A-LR,velocity,penalty
+s141,SSP2-4.5,NorESM2-MM,velocity,penalty
+s142,SSP1-2.6,CanESM5,tos,feature
+s143,SSP1-2.6,CMCC-ESM2,tos,feature
+s144,SSP1-2.6,GFDL-ESM4,tos,feature
+s145,SSP1-2.6,IPSL-CM6A-LR,tos,feature
+s146,SSP1-2.6,NorESM2-MM,tos,feature
+s147,SSP1-2.6,CanESM5,phos,feature
+s148,SSP1-2.6,CMCC-ESM2,phos,feature
+s149,SSP1-2.6,GFDL-ESM4,phos,feature
+s150,SSP1-2.6,IPSL-CM6A-LR,phos,feature
+s151,SSP1-2.6,NorESM2-MM,phos,feature
+s152,SSP1-2.6,CanESM5,o2os,feature
+s153,SSP1-2.6,CMCC-ESM2,o2os,feature
+s154,SSP1-2.6,GFDL-ESM4,o2os,feature
+s155,SSP1-2.6,IPSL-CM6A-LR,o2os,feature
+s156,SSP1-2.6,NorESM2-MM,o2os,feature
+s157,SSP1-2.6,CanESM5,velocity,feature
+s158,SSP1-2.6,CMCC-ESM2,velocity,feature
+s159,SSP1-2.6,GFDL-ESM4,velocity,feature
+s160,SSP1-2.6,IPSL-CM6A-LR,velocity,feature
+s161,SSP1-2.6,NorESM2-MM,velocity,feature
+s162,SSP2-4.5,CanESM5,tos,feature
+s163,SSP2-4.5,CMCC-ESM2,tos,feature
+s164,SSP2-4.5,GFDL-ESM4,tos,feature
+s165,SSP2-4.5,IPSL-CM6A-LR,tos,feature
+s166,SSP2-4.5,NorESM2-MM,tos,feature
+s167,SSP2-4.5,CanESM5,phos,feature
+s168,SSP2-4.5,CMCC-ESM2,phos,feature
+s169,SSP2-4.5,GFDL-ESM4,phos,feature
+s170,SSP2-4.5,IPSL-CM6A-LR,phos,feature
+s171,SSP2-4.5,NorESM2-MM,phos,feature
+s172,SSP2-4.5,CanESM5,o2os,feature
+s173,SSP2-4.5,CMCC-ESM2,o2os,feature
+s174,SSP2-4.5,GFDL-ESM4,o2os,feature
+s175,SSP2-4.5,IPSL-CM6A-LR,o2os,feature
+s176,SSP2-4.5,NorESM2-MM,o2os,feature
+s177,SSP2-4.5,CanESM5,velocity,feature
+s178,SSP2-4.5,CMCC-ESM2,velocity,feature
+s179,SSP2-4.5,GFDL-ESM4,velocity,feature
+s180,SSP2-4.5,IPSL-CM6A-LR,velocity,feature
+s181,SSP2-4.5,NorESM2-MM,velocity,feature
+s182,SSP5-8.5,CanESM5,tos,penalty
+s183,SSP5-8.5,CMCC-ESM2,tos,penalty
+s184,SSP5-8.5,GFDL-ESM4,tos,penalty
+s185,SSP5-8.5,IPSL-CM6A-LR,tos,penalty
+s186,SSP5-8.5,NorESM2-MM,tos,penalty
+s187,SSP5-8.5,CanESM5,phos,penalty
+s188,SSP5-8.5,CMCC-ESM2,phos,penalty
+s189,SSP5-8.5,GFDL-ESM4,phos,penalty
+s190,SSP5-8.5,IPSL-CM6A-LR,phos,penalty
+s191,SSP5-8.5,NorESM2-MM,phos,penalty
+s192,SSP5-8.5,CanESM5,o2os,penalty
+s193,SSP5-8.5,CMCC-ESM2,o2os,penalty
+s194,SSP5-8.5,GFDL-ESM4,o2os,penalty
+s195,SSP5-8.5,IPSL-CM6A-LR,o2os,penalty
+s196,SSP5-8.5,NorESM2-MM,o2os,penalty
+s197,SSP5-8.5,CanESM5,velocity,penalty
+s198,SSP5-8.5,CMCC-ESM2,velocity,penalty
+s199,SSP5-8.5,GFDL-ESM4,velocity,penalty
+s200,SSP5-8.5,IPSL-CM6A-LR,velocity,penalty
+s201,SSP5-8.5,NorESM2-MM,velocity,penalty
+s202,SSP5-8.5,CanESM5,tos,feature
+s203,SSP5-8.5,CMCC-ESM2,tos,feature
+s204,SSP5-8.5,GFDL-ESM4,tos,feature
+s205,SSP5-8.5,IPSL-CM6A-LR,tos,feature
+s206,SSP5-8.5,NorESM2-MM,tos,feature
+s207,SSP5-8.5,CanESM5,phos,feature
+s208,SSP5-8.5,CMCC-ESM2,phos,feature
+s209,SSP5-8.5,GFDL-ESM4,phos,feature
+s210,SSP5-8.5,IPSL-CM6A-LR,phos,feature
+s211,SSP5-8.5,NorESM2-MM,phos,feature
+s212,SSP5-8.5,CanESM5,o2os,feature
+s213,SSP5-8.5,CMCC-ESM2,o2os,feature
+s214,SSP5-8.5,GFDL-ESM4,o2os,feature
+s215,SSP5-8.5,IPSL-CM6A-LR,o2os,feature
+s216,SSP5-8.5,NorESM2-MM,o2os,feature
+s217,SSP5-8.5,CanESM5,velocity,feature
+s218,SSP5-8.5,CMCC-ESM2,velocity,feature
+s219,SSP5-8.5,GFDL-ESM4,velocity,feature
+s220,SSP5-8.5,IPSL-CM6A-LR,velocity,feature
+s221,SSP5-8.5,NorESM2-MM,velocity,feature
+s222,SSP1-2.6,EM,tos,climate priority area
+s223,SSP1-2.6,EM,phos,climate priority area
+s224,SSP1-2.6,EM,o2os,climate priority area
+s225,SSP1-2.6,EM,velocity,climate priority area
+s226,SSP2-4.5,EM,tos,climate priority area
+s227,SSP2-4.5,EM,phos,climate priority area
+s228,SSP2-4.5,EM,o2os,climate priority area
+s229,SSP2-4.5,EM,velocity,climate priority area
+s230,SSP1-2.6,CanESM5,tos,climate priority area
+s231,SSP1-2.6,CMCC-ESM2,tos,climate priority area
+s232,SSP1-2.6,GFDL-ESM4,tos,climate priority area
+s233,SSP1-2.6,IPSL-CM6A-LR,tos,climate priority area
+s234,SSP1-2.6,NorESM2-MM,tos,climate priority area
+s235,SSP1-2.6,CanESM5,phos,climate priority area
+s236,SSP1-2.6,CMCC-ESM2,phos,climate priority area
+s237,SSP1-2.6,GFDL-ESM4,phos,climate priority area
+s238,SSP1-2.6,IPSL-CM6A-LR,phos,climate priority area
+s239,SSP1-2.6,NorESM2-MM,phos,climate priority area
+s240,SSP1-2.6,CanESM5,o2os,climate priority area
+s241,SSP1-2.6,CMCC-ESM2,o2os,climate priority area
+s242,SSP1-2.6,GFDL-ESM4,o2os,climate priority area
+s243,SSP1-2.6,IPSL-CM6A-LR,o2os,climate priority area
+s244,SSP1-2.6,NorESM2-MM,o2os,climate priority area
+s245,SSP1-2.6,CanESM5,velocity,climate priority area
+s246,SSP1-2.6,CMCC-ESM2,velocity,climate priority area
+s247,SSP1-2.6,GFDL-ESM4,velocity,climate priority area
+s248,SSP1-2.6,IPSL-CM6A-LR,velocity,climate priority area
+s249,SSP1-2.6,NorESM2-MM,velocity,climate priority area
+s250,SSP2-4.5,CanESM5,tos,climate priority area
+s251,SSP2-4.5,CMCC-ESM2,tos,climate priority area
+s252,SSP2-4.5,GFDL-ESM4,tos,climate priority area
+s253,SSP2-4.5,IPSL-CM6A-LR,tos,climate priority area
+s254,SSP2-4.5,NorESM2-MM,tos,climate priority area
+s255,SSP2-4.5,CanESM5,phos,climate priority area
+s256,SSP2-4.5,CMCC-ESM2,phos,climate priority area
+s257,SSP2-4.5,GFDL-ESM4,phos,climate priority area
+s258,SSP2-4.5,IPSL-CM6A-LR,phos,climate priority area
+s259,SSP2-4.5,NorESM2-MM,phos,climate priority area
+s260,SSP2-4.5,CanESM5,o2os,climate priority area
+s261,SSP2-4.5,CMCC-ESM2,o2os,climate priority area
+s262,SSP2-4.5,GFDL-ESM4,o2os,climate priority area
+s263,SSP2-4.5,IPSL-CM6A-LR,o2os,climate priority area
+s264,SSP2-4.5,NorESM2-MM,o2os,climate priority area
+s265,SSP2-4.5,CanESM5,velocity,climate priority area
+s266,SSP2-4.5,CMCC-ESM2,velocity,climate priority area
+s267,SSP2-4.5,GFDL-ESM4,velocity,climate priority area
+s268,SSP2-4.5,IPSL-CM6A-LR,velocity,climate priority area
+s269,SSP2-4.5,NorESM2-MM,velocity,climate priority area
+s270,SSP5-8.5,CanESM5,tos,climate priority area
+s271,SSP5-8.5,CMCC-ESM2,tos,climate priority area
+s272,SSP5-8.5,GFDL-ESM4,tos,climate priority area
+s273,SSP5-8.5,IPSL-CM6A-LR,tos,climate priority area
+s274,SSP5-8.5,NorESM2-MM,tos,climate priority area
+s275,SSP5-8.5,CanESM5,phos,climate priority area
+s276,SSP5-8.5,CMCC-ESM2,phos,climate priority area
+s277,SSP5-8.5,GFDL-ESM4,phos,climate priority area
+s278,SSP5-8.5,IPSL-CM6A-LR,phos,climate priority area
+s279,SSP5-8.5,NorESM2-MM,phos,climate priority area
+s280,SSP5-8.5,CanESM5,o2os,climate priority area
+s281,SSP5-8.5,CMCC-ESM2,o2os,climate priority area
+s282,SSP5-8.5,GFDL-ESM4,o2os,climate priority area
+s283,SSP5-8.5,IPSL-CM6A-LR,o2os,climate priority area
+s284,SSP5-8.5,NorESM2-MM,o2os,climate priority area
+s285,SSP5-8.5,CanESM5,velocity,climate priority area
+s286,SSP5-8.5,CMCC-ESM2,velocity,climate priority area
+s287,SSP5-8.5,GFDL-ESM4,velocity,climate priority area
+s288,SSP5-8.5,IPSL-CM6A-LR,velocity,climate priority area
+s289,SSP5-8.5,NorESM2-MM,velocity,climate priority area
+s290,SSP5-8.5,EM,MHW_SumCumInt,percentile
+s291,SSP5-8.5,EM,MHW_SumCumInt,feature
+s292,SSP5-8.5,EM,MHW_SumCumInt,penalty
+s293,SSP5-8.5,EM,MHW_SumCumInt,climate priority area
+s294,SSP5-8.5,CanESM5,MHW_SumCumInt,percentile
+s295,SSP5-8.5,CMCC-ESM2,MHW_SumCumInt,percentile
+s296,SSP5-8.5,GFDL-ESM4,MHW_SumCumInt,percentile
+s297,SSP5-8.5,IPSL-CM6A-LR,MHW_SumCumInt,percentile
+s298,SSP5-8.5,NorESM2-MM,MHW_SumCumInt,percentile
+s299,SSP1-2.6,EM,MHW_SumCumInt,percentile
+s300,SSP1-2.6,EM,MHW_SumCumInt,feature
+s301,SSP1-2.6,EM,MHW_SumCumInt,penalty
+s302,SSP1-2.6,EM,MHW_SumCumInt,climate priority area
+s303,SSP2-4.5,EM,MHW_SumCumInt,percentile
+s304,SSP2-4.5,EM,MHW_SumCumInt,feature
+s305,SSP2-4.5,EM,MHW_SumCumInt,penalty
+s306,SSP2-4.5,EM,MHW_SumCumInt,climate priority area
+s307,SSP5-8.5,CanESM5,MHW_SumCumInt,feature
+s308,SSP5-8.5,CMCC-ESM2,MHW_SumCumInt,feature
+s309,SSP5-8.5,GFDL-ESM4,MHW_SumCumInt,feature
+s310,SSP5-8.5,IPSL-CM6A-LR,MHW_SumCumInt,feature
+s311,SSP5-8.5,NorESM2-MM,MHW_SumCumInt,feature
+s312,SSP5-8.5,CanESM5,MHW_SumCumInt,penalty
+s313,SSP5-8.5,CMCC-ESM2,MHW_SumCumInt,penalty
+s314,SSP5-8.5,GFDL-ESM4,MHW_SumCumInt,penalty
+s315,SSP5-8.5,IPSL-CM6A-LR,MHW_SumCumInt,penalty
+s316,SSP5-8.5,NorESM2-MM,MHW_SumCumInt,penalty
+s317,SSP5-8.5,CanESM5,MHW_SumCumInt,climate priority area
+s318,SSP5-8.5,CMCC-ESM2,MHW_SumCumInt,climate priority area
+s319,SSP5-8.5,GFDL-ESM4,MHW_SumCumInt,climate priority area
+s320,SSP5-8.5,IPSL-CM6A-LR,MHW_SumCumInt,climate priority area
+s321,SSP5-8.5,NorESM2-MM,MHW_SumCumInt,climate priority area
+s322,SSP1-2.6,CanESM5,MHW_SumCumInt,percentile
+s323,SSP1-2.6,CMCC-ESM2,MHW_SumCumInt,percentile
+s324,SSP1-2.6,GFDL-ESM4,MHW_SumCumInt,percentile
+s325,SSP1-2.6,IPSL-CM6A-LR,MHW_SumCumInt,percentile
+s326,SSP1-2.6,NorESM2-MM,MHW_SumCumInt,percentile
+s327,SSP1-2.6,CanESM5,MHW_SumCumInt,feature
+s328,SSP1-2.6,CMCC-ESM2,MHW_SumCumInt,feature
+s329,SSP1-2.6,GFDL-ESM4,MHW_SumCumInt,feature
+s330,SSP1-2.6,IPSL-CM6A-LR,MHW_SumCumInt,feature
+s331,SSP1-2.6,NorESM2-MM,MHW_SumCumInt,feature
+s332,SSP1-2.6,CanESM5,MHW_SumCumInt,penalty
+s333,SSP1-2.6,CMCC-ESM2,MHW_SumCumInt,penalty
+s334,SSP1-2.6,GFDL-ESM4,MHW_SumCumInt,penalty
+s335,SSP1-2.6,IPSL-CM6A-LR,MHW_SumCumInt,penalty
+s336,SSP1-2.6,NorESM2-MM,MHW_SumCumInt,penalty
+s337,SSP1-2.6,CanESM5,MHW_SumCumInt,climate priority area
+s338,SSP1-2.6,CMCC-ESM2,MHW_SumCumInt,climate priority area
+s339,SSP1-2.6,GFDL-ESM4,MHW_SumCumInt,climate priority area
+s340,SSP1-2.6,IPSL-CM6A-LR,MHW_SumCumInt,climate priority area
+s341,SSP1-2.6,NorESM2-MM,MHW_SumCumInt,climate priority area
+s342,SSP2-4.5,CanESM5,MHW_SumCumInt,percentile
+s343,SSP2-4.5,CMCC-ESM2,MHW_SumCumInt,percentile
+s344,SSP2-4.5,GFDL-ESM4,MHW_SumCumInt,percentile
+s345,SSP2-4.5,IPSL-CM6A-LR,MHW_SumCumInt,percentile
+s346,SSP2-4.5,NorESM2-MM,MHW_SumCumInt,percentile
+s347,SSP2-4.5,CanESM5,MHW_SumCumInt,feature
+s348,SSP2-4.5,CMCC-ESM2,MHW_SumCumInt,feature
+s349,SSP2-4.5,GFDL-ESM4,MHW_SumCumInt,feature
+s350,SSP2-4.5,IPSL-CM6A-LR,MHW_SumCumInt,feature
+s351,SSP2-4.5,NorESM2-MM,MHW_SumCumInt,feature
+s352,SSP2-4.5,CanESM5,MHW_SumCumInt,penalty
+s353,SSP2-4.5,CMCC-ESM2,MHW_SumCumInt,penalty
+s354,SSP2-4.5,GFDL-ESM4,MHW_SumCumInt,penalty
+s355,SSP2-4.5,IPSL-CM6A-LR,MHW_SumCumInt,penalty
+s356,SSP2-4.5,NorESM2-MM,MHW_SumCumInt,penalty
+s357,SSP2-4.5,CanESM5,MHW_SumCumInt,climate priority area
+s358,SSP2-4.5,CMCC-ESM2,MHW_SumCumInt,climate priority area
+s359,SSP2-4.5,GFDL-ESM4,MHW_SumCumInt,climate priority area
+s360,SSP2-4.5,IPSL-CM6A-LR,MHW_SumCumInt,climate priority area
+s361,SSP2-4.5,NorESM2-MM,MHW_SumCumInt,climate priority area
