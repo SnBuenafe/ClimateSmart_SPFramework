@@ -163,9 +163,9 @@ climate <- get_ClimateSummary(solution_list, climateLayer_list, "tos", col_scena
 summary <- left_join(climate, df, by = "run")
 write.csv(summary, paste0(output_summary, "ScenarioTheme_tos_Summary.csv")) # save
 
-ggLowRegret_Area <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "scenario") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Area-LR-Percentile-tos.png",
-       plot = ggLowRegret_Area, width = 7, height = 5, dpi = 300,
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "scenario") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-Percentile-tos.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
 
 # ----- Get Kappa Correlation Matrix -----
@@ -206,14 +206,11 @@ ggsave(filename = "ClimateWarmingDist-ScenarioTheme-Percentile-tos.png",
        plot = ggRidge, width = 10, height = 6, dpi = 300,
        path = "Figures/") # save plot
 
-#### Create low-regret emission-scenario solution ####
-s1_LRplot <- create_LowRegretSf(solution_list, scenario_list, PUs, scenario = TRUE)
-saveRDS(s1_LRplot, paste0(output_lowregret, "s1-EM-LowRegret-Percentile-tos.rds")) # save low-regret solution
-(ggLowRegret1 <- plot_lowregret(s1_LRplot, land) + ggtitle("Low-Regret Areas: Different Scenarios", subtitle = "Rate of Climate Warming, Percentile") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "LR-Scenario-tos.png",
-       plot = ggLowRegret1, width = 21, height = 29.7, dpi = 300,
-       path = "Figures/") # save plot
+# ----- Create selection frequency plot -----
+sFreq <- create_LowRegretSf(solution_list, scenario_list, PUs, scenario = TRUE)
+saveRDS(sFreq, paste0(output_lowregret, "sFreq1-EM-Percentile-tos.rds"))
 
-# ----- Summary -----
-summary <- compute_summary(s1_LRplot, total_area, PU_size, "LR-Percentile-tos", Cost = "cost")
-write.csv(summary, paste0(output_summary, "ScenarioTheme_tos_LowRegretSummary.csv")) # save
+(ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Scenario Theme", subtitle = "Climate Warming, Percentile") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "Freq-EM-Percentile-Scenario-tos.png",
+       plot = ggFreq, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
