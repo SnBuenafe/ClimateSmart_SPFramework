@@ -4,7 +4,9 @@
 #install.packages("remotes")
 #remotes::install_github("jfq3/ggordiplots", force = TRUE)
 
-pacman::p_load(sf, terra, tidyverse, rnaturalearth, prioritizr, stars, patchwork, proj4, magrittr, doParallel, ggridges, viridis, vegan, irr, vegan, BiocManager, ncdf4, PCICt, ncdf4.helpers, VoCC, RColorBrewer, ggordiplots)
+#install.packages("/Library/gurobi911/mac64/R/gurobi_9.1-1_R_4.0.2.tgz", repos=NULL)
+
+pacman::p_load(sf, terra, tidyverse, rnaturalearth, prioritizr, stars, patchwork, proj4, magrittr, doParallel, ggridges, viridis, vegan, irr, vegan, BiocManager, ncdf4, PCICt, ncdf4.helpers, VoCC, RColorBrewer, ggordiplots, gurobi)
 
 longlat <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
 

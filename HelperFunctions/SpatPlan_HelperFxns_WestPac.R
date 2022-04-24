@@ -231,7 +231,6 @@ create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs
       df %<>% dplyr::mutate(!!sym(spp[i]) := case_when(((!!sym(colname) >= quantile) & !!sym(spp[i]) == 1) ~ 1, TRUE ~ 0))
     }
     
-    
     list[[i]] <- df %>%  dplyr::select(1) # always just select the species
     #if (metric_name %in% c("tos", "phos", "o2os")) {
     #  list[[i]] <- df %>% dplyr::select(-slpTrends, -seTrends, -sigTrends, -transformed)
@@ -460,11 +459,12 @@ check_normality <- function(df, col_name) {
 
 # Plots Low Regret Areas
 plot_lowregret <- function(data, land) {
-  gg <- ggplot() + geom_sf(data = data, aes(fill = as.factor(selection)), color = NA, size = 0.01) +
+  gg <- ggplot() + geom_sf(data = data, aes(fill = as.logical(solution_1)), color = NA, size = 0.01) +
     geom_sf(data = land, color = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
     coord_sf(xlim = st_bbox(data)$xlim, ylim = st_bbox(data)$ylim) +
-    scale_fill_brewer(name = "Selection",
-                      palette = "OrRd", aesthetics = "fill") +
+    scale_colour_manual(values = c("TRUE" = "#b30000",
+                                   "FALSE" = "#fee8c8"),
+                        aesthetics = "fill") +
     theme_bw() +
     labs(subtitle = "Low-Regret Areas")
 }
