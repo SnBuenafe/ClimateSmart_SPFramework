@@ -239,12 +239,23 @@ for (i in 1:length(metric_list)) {
     plot_corrplot(., length(object_list)))
 
 # ----- Create low-regret climate-metric solution -----
-s2_LRplot <- create_LowRegretSf(solution_list, names, PUs)
-saveRDS(s2_LRplot, paste0(output_lowregret, "s2-EM-LowRegret-Percentile-585.rds")) # save low-regret solution
-(ggLowRegret2 <- plot_lowregret(s2_LRplot, land) + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "LR-Metric-Percentile.png",
+sFreq <- create_LowRegretSf(solution_list, names, PUs)
+saveRDS(sFreq, paste0(output_lowregret, "sFreq3-EM-Percentile-585.rds")) # save low-regret solution
+(ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric Theme", subtitle = "Percentile (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "Freq-Percentile-Ensemble-tos-585.png",
         plot = ggLowRegret2, width = 21, height = 29.7, dpi = 300,
         path = "Figures/") # save plot
+
+
+col_names <- c("tos_CanESM5", "tos_CMCC-ESM2", "tos_GFDL-ESM4", "tos_IPSL-CM6A-LR", "tos_NorESM2-MM")
+sFreq <- create_LowRegretSf(solution_list, col_names, PUs)
+saveRDS(sFreq, paste0(output_lowregret, "sFreq2-EM-Percentile-tos.rds")) # save solution
+
+(ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Ensemble Theme", subtitle = "Climate Warming, Percentile (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)))
+ggsave(filename = "Freq-Percentile-Metric-585.png",
+       plot = ggFreq, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
 # Summary of low-regret
 summary <- compute_summary(s2_LRplot, total_area, PU_size, "LR-Percentile-585", Cost = "cost")
 write.csv(summary, paste0(output_summary, "MetricTheme_Percentile_LowRegretSummary.csv")) # save
@@ -252,6 +263,8 @@ write.csv(summary, paste0(output_summary, "MetricTheme_Percentile_LowRegretSumma
 # ----- Remove layers -----
 rm(list = ls(pattern = paste(metric_list, collapse = "|")))
 rm(s2, s3, s4, s5, s290, p2, p3, p4, p5, p290)
+
+#### TODO: DELETE EVERYTHING AFTER THIS
 #### Supplementary: Feature ####
 # ----- Load climate layers -----
 metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_SumCumInt")
