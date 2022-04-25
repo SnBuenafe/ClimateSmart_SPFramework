@@ -103,6 +103,9 @@ plot_statistics <- function(summary, col_name, y_axis, theme) {
   } else if (theme == "LR-approach"){
     color_legend = c("#E6BA7E", "#4D3B2A", "#6984BF", "#2B8142")
     string <- "as.factor(run)"
+  } else if (theme == "layer"){
+    color_legend = c("LowRegret" = "#4C90F5", "Single" = "#A9C2EB", "Multiple_SSP126" = "#289E3D", "Multiple_SSP245" = "#E6C173", "Multiple_SSP585" = "#855600")
+    string <- "as.factor(run)"
   }
   
   plot <- ggplot(data = summary, aes_string(x = string)) + # TODO: add in aes (later on) group = scenario
