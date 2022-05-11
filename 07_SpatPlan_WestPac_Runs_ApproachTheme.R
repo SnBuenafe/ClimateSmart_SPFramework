@@ -222,9 +222,43 @@ for (i in 1:length(names)) {
 # ----- Create selection frequency plot -----
 sFreq <- create_LowRegretSf(solution_list, names, PUs)
 saveRDS(sFreq, paste0(output_lowregret, "sFreq4-EM-tos-585.rds")) # save low-regret solution
-(ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Approach Theme", subtitle = "Percentile (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "Freq-Ensemble-tos-585.png",
+
+ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Approach Theme", subtitle = "Percentile (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)) +
+    inset_element(plot_inset(sFreq), 0.7, 0.7, 0.99, 0.99)
+
+ggsave(filename = "Freq-Approach-tos-585.png",
        plot = ggFreq, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# ----- Features according to frequency selection -----
+PlanUnits <- PUs %>% 
+  dplyr::mutate(cellID = row_number())
+name <- c("selection_1", "selection_2", "selection_3", "selection_4")
+
+solution <- frequencyTargets(sFreq, name)
+
+feat_rep <- tibble(feature = character()) # empty tibble
+for(i in 1:length(name)) {
+  df <- represent_feature(dummy_problem, solution[[i]], name[i])
+  feat_rep <- left_join(df, feat_rep, by = "feature")
+}
+
+x <- feat_rep %>% 
+  pivot_longer(!feature, names_to = "selection", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = selection, group = selection, fill = selection),
+                      scale = 5) +
+  scale_fill_manual(values = c(selection_1 = "#bdc9e1",
+                               selection_2 = "#74a9cf",
+                               selection_3 = "#2b8cbe",
+                               selection_4 = "#045a8d")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  theme_classic()
+
+ggsave(filename = "Freq-Targets-ApproachTheme-tos.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
        path = "Figures/") # save plot
 
 # ----- Measuring how climate-smart solutions are using Kernel Density plots -----
@@ -236,9 +270,10 @@ for(i in 1:length(names)) {
 }
 df <- do.call(rbind, list)
 
-ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
-  geom_density_ridges_gradient(scale = 3) +
+ggRidge <- ggplot() +
+  geom_density_ridges_gradient(data = df %>% dplyr::filter(solution_1 == 1), aes(x = transformed, y = approach, fill = ..x..), scale = 1) +
   scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), option = "C") +
+  geom_density_ridges(data = df %>% dplyr::filter(solution_1 == 0), aes(x = transformed, y = approach), alpha = 0.25, linetype = "dotted", scale = 1) +
   geom_vline(xintercept = climate$mean_climate_warming,
              linetype = "dashed", color = "tan1", size = 0.5) +
   theme_classic()

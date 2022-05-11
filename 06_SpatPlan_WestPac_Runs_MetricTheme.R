@@ -241,7 +241,42 @@ for (i in 1:length(metric_list)) {
 # ----- Create selection frequency plot -----
 sFreq <- create_LowRegretSf(solution_list, names, PUs)
 saveRDS(sFreq, paste0(output_lowregret, "sFreq3-EM-Percentile-585.rds")) # save low-regret solution
-(ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric Theme", subtitle = "Percentile (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)))
+
+ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric Theme", subtitle = "Percentile (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)) +
+  inset_element(plot_inset(sFreq), 0.7, 0.7, 0.99, 0.99)
+
 ggsave(filename = "Freq-Percentile-Ensemble-tos-585.png",
         plot = ggFreq, width = 21, height = 29.7, dpi = 300,
         path = "Figures/") # save plot
+
+# ----- Features according to frequency selection -----
+PlanUnits <- PUs %>% 
+  dplyr::mutate(cellID = row_number())
+name <- c("selection_1", "selection_2", "selection_3", "selection_4", "selection_5")
+
+solution <- frequencyTargets(sFreq, name)
+
+feat_rep <- tibble(feature = character()) # empty tibble
+for(i in 1:length(name)) {
+  df <- represent_feature(dummy_problem, solution[[i]], name[i])
+  feat_rep <- left_join(df, feat_rep, by = "feature")
+}
+
+x <- feat_rep %>% 
+  pivot_longer(!feature, names_to = "selection", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = selection, group = selection, fill = selection),
+                      scale = 5) +
+  scale_fill_manual(values = c(selection_1 = "#d0d1e6",
+                               selection_2 = "#a6bddb",
+                               selection_3 = "#74a9cf",
+                               selection_4 = "#2b8cbe",
+                               selection_5 = "#045a8d")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  theme_classic()
+
+ggsave(filename = "Freq-Targets-MetricTheme-Percentile-tos.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot

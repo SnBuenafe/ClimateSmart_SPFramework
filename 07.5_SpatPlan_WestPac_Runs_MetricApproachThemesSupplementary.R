@@ -242,7 +242,29 @@ for (i in 1:length(metric_list)) {
 # ----- Create selection frequency plot -----
 sFreq <- create_LowRegretSf(solution_list, names, PUs)
 saveRDS(sFreq, paste0(output_lowregret, "sFreq5-EM-Feature-585.rds")) # save low-regret solution
-(ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric Theme", subtitle = "Feature (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)))
+
+temp <- sFreq %>% as_tibble %>% 
+  dplyr::select(selection) %>% 
+  dplyr::group_by(selection) %>% 
+  dplyr::summarize(total = n()) %>% 
+  arrange(., desc(selection)) %>% 
+  dplyr::mutate(proportion = ifelse(selection == 0, yes = total/nrow(PUs), no = cumsum(total)/nrow(PUs))) %>% 
+  arrange(selection)
+
+inset <- ggplot(temp, aes(x = as.factor(selection), y = proportion, fill = as.factor(selection))) +
+  scale_fill_brewer(name = "Selection Frequency",
+                    palette = "PuBu", aesthetics = "fill") +
+  geom_col(width = 1, show.legend = FALSE) +
+  theme_bw() + 
+  xlab(element_blank()) +
+  ylab(element_blank()) +
+  scale_y_continuous(expand = c(0,0)) +
+  labs(title = element_blank()) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric Theme", subtitle = "Feature (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)) +
+  inset_element(inset, 0.7, 0.7, 0.99, 0.99)
 ggsave(filename = "Freq-Feature-Ensemble-tos-585.png",
        plot = ggFreq, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -460,7 +482,30 @@ for (i in 1:length(metric_list)) {
 # ----- Create selection frequency plot -----
 sFreq <- create_LowRegretSf(solution_list, names, PUs)
 saveRDS(sFreq, paste0(output_lowregret, "sFreq6-EM-Penalty-585.rds")) # save low-regret solution
-(ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric-Approach Theme", subtitle = "Penalty (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)))
+
+temp <- sFreq %>% as_tibble %>% 
+  dplyr::select(selection) %>% 
+  dplyr::group_by(selection) %>% 
+  dplyr::summarize(total = n()) %>% 
+  arrange(., desc(selection)) %>% 
+  dplyr::mutate(proportion = ifelse(selection == 0, yes = total/nrow(PUs), no = cumsum(total)/nrow(PUs))) %>% 
+  arrange(selection)
+
+inset <- ggplot(temp, aes(x = as.factor(selection), y = proportion, fill = as.factor(selection))) +
+  scale_fill_brewer(name = "Selection Frequency",
+                    palette = "PuBu", aesthetics = "fill") +
+  geom_col(width = 1, show.legend = FALSE) +
+  theme_bw() + 
+  xlab(element_blank()) +
+  ylab(element_blank()) +
+  scale_y_continuous(expand = c(0,0)) +
+  labs(title = element_blank()) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric-Approach Theme", subtitle = "Penalty (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)) +
+  inset_element(inset, 0.7, 0.7, 0.99, 0.99)
+
 ggsave(filename = "Freq-Penalty-Ensemble-tos-585.png",
        plot = ggFreq, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -715,7 +760,29 @@ for (i in 1:length(metric_list)) {
 # ----- Create selection frequency plot -----
 sFreq <- create_LowRegretSf(solution_list, names, PUs)
 saveRDS(sFreq, paste0(output_lowregret, "sFreq7-EM-Penalty-585.rds")) # save low-regret solution
-(ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric-Approach Theme", subtitle = "Climate Priority Area (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)))
+
+temp <- sFreq %>% as_tibble %>% 
+  dplyr::select(selection) %>% 
+  dplyr::group_by(selection) %>% 
+  dplyr::summarize(total = n()) %>% 
+  arrange(., desc(selection)) %>% 
+  dplyr::mutate(proportion = ifelse(selection == 0, yes = total/nrow(PUs), no = cumsum(total)/nrow(PUs))) %>% 
+  arrange(selection)
+
+inset <- ggplot(temp, aes(x = as.factor(selection), y = proportion, fill = as.factor(selection))) +
+  scale_fill_brewer(name = "Selection Frequency",
+                    palette = "PuBu", aesthetics = "fill") +
+  geom_col(width = 1, show.legend = FALSE) +
+  theme_bw() + 
+  xlab(element_blank()) +
+  ylab(element_blank()) +
+  scale_y_continuous(expand = c(0,0)) +
+  labs(title = element_blank()) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric-Approach Theme", subtitle = "Climate Priority Area (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)) +
+  inset_element(inset, 0.7, 0.7, 0.99, 0.99)
 ggsave(filename = "Freq-ClimatePriorityArea-Ensemble-tos-585.png",
        plot = ggFreq, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -755,9 +822,10 @@ df <- do.call(rbind, list)
 
 climate <- load_summary("phos", "mean_ocean_acidification")
 
-ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
-  geom_density_ridges_gradient(scale = 3) +
+ggRidge <- ggplot() +
+  geom_density_ridges_gradient(data = df %>% dplyr::filter(solution_1 == 1), aes(x = transformed, y = approach, group = approach, fill = ..x..), scale = 1) +
   scale_fill_viridis_c(name = expression('Δ pH yr'^"-1"*''), option = "A") +
+  geom_density_ridges(data = df %>% dplyr::filter(solution_1 == 0), aes(x = transformed, y = approach), alpha = 0.25, linetype = "dotted", scale = 1) +
   geom_vline(xintercept = climate$mean_ocean_acidification,
              linetype = "dashed", color = "tan1", size = 0.5) +
   theme_classic()
@@ -795,9 +863,10 @@ df <- do.call(rbind, list)
 
 climate <- load_summary("o2os", "mean_oxygen_decline")
 
-ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
-  geom_density_ridges_gradient(scale = 3) +
+ggRidge <- ggplot() +
+  geom_density_ridges_gradient(data = df %>% dplyr::filter(solution_1 == 1), aes(x = transformed, y = approach, fill = ..x..), scale = 1) +
   scale_fill_viridis_c(name = expression('Δ mol m'^"-3"*' yr'^"-1"*''), option = "D") +
+  geom_density_ridges(data = df %>% dplyr::filter(solution_1 == 0), aes(x = transformed, y = approach), alpha = 0.25, linetype = "dotted", scale = 1) +
   geom_vline(xintercept = climate$mean_oxygen_decline,
              linetype = "dashed", color = "black", size = 0.5) +
   theme_classic()
@@ -836,9 +905,10 @@ df <- do.call(rbind, list)
 
 climate <- load_summary("velocity", "median_velocity")
 
-ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
-  geom_density_ridges_gradient(scale = 3) +
+ggRidge <- ggplot() +
+  geom_density_ridges_gradient(data = df %>% dplyr::filter(solution_1 == 1), aes(x = transformed, y = approach, fill = ..x..), scale = 1) +
   scale_fill_distiller(name = expression('km yr'^"-1"*''), palette = "RdYlBu") +
+  geom_density_ridges(data = df %>% dplyr::filter(solution_1 == 0), aes(x = transformed, y = approach), alpha = 0.25, linetype = "dotted", scale = 1) +
   geom_vline(xintercept = climate$median_velocity,
              linetype = "dashed", color = "khaki3", size = 0.5) +
   theme_classic()
@@ -870,15 +940,16 @@ solution_list <- list(s291, s290, s292, s293)
 
 list <- list() # empty list
 for(i in 1:length(names)) {
-  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name, metric = MHW_SumCumInt_SSP585)
+  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name)
 }
 df <- do.call(rbind, list)
 
 climate <- load_summary("MHW", "mean_sum_cumulative_intensity")
 
-ggRidge <- ggplot(data = df, aes(x = transformed, y = approach, group = approach, fill = stat(x))) +
-  geom_density_ridges_gradient(scale = 3) +
+ggRidge <- ggplot() +
+  geom_density_ridges_gradient(data = df %>% dplyr::filter(solution_1 == 1), aes(x = transformed, y = approach, fill = ..x..), scale = 1) +
   scale_fill_viridis_c(name = expression('total degree days'), option = "G") +
+  geom_density_ridges(data = df %>% dplyr::filter(solution_1 == 0), aes(x = transformed, y = approach), alpha = 0.25, linetype = "dotted", scale = 1) +
   geom_vline(xintercept = climate$mean_sum_cumulative_intensity,
              linetype = "dashed", color = "khaki3", size = 0.5) +
   theme_classic()

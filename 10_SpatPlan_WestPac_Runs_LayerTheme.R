@@ -1,6 +1,8 @@
 # title: "Exploring different aspects of climate-smart reserve design"
 # author: "Tin Buenafe"
 
+# Disclaimer: This was not part of the paper, as it proved to be too computationally intensive.
+
 #### Preliminaries ####
 # "Layer Theme"
 # Explores different ways on how to look at data from different climate layers
