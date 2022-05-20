@@ -243,32 +243,11 @@ for (i in 1:length(metric_list)) {
 sFreq <- create_LowRegretSf(solution_list, names, PUs)
 saveRDS(sFreq, paste0(output_lowregret, "sFreq5-EM-Feature-585.rds")) # save low-regret solution
 
-temp <- sFreq %>% as_tibble %>% 
-  dplyr::select(selection) %>% 
-  dplyr::group_by(selection) %>% 
-  dplyr::summarize(total = n()) %>% 
-  arrange(., desc(selection)) %>% 
-  dplyr::mutate(proportion = ifelse(selection == 0, yes = total/nrow(PUs), no = cumsum(total)/nrow(PUs))) %>% 
-  arrange(selection)
-
-inset <- ggplot(temp, aes(x = as.factor(selection), y = proportion, fill = as.factor(selection))) +
-  scale_fill_brewer(name = "Selection Frequency",
-                    palette = "PuBu", aesthetics = "fill") +
-  geom_col(width = 1, show.legend = FALSE) +
-  theme_bw() + 
-  xlab(element_blank()) +
-  ylab(element_blank()) +
-  scale_y_continuous(expand = c(0,0)) +
-  labs(title = element_blank()) +
-  theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank())
-
 ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric Theme", subtitle = "Feature (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)) +
-  inset_element(inset, 0.7, 0.7, 0.99, 0.99)
+  inset_element(plot_inset(sFreq), 0.7, 0.7, 0.99, 0.99)
 ggsave(filename = "Freq-Feature-Ensemble-tos-585.png",
        plot = ggFreq, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
-
 
 #### Metric Theme: Using penalty approach ####
 # ----- Climate Warming -----
@@ -483,33 +462,12 @@ for (i in 1:length(metric_list)) {
 sFreq <- create_LowRegretSf(solution_list, names, PUs)
 saveRDS(sFreq, paste0(output_lowregret, "sFreq6-EM-Penalty-585.rds")) # save low-regret solution
 
-temp <- sFreq %>% as_tibble %>% 
-  dplyr::select(selection) %>% 
-  dplyr::group_by(selection) %>% 
-  dplyr::summarize(total = n()) %>% 
-  arrange(., desc(selection)) %>% 
-  dplyr::mutate(proportion = ifelse(selection == 0, yes = total/nrow(PUs), no = cumsum(total)/nrow(PUs))) %>% 
-  arrange(selection)
-
-inset <- ggplot(temp, aes(x = as.factor(selection), y = proportion, fill = as.factor(selection))) +
-  scale_fill_brewer(name = "Selection Frequency",
-                    palette = "PuBu", aesthetics = "fill") +
-  geom_col(width = 1, show.legend = FALSE) +
-  theme_bw() + 
-  xlab(element_blank()) +
-  ylab(element_blank()) +
-  scale_y_continuous(expand = c(0,0)) +
-  labs(title = element_blank()) +
-  theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank())
-
-ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric-Approach Theme", subtitle = "Penalty (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)) +
-  inset_element(inset, 0.7, 0.7, 0.99, 0.99)
+ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric Theme", subtitle = "Penalty (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)) +
+  inset_element(plot_inset(sFreq), 0.7, 0.7, 0.99, 0.99)
 
 ggsave(filename = "Freq-Penalty-Ensemble-tos-585.png",
        plot = ggFreq, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
-
 
 #### Metric Theme: Using Climate Priority Area approach ####
 # areas that are within the 5th percentile (or 95th percentile) are considered climate refugia/climate-smart
@@ -761,28 +719,9 @@ for (i in 1:length(metric_list)) {
 sFreq <- create_LowRegretSf(solution_list, names, PUs)
 saveRDS(sFreq, paste0(output_lowregret, "sFreq7-EM-Penalty-585.rds")) # save low-regret solution
 
-temp <- sFreq %>% as_tibble %>% 
-  dplyr::select(selection) %>% 
-  dplyr::group_by(selection) %>% 
-  dplyr::summarize(total = n()) %>% 
-  arrange(., desc(selection)) %>% 
-  dplyr::mutate(proportion = ifelse(selection == 0, yes = total/nrow(PUs), no = cumsum(total)/nrow(PUs))) %>% 
-  arrange(selection)
+ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric Theme", subtitle = "Climate priority area (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)) +
+  inset_element(plot_inset(sFreq), 0.7, 0.7, 0.99, 0.99)
 
-inset <- ggplot(temp, aes(x = as.factor(selection), y = proportion, fill = as.factor(selection))) +
-  scale_fill_brewer(name = "Selection Frequency",
-                    palette = "PuBu", aesthetics = "fill") +
-  geom_col(width = 1, show.legend = FALSE) +
-  theme_bw() + 
-  xlab(element_blank()) +
-  ylab(element_blank()) +
-  scale_y_continuous(expand = c(0,0)) +
-  labs(title = element_blank()) +
-  theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank())
-
-ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric-Approach Theme", subtitle = "Climate Priority Area (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)) +
-  inset_element(inset, 0.7, 0.7, 0.99, 0.99)
 ggsave(filename = "Freq-ClimatePriorityArea-Ensemble-tos-585.png",
        plot = ggFreq, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot

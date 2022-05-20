@@ -517,8 +517,9 @@ plot_inset <- function(sFreq) {
     dplyr::select(selection) %>% 
     dplyr::group_by(selection) %>% 
     dplyr::summarize(total = n()) %>% 
-    arrange(., desc(selection)) %>% 
-    dplyr::mutate(proportion = ifelse(selection == 0, yes = total/nrow(PUs), no = cumsum(total)/nrow(PUs))) %>% 
+    dplyr::mutate(proportion = total/nrow(PUs)) %>% 
+    #arrange(., desc(selection)) %>%  # commenting this out because want to get areas with exact selection frequencies
+    #dplyr::mutate(proportion = ifelse(selection == 0, yes = total/nrow(PUs), no = cumsum(total)/nrow(PUs))) %>% 
     arrange(selection)
   
   inset <- ggplot(temp, aes(x = as.factor(selection), y = proportion, fill = as.factor(selection))) +
@@ -540,10 +541,10 @@ plot_inset <- function(sFreq) {
 frequencyTargets <- function(sFreq, name) {
   
   solution <- list() # empty list
-  for(i in 1:(length(name)-1)){
+  for(i in 1:(length(name))){
     solution[[i]] <- sFreq %>% 
       as_tibble() %>% 
-      dplyr::filter(selection >= i) %>% 
+      dplyr::filter(selection == i) %>% 
       dplyr::select(selection, cellID) %>% 
       left_join(PlanUnits, ., by = "cellID") %>% 
       dplyr::mutate(solution_1 = ifelse(is.na(selection), yes = 0, no = 1))
