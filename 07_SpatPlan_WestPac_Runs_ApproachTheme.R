@@ -61,11 +61,17 @@ features <- aqua_sf %>%
   dplyr::select(-geometry) %>% 
   names()
 features <- append(features, "climate_layer") # add "climate_layer" to features
+
+targets <- features %>% as_tibble() %>% 
+  setNames(., "Species") %>% 
+  add_column(target = 0.3) %>% 
+  mutate(target = ifelse(str_detect(Species, pattern = "climate_layer"), 30/35, 0.3))
+
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
 p6 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(0.3) %>% 
+  add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 # 4. Solve the planning problem 
