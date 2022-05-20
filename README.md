@@ -43,6 +43,14 @@ Exploring different ways to incorporate climate layers into spatial planning:
 3. "Climate priority area" approach: locks in the most "climate-smart" areas of each of the biodiversity features and still protects the rest of the features' distributions
 4. "Penalty" approach: treats climate layers as linear penalties (e.g. penalizing selection of areas of high climate warming)
 
+__"Metric + Approach" theme__ (`07.5_SpatPlan_WestPac_Runs_MetricApproachThemesSupplementary.R`)
+
+Rerunning the Metric and Approach themes for all metrics and all approaches.
+
 __Iterative runs__ (`08_SpatPlan_WestPac_SuppRuns_Iterations.R`)
 
 Ran all possible options across all the the 4 themes.
+
+__nMDS__ (`09_SpatPlan_WestPac_nMDS.R`)
+
+Create nMDS plots for outputs in `08_SpatPlanWestPac_SuppRuns_Iterations.R`

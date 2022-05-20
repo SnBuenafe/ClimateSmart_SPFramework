@@ -2,7 +2,7 @@
 ._.DS_Store
 .RData
 .Rproj.user
-.Rhistory
+*.Rhistory
 .Rapp.history
 Data/World_EEZ_v11
 Output/temp

@@ -163,9 +163,9 @@ climate <- get_ClimateSummary(solution_list, climateLayer_list, "tos", col_scena
 summary <- left_join(climate, df, by = "run")
 write.csv(summary, paste0(output_summary, "ScenarioTheme_tos_Summary.csv")) # save
 
-ggLowRegret_Area <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "scenario") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Area-LR-Percentile-tos.png",
-       plot = ggLowRegret_Area, width = 7, height = 5, dpi = 300,
+ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "scenario") + theme(axis.text = element_text(size = 25))
+ggsave(filename = "Area-Percentile-tos.png",
+       plot = ggArea, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
 
 # ----- Get Kappa Correlation Matrix -----
@@ -189,9 +189,10 @@ for(i in 1:length(names)) {
 }
 df <- do.call(rbind, list)
 
-ggRidge <- ggplot(data = df, aes(x = transformed, y = scenario, group = scenario, fill = stat(x))) +
-  geom_density_ridges_gradient(scale = 3) +
+ggRidge <- ggplot() +
+  geom_density_ridges_gradient(data = df %>% dplyr::filter(solution_1 == 1), aes(x = transformed, y = scenario, fill = ..x..), scale = 3) +
   scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), option = "C") +
+  geom_density_ridges(data = df %>% dplyr::filter(solution_1 == 0), aes(x = transformed, y = scenario), alpha = 0.25, linetype = "dotted", scale = 3) +
   geom_vline(xintercept=(climate %>% 
                            dplyr::filter(scenario == 126))$mean_climate_warming,
              linetype = "dashed", color = "tan1", size = 0.5) +
@@ -206,14 +207,42 @@ ggsave(filename = "ClimateWarmingDist-ScenarioTheme-Percentile-tos.png",
        plot = ggRidge, width = 10, height = 6, dpi = 300,
        path = "Figures/") # save plot
 
-#### Create low-regret emission-scenario solution ####
-s1_LRplot <- create_LowRegretSf(solution_list, scenario_list, PUs, scenario = TRUE)
-saveRDS(s1_LRplot, paste0(output_lowregret, "s1-EM-LowRegret-Percentile-tos.rds")) # save low-regret solution
-(ggLowRegret1 <- plot_lowregret(s1_LRplot, land) + ggtitle("Low-Regret Areas: Different Scenarios", subtitle = "Rate of Climate Warming, Percentile") + theme(axis.text = element_text(size = 25)))
-ggsave(filename = "LR-Scenario-tos.png",
-       plot = ggLowRegret1, width = 21, height = 29.7, dpi = 300,
+# ----- Create selection frequency plot -----
+sFreq <- create_LowRegretSf(solution_list, scenario_list, PUs, scenario = TRUE)
+saveRDS(sFreq, paste0(output_lowregret, "sFreq1-EM-Percentile-tos.rds"))
+
+ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Scenario Theme", subtitle = "Climate Warming, Percentile") + theme(axis.text = element_text(size = 25)) +
+  inset_element(plot_inset(sFreq), 0.7, 0.7, 0.99, 0.99)
+ggsave(filename = "Freq-EM-Percentile-Scenario-tos.png",
+       plot = ggFreq, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Summary -----
-summary <- compute_summary(s1_LRplot, total_area, PU_size, "LR-Percentile-tos", Cost = "cost")
-write.csv(summary, paste0(output_summary, "ScenarioTheme_tos_LowRegretSummary.csv")) # save
+# ----- Features according to frequency selection -----
+PlanUnits <- PUs %>% 
+  dplyr::mutate(cellID = row_number())
+name <- c("selection_1", "selection_2", "selection_3")
+
+solution <- frequencyTargets(sFreq, name)
+
+feat_rep <- tibble(feature = character()) # empty tibble
+for(i in 1:length(name)) {
+  df <- represent_feature(dummy_problem, solution[[i]], name[i])
+  feat_rep <- left_join(df, feat_rep, by = "feature")
+}
+
+x <- feat_rep %>% 
+  pivot_longer(!feature, names_to = "selection", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- ggplot(data = x) +
+  geom_density_ridges(aes(x = percent, y = selection, group = selection, fill = selection),
+                      scale = 5) +
+  scale_fill_manual(values = c(selection_1 = "#bdc9e1",
+                               selection_2 = "#74a9cf",
+                               selection_3 = "#0570b0")) +
+  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+  theme_classic()
+
+ggsave(filename = "Freq-Targets-ScenarioTheme-Percentile-tos.png",
+       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       path = "Figures/") # save plot

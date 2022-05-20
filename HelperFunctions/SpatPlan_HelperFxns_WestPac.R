@@ -10,14 +10,9 @@ represent_feature <- function(p, s, col_name) {
     mutate(relative_held = relative_held*100) %>% 
     rename(!!sym(col_name) := relative_held)
   
-  #if(str_detect(col_name, regex("percentile", ignore_case = TRUE))) {
-  #  feat_rep %<>% mutate(!!sym(col_name) := .data[[ col_name ]] * 0.35)
-  #} 
   if(grepl(pattern = "penalty|feature", x = col_name, ignore.case = TRUE)) {
     feat_rep %<>% add_row(feature = "climate_layer", !!sym(col_name) := NA)
-  }# else if(str_detect(col_name, regex("ClimatePriorityArea", ignore_case = FALSE))) {
-  #  feat_rep %<>% mutate(!!sym(col_name) := ifelse(str_detect(feature, ".1"), yes = .data[[ col_name ]] * 0.95, no = .data[[ col_name ]] * 0.05))
-  #}
+  }
 
   return(feat_rep)
 }
@@ -29,10 +24,12 @@ compute_summary <- function(s, total_area, PU_size, run_name, Cost) {
     as_tibble() %>% 
     dplyr::select(-geometry) %>% 
     filter(solution_1 == 1) %>% 
-    summarize(sum_area = nrow(.) * PU_size, total_cost = sum(!!sym(Cost)))
+    summarize(sum_area = nrow(.) * PU_size, 
+              total_cost = sum(!!sym(Cost))) # total area and cost
 
-  summary %<>% mutate(percent_area = sum_area*100/total_area, num_pu = nrow(s %>% as_tibble() %>% 
-                                                                              filter(solution_1 == 1)), run = run_name)
+  summary %<>% mutate(percent_area = sum_area*100/total_area, 
+                      num_pu = nrow(s %>% as_tibble() %>% filter(solution_1 == 1)), 
+                      run = run_name)
   
   return(summary)
 }
@@ -47,6 +44,7 @@ select_solution <- function(obj, col_name) {
 
 # This function creates Cohen's Kappa Correlation Matrix
 create_corrmatrix <- function(list_plans) {
+  
   pacman::p_load(irr)
 
   y = 1
@@ -56,7 +54,10 @@ create_corrmatrix <- function(list_plans) {
       kappa_temp <- irr::kappa2(bind_cols(list_plans[[i]], list_plans[[j]]))
       kappa_corrvalue <- kappa_temp$value
       kappa_pvalue <- kappa_temp$p.value
-      s_matrix[[y]] <- cbind(colnames(list_plans[[i]]), colnames(list_plans[[j]]), kappa_corrvalue, kappa_pvalue)
+      s_matrix[[y]] <- cbind(colnames(list_plans[[i]]), # first plan
+                             colnames(list_plans[[j]]), # second plan
+                             kappa_corrvalue, # correlation value
+                             kappa_pvalue) # p value
       y = y+1
     }
   }
@@ -77,6 +78,7 @@ create_corrmatrix <- function(list_plans) {
 # This plots the Correlation Matrix.
 plot_corrplot <- function(matrix, num) {
   pacman::p_load(corrplot)
+  
   # creating corrplot
   rownames(matrix) <- matrix[,1]
   n <- num + 1 # num represents the number of inputted spatial plans
@@ -91,90 +93,34 @@ plot_corrplot <- function(matrix, num) {
 
 # Plot statistics
 plot_statistics <- function(summary, col_name, y_axis, theme) {
+  
+  # Dictate palettes and what to plot
   if (theme == "ensemble"){
     color_legend <- c("#FAF7B7", "#E6C173", "#855600", "#5075BA", "#81B0CC", "#5A9E67")
     string <- "as.factor(run)"
-  } else if (theme == "scenario"){
+  } 
+  else if (theme == "scenario"){
     color_legend <- c("126" = "#289E3D", "245" = "#E6C173", "585" = "#855600")
     string <- "as.factor(scenario)"
-  } else if (theme == "metric") {
+  } 
+  else if (theme == "metric") {
     color_legend <- c("#3C6342", "#289E3D", "#E6C173", "#81B0CC", "#855600")
     string <- "as.factor(run)"
-  } else if (theme == "LR-approach"){
+  } 
+  else if (theme == "LR-approach"){
     color_legend = c("#E6BA7E", "#4D3B2A", "#6984BF", "#2B8142")
+    string <- "as.factor(run)"
+  } 
+  else if (theme == "layer"){
+    color_legend = c("LowRegret" = "#4C90F5", "Single" = "#A9C2EB", "Multiple_SSP126" = "#289E3D", "Multiple_SSP245" = "#E6C173", "Multiple_SSP585" = "#855600")
     string <- "as.factor(run)"
   }
   
-  plot <- ggplot(data = summary, aes_string(x = string)) + # TODO: add in aes (later on) group = scenario
+  plot <- ggplot(data = summary, aes_string(x = string)) +
     geom_bar(aes_string(y = col_name, fill = string), stat = 'identity', position = position_dodge()) +
     scale_fill_manual(name = 'Run',
                       values = color_legend) +
     xlab("Run") +
-    ylab(y_axis) +
-    theme(legend.position = "bottom") +
-    theme_classic()
-  
-  return(plot)
-  
-#  if (color == 1) { # For plotting related to RQ2
-#    color_legend <- c("tos" = "#289E3D", "phos" = "#E6C173", "o2os" = "#81B0CC", "velocity" = "#855600")
-    
-#    summary %<>% dplyr::mutate(approach = case_when(str_detect(run, pattern = "tos") ~ "tos",
-#                                                    str_detect(run, pattern = "phos") ~ "phos",
-#                                                    str_detect(run, pattern = "o2os") ~ "o2os",
-#                                                    str_detect(run, pattern = "velocity") ~ "velocity"))
-    
-#  } else if (color == 2) { # For plotting related to RQ1
-#    color_legend <- c("uninformed" = "#a6611a", "tos" = "#dfc27d")
-    
-#    summary %<>% dplyr::mutate(approach = case_when(str_detect(run, pattern = "uninformed") ~ "uninformed",
-                              #                      str_detect(run, pattern = "tos") ~ "tos"))
-#  } else if (color == 3) { # For plotting vs scenarios
-#    summary %<>% dplyr::mutate(approach = case_when(run == "percentile_tos_585" ~ "SSP 5-8.5",
-#                                                    run == "percentile_tos_126" ~ "SSP 1-2.6",
- #                                                   run == "percentile_tos_245" ~ "SSP 2-4.5"))
-  #  
-   # color_legend <- c("SSP 1-2.6" = "#289E3D", "SSP 2-4.5" = "#E6C173", "SSP 5-8.5" = "#855600")
-#  } else {
- #   color_legend <- c("#289E3D", "#E6C173", "#81B0CC", "#855600", "#5075BA")
-  #  }
-  
-  #plot <- ggplot(data = summary, aes(x = as.factor(approach))) + # TODO: add in aes (later on) group = scenario
-   # geom_bar(aes_string(y = col_name, fill = "as.factor(approach)"), stat = 'identity', position = position_dodge()) +
-  #  scale_fill_manual(name = 'Run',
-   #                   values = color_legend) +
-    #xlab("Run") +
-    #ylab(y_axis) +
-    #theme(legend.position = "bottom") +
-    #theme_classic()
-  
-}
-
-# Plots statistics, comparing them across approaches
-plot_ComparisonStatistics <- function(summary, col_name, y_axis) {
-    color_legend = c("uninformed" = "#1C2833", "feature" = "#E6BA7E", "percentile" = "#4D3B2A", "penalty" = "#6984BF")
-
-    plot <- ggplot(data = summary, aes(x = as.factor(metric), group = as.factor(approach))) +
-      geom_bar(aes_string(y = col_name, fill = "as.factor(approach)"), stat = 'identity', position = position_dodge()) +
-      scale_fill_manual(name = 'Approach',
-                        values = color_legend) +
-      xlab("Climate-smart Metric") +
-      ylab(y_axis) +
-      theme(legend.position = "bottom") +
-      theme_classic()
-    
-    return(plot)
-}
-
-# Plots statistics of low-regret areas
-plot_LowRegretStatistics <- function(LowRegret_df, col_name, y_axis) {
-  color_legend = c("feature" = "#E6BA7E", "percentile" = "#4D3B2A", "penalty" = "#6984BF")
-  
-  plot <- ggplot(data = LowRegret_df, aes(x = as.factor(approach))) +
-    geom_bar(aes_string(y = col_name, fill = "as.factor(approach)"), stat = "identity", position = position_dodge()) +
-    scale_fill_manual(name = "Approach",
-                      values = color_legend) +
-    xlab("Climate-smart Approach") +
     ylab(y_axis) +
     theme(legend.position = "bottom") +
     theme_classic()
@@ -214,6 +160,7 @@ create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs
       dplyr::select(-cellID)
     
     if (metric_name %in% c("tos", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")) {
+      
       # Get 35th percentile of climate metric under the range of the species
       quantile <- df %>% 
         dplyr::filter(!!sym(spp[i]) == 1) %>%  # filter out those that have biodiversity values
@@ -221,7 +168,9 @@ create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs
         pull()
       
       df %<>% dplyr::mutate(!!sym(spp[i]) := case_when(((!!sym(colname) <= quantile) & !!sym(spp[i]) == 1) ~ 1, TRUE ~ 0))
+      
     } else if (metric_name %in% c("phos", "o2os")) {
+      
       # Get 65th percentile of climate metric under range of the species
       quantile <- df %>% 
         dplyr::filter(!!sym(spp[i]) == 1) %>%  # filter out those that have biodiversity values
@@ -231,13 +180,7 @@ create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs
       df %<>% dplyr::mutate(!!sym(spp[i]) := case_when(((!!sym(colname) >= quantile) & !!sym(spp[i]) == 1) ~ 1, TRUE ~ 0))
     }
     
-    
     list[[i]] <- df %>%  dplyr::select(1) # always just select the species
-    #if (metric_name %in% c("tos", "phos", "o2os")) {
-    #  list[[i]] <- df %>% dplyr::select(-slpTrends, -seTrends, -sigTrends, -transformed)
-    #} else if (metric_name == "velocity") {
-    #  list[[i]] <- df %>% dplyr::select(-voccMag, -voccAng, -transformed)
-    #} 
     
   }
   stopCluster(cl)
@@ -250,10 +193,6 @@ create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs
 
 # Streamlines the creation of the climate layer for the "feature" approach
 create_FeatureLayer <- function(metric_name, colname, metric_df) {
-  
-  #metric_name = tos, phos, o2os, velocity
-  # colname = slpTrends / voccMag
-  # metric_df = roc_tos_SSP585, ...
   
   if (metric_name %in% c("tos", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")) {
     quantile <- metric_df %>% as_tibble() %>% 
@@ -280,6 +219,7 @@ create_FeatureLayer <- function(metric_name, colname, metric_df) {
   return(filtered)
 }
 
+# Streamlines the creation of the climate layer for the "climate priority area" approach: creating climate priority areas features
 create_ImportantFeatureLayer <- function(aqua_sf, metric_name, colname, metric_df) {
   
   spp <- aqua_sf %>% as_tibble() %>% 
@@ -345,6 +285,8 @@ create_ImportantFeatureLayer <- function(aqua_sf, metric_name, colname, metric_d
   
   
 }
+
+# Streamlines the creation of the climate layer for the "climate priority area" approach: getting the non-climate-smart areas
 create_RepresentationFeature <- function(df, aqua_sf) {
   
   spp <- aqua_sf %>% as_tibble() %>% 
@@ -443,32 +385,14 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
 }
 
 # Intersect solution with climate layer
-make_intersect <- function(s, metric) {
-  df <- s %>% as_tibble() %>% 
-    dplyr::select(solution_1, geometry) %>% 
-    left_join(., metric) %>% 
-    filter(solution_1 == 1)
-}
+#make_intersect <- function(s, metric) {
+#  df <- s %>% as_tibble() %>% 
+#    dplyr::select(solution_1, geometry) %>% 
+#    left_join(., metric) %>% 
+#    filter(solution_1 == 1)
+#}
 
-# Check normality of metric.
-check_normality <- function(df, col_name) {
-  tmp <- df %>% as_tibble() %>%
-    dplyr::select(!!sym(col_name))
-  qqnorm(tmp[[ col_name ]])
-  qqline(tmp[[ col_name ]])
-}
-
-# Plots Low Regret Areas
-plot_lowregret <- function(data, land) {
-  gg <- ggplot() + geom_sf(data = data, aes(fill = as.factor(selection)), color = NA, size = 0.01) +
-    geom_sf(data = land, color = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
-    coord_sf(xlim = st_bbox(data)$xlim, ylim = st_bbox(data)$ylim) +
-    scale_fill_brewer(name = "Selection",
-                      palette = "OrRd", aesthetics = "fill") +
-    theme_bw() +
-    labs(subtitle = "Low-Regret Areas")
-}
-
+# Create selection frequency plot
 plot_SelectionFrequency <- function(data, land) {
   gg <- ggplot() + geom_sf(data = data, aes(fill = as.factor(selection)), color = NA, size = 0.01) +
     geom_sf(data = land, color = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
@@ -527,7 +451,6 @@ create_Scaling <- function(cost, climate_metric, metric) {
   percentage <- c(seq(from  = 20, to = 100, by = 10), seq(from = 120, to = 200, by = 20), 400)
   
   #x = (max(cost) - min(cost)) / (max(climate_metric) - min(climate_metric))
-  
   x = (max(cost)) / (max(climate_metric) - min(climate_metric)) #  Used max cost instead of range of cost because we're using a uniform cost layer
   
   scaling <- tibble(scaling = numeric(), penalty_value = numeric())
@@ -546,74 +469,7 @@ create_Scaling <- function(cost, climate_metric, metric) {
 
 }
 
-# Creates the summaries of the climate metrics for low-regret areas
-lowRegret_ClimateSummary <- function(solution, run, metric, climate, scenario, approach) {
-  
-  list <- list() # empty list
-  
-  for(i in 1:length(run)) {
-    df <- solution[[i]] %>% 
-      dplyr::select(selection, cellID) %>% 
-      dplyr::rename(solution_1 = selection)
-    
-    x <- tibble(run = character()) # empty tibble
-    for(j in 1:length(metric)) {
-      tmp <- get_ClimateSummary(solution_list = list(df), climate_layer = climate[[j]],
-                                metric = metric[j], col_scenario = scenario,
-                                col_approach = approach[i], col_run = run[i], 
-                                climateLayer = "single")
-      x <- left_join(tmp, x)
-    }
-    
-    list[[i]] <- x
-  }
-  
-  complete <- do.call(rbind, list)
-  return(complete)
-}
-
-# intersection of all low-regret areas
-intersect_lowregret <- function(solution, run) {
-  
-  tibble <- tibble(cellID = integer()) #empty tibble
-  for(i in 1:length(run)) {
-    df <- solution[[i]] %>% 
-      as_tibble() %>% 
-      dplyr::select(selection, cellID) %>% 
-      dplyr::rename(!!sym(run[i]) := selection)
-    tibble <- left_join(df, tibble)
-  }
-  
-  tmp <- PUs %>% 
-    dplyr::mutate(cellID = row_number()) %>% 
-    as_tibble()
-  
-  tibble %<>% dplyr::mutate(selection = rowSums(., na.rm = TRUE) - cellID) %>% 
-    left_join(., tmp, by = "cellID") %>% 
-    dplyr::mutate(cost = PU_size) %>% 
-    st_as_sf(sf_column_name = "geometry")
-    
-  return(tibble)
-}
-
-# Compares statistics across approaches and metrics.
-plot_ComparisonStatistics <- function(summary, col_name, y_axis) {
-  color_legend = c("uninformed" = "#1C2833", "feature" = "#E6BA7E", "percentile" = "#4D3B2A", "penalty" = "#6984BF")
-  
-  plot <- ggplot(data = summary, aes(x = as.factor(metric), group = as.factor(approach))) +
-    geom_bar(aes_string(y = col_name, fill = "as.factor(approach)"), stat = 'identity', position = position_dodge()) +
-    scale_fill_manual(name = 'Approach',
-                      values = color_legend) +
-    xlab("Climate-smart Metric") +
-    ylab(y_axis) +
-    theme(legend.position = "bottom") +
-    theme_classic()
-  
-  return(plot)
-}
-
-# Plot features
-
+# Plot features for the workflow figure
 plot_AQMFeatures <- function(s1, PlanUnits, world, column){
   gg <- ggplot() + 
     geom_sf(data = s1, aes_string(fill = column), colour = NA, size = 0.1, show.legend = TRUE) +
@@ -633,8 +489,8 @@ make_kernel <- function(solution, name, group, metric = NA) {
   if(is.na(metric)) {
     df <- solution %>% 
       as_tibble() %>% 
-      dplyr::filter(solution_1 == 1) %>% 
-      dplyr::select(transformed) %>% 
+     # dplyr::filter(solution_1 == 1) %>% 
+      dplyr::select(solution_1, transformed) %>% 
       dplyr::rename(!!sym(name) := transformed) %>% 
       pivot_longer(!!sym(name), names_to = group, values_to = "transformed")
   } else {
@@ -644,7 +500,7 @@ make_kernel <- function(solution, name, group, metric = NA) {
     df <- solution %>% 
       as_tibble() %>%
       left_join(., metric_df) %>% 
-      dplyr::filter(solution_1 == 1) %>% 
+     # dplyr::filter(solution_1 == 1) %>% 
       dplyr::select(transformed) %>% 
       dplyr::rename(!!sym(name) := transformed) %>% 
       pivot_longer(!!sym(name), names_to = group, values_to = "transformed")
@@ -654,3 +510,46 @@ make_kernel <- function(solution, name, group, metric = NA) {
   return(df)
 }
 
+# Make inset histogram
+plot_inset <- function(sFreq) {
+  
+  temp <- sFreq %>% as_tibble %>% 
+    dplyr::select(selection) %>% 
+    dplyr::group_by(selection) %>% 
+    dplyr::summarize(total = n()) %>% 
+    dplyr::mutate(proportion = total/nrow(PUs)) %>% 
+    #arrange(., desc(selection)) %>%  # commenting this out because want to get areas with exact selection frequencies
+    #dplyr::mutate(proportion = ifelse(selection == 0, yes = total/nrow(PUs), no = cumsum(total)/nrow(PUs))) %>% 
+    arrange(selection)
+  
+  inset <- ggplot(temp, aes(x = as.factor(selection), y = proportion, fill = as.factor(selection))) +
+    scale_fill_brewer(name = "Selection Frequency",
+                      palette = "PuBu", aesthetics = "fill") +
+    geom_col(width = 1, show.legend = FALSE) +
+    theme_bw() + 
+    xlab(element_blank()) +
+    ylab(element_blank()) +
+    scale_y_continuous(expand = c(0,0)) +
+    labs(title = element_blank()) +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+  
+  return(inset)
+}
+
+# Preprocess frequencies of selection to create KD plots of targets
+frequencyTargets <- function(sFreq, name) {
+  
+  solution <- list() # empty list
+  for(i in 1:(length(name))){
+    solution[[i]] <- sFreq %>% 
+      as_tibble() %>% 
+      dplyr::filter(selection == i) %>% 
+      dplyr::select(selection, cellID) %>% 
+      left_join(PlanUnits, ., by = "cellID") %>% 
+      dplyr::mutate(solution_1 = ifelse(is.na(selection), yes = 0, no = 1))
+    
+  }
+  
+  return(solution)
+}
