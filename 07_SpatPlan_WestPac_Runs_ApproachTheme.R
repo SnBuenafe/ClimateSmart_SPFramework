@@ -255,7 +255,7 @@ x <- feat_rep %>%
 
 ggRidge <- ggplot(data = x) +
   geom_density_ridges(aes(x = percent, y = selection, group = selection, fill = selection),
-                      scale = 5) +
+                      scale = 2) +
   scale_fill_manual(values = c(selection_1 = "#bdc9e1",
                                selection_2 = "#74a9cf",
                                selection_3 = "#2b8cbe",
