@@ -48,19 +48,6 @@ scenario_list <- c("126", "245")
 solution <- c("s48", "s49") # solution names, check metadata
 loopthrough_EM_Feature(solution, metric_list, scenario_list)
 
-metric_list <- c("o2os")
-scenario_list <- c("126", "245")
-
-solution <- c("s50", "s51") # solution names, check metadata
-loopthrough_EM_Feature(solution, metric_list, scenario_list)
-
-
-metric_list <- c("velocity")
-scenario_list <- c("126", "245")
-
-solution <- c("s52", "s53") # solution names, check metadata
-loopthrough_EM_Feature(solution, metric_list, scenario_list)
-
 # ----- Penalty approach -----
 metric_list <- c("MHW_SumCumInt")
 scenario_list <- c("126", "245")
@@ -109,39 +96,6 @@ scenario_list <- c("126", "245" ,"585")
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 
 solution <- c(seq(from = 142, to = 146, by = 1), seq(from = 162, to = 166, by = 1), seq(from = 202, to = 206, by = 1)) # solution names, check metadata
-solution <-lapply(solution, function(x) {
-  y <- paste0("s", x)
-}) %>% unlist()
-
-loopthrough_MM_Feature(solution, metric_list, scenario_list, model_list)
-
-metric_list <- c("phos")
-scenario_list <- c("126", "245" ,"585")
-model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
-
-solution <- c(seq(from = 147, to = 151, by = 1), seq(from = 167, to = 171, by = 1), seq(from = 207, to = 211, by = 1)) # solution names, check metadata
-solution <-lapply(solution, function(x) {
-  y <- paste0("s", x)
-}) %>% unlist()
-
-loopthrough_MM_Feature(solution, metric_list, scenario_list, model_list)
-
-metric_list <- c("o2os")
-scenario_list <- c("126", "245" ,"585")
-model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
-
-solution <- c(seq(from = 152, to = 156, by = 1), seq(from = 172, to = 176, by = 1), seq(from = 212, to = 216, by = 1)) # solution names, check metadata
-solution <-lapply(solution, function(x) {
-  y <- paste0("s", x)
-}) %>% unlist()
-
-loopthrough_MM_Feature(solution, metric_list, scenario_list, model_list)
-
-metric_list <- c("velocity")
-scenario_list <- c("126", "245" ,"585")
-model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
-
-solution <- c(seq(from = 157, to = 161, by = 1), seq(from = 177, to = 181, by = 1), seq(from = 217, to = 221, by = 1)) # solution names, check metadata
 solution <-lapply(solution, function(x) {
   y <- paste0("s", x)
 }) %>% unlist()
