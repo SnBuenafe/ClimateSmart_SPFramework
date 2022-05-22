@@ -20,7 +20,7 @@ solution <-lapply(solution, function(x) {
 
 # Extracting selected/not-selected data for all solutions
 pivot <- list() # empty list
-for(i in 1:length(solution)) {
+for(i in (1:length(solution))) {
   path <- "Output/solutions/"
   pattern <- paste0(solution[i], "-")
   file <- list.files(path = path, pattern = paste0("^", pattern))
@@ -33,7 +33,7 @@ for(i in 1:length(solution)) {
   pivot[[i]] <- s %>% 
     pivot_wider(names_from = cellID, values_from = solution_1)
   
-  print("Done with: ", solution[i])
+  print(solution[i])
 }
 pivot_combined <- do.call(bind_rows, pivot)
 write.csv(pivot_combined, "Output/nmds/nmds_df.csv") # save pivot table
