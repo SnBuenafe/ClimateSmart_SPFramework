@@ -949,6 +949,6 @@ ggRidge <- ggplot(data = x) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
   xlim(c(min(x$percent), NA)) +
   theme_classic()
-ggsave(filename = "TargetDist-ApproachTheme-o2os.png",
+ggsave(filename = "TargetDist-ApproachTheme-MHW_SumCumInt.png",
        plot = ggRidge, width = 15, height = 10, dpi = 300,
        path = "Figures/") # save plot
