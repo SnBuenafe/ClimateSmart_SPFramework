@@ -42,10 +42,10 @@ solution <- c("s299", "s303") # solution names, check metadata
 loopthrough_EM_Percentile(solution, metric_list, scenario_list)
 
 # ----- Feature approach -----
-metric_list <- c("MHW_SumCumInt")
+metric_list <- c("phos")
 scenario_list <- c("126", "245")
 
-solution <- c("s300", "s304") # solution names, check metadata
+solution <- c("s48", "s49") # solution names, check metadata
 loopthrough_EM_Feature(solution, metric_list, scenario_list)
 
 # ----- Penalty approach -----
@@ -91,16 +91,17 @@ loopthrough_MM_Penalty(solution, metric_list, scenario_list, model_list)
 
 # ----- Feature approach runs -----
 # loop through the metric, scenario, and model lists
-metric_list <- c("MHW_SumCumInt")
-scenario_list <- c("585", "126", "245")
+metric_list <- c("tos")
+scenario_list <- c("126", "245" ,"585")
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 
-solution <- c(seq(from = 307, to = 311, by = 1), seq(from = 327, to = 331, by = 1), seq(from = 347, to = 351, by = 1)) # solution names, check metadata
+solution <- c(seq(from = 142, to = 146, by = 1), seq(from = 162, to = 166, by = 1), seq(from = 202, to = 206, by = 1)) # solution names, check metadata
 solution <-lapply(solution, function(x) {
   y <- paste0("s", x)
 }) %>% unlist()
 
 loopthrough_MM_Feature(solution, metric_list, scenario_list, model_list)
+
 
 # ----- Climate priority area approach runs -----
 # loop through the metric, scenario, and model lists

@@ -30,11 +30,18 @@ features <- aqua_sf %>%
   dplyr::select(-geometry) %>% 
   names()
 features <- append(features, "climate_layer") # add "climate_layer" to features
+
+targets <- features %>% as_tibble() %>% 
+  setNames(., "Species") %>% 
+  add_column(target = 0.3) %>% 
+  mutate(target = ifelse(str_detect(Species, pattern = "climate_layer"), 30/35, 0.3))
+
+
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
 p6 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(0.3) %>% 
+  add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 # 4. Solve the planning problem 
@@ -57,11 +64,17 @@ features <- aqua_sf %>%
   dplyr::select(-geometry) %>% 
   names()
 features <- append(features, "climate_layer") # add "climate_layer" to features
+
+targets <- features %>% as_tibble() %>% 
+  setNames(., "Species") %>% 
+  add_column(target = 0.3) %>% 
+  mutate(target = ifelse(str_detect(Species, pattern = "climate_layer"), 30/35, 0.3))
+
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
 p7 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(0.3) %>% 
+  add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 # 4. Solve the planning problem 
@@ -84,11 +97,17 @@ features <- aqua_sf %>%
   dplyr::select(-geometry) %>% 
   names()
 features <- append(features, "climate_layer") # add "climate_layer" to features
+
+targets <- features %>% as_tibble() %>% 
+  setNames(., "Species") %>% 
+  add_column(target = 0.3) %>% 
+  mutate(target = ifelse(str_detect(Species, pattern = "climate_layer"), 30/35, 0.3))
+
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
 p8 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(0.3) %>% 
+  add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 # 4. Solve the planning problem 
@@ -111,11 +130,15 @@ features <- aqua_sf %>%
   dplyr::select(-geometry) %>% 
   names()
 features <- append(features, "climate_layer") # add "climate_layer" to features
+targets <- features %>% as_tibble() %>% 
+  setNames(., "Species") %>% 
+  add_column(target = 0.3) %>% 
+  mutate(target = ifelse(str_detect(Species, pattern = "climate_layer"), 30/35, 0.3))
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
 p9 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(0.3) %>% 
+  add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 # 4. Solve the planning problem 
@@ -138,11 +161,15 @@ features <- aqua_sf %>%
   dplyr::select(-geometry) %>% 
   names()
 features <- append(features, "climate_layer") # add "climate_layer" to features
+targets <- features %>% as_tibble() %>% 
+  setNames(., "Species") %>% 
+  add_column(target = 0.3) %>% 
+  mutate(target = ifelse(str_detect(Species, pattern = "climate_layer"), 30/35, 0.3))
 # 3. Set up the spatial planning problem
 out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
 p291 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(0.3) %>% 
+  add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
   add_gurobi_solver(gap = 0, verbose = FALSE)
 # 4. Solve the planning problem 
@@ -236,8 +263,18 @@ for (i in 1:length(metric_list)) {
 }
 
 # manually save corrplot
+#(matrix <- create_corrmatrix(object_list) %>% 
+#    plot_corrplot(., length(object_list)))
+
+# Save corrplot
+file_path_test = "Figures/CorrelationMatrix_Feature.png"
+png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
+
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
+
+# Then
+dev.off()
 
 # ----- Create selection frequency plot -----
 sFreq <- create_LowRegretSf(solution_list, names, PUs)
@@ -912,6 +949,6 @@ ggRidge <- ggplot(data = x) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
   xlim(c(min(x$percent), NA)) +
   theme_classic()
-ggsave(filename = "TargetDist-ApproachTheme-o2os.png",
+ggsave(filename = "TargetDist-ApproachTheme-MHW_SumCumInt.png",
        plot = ggRidge, width = 15, height = 10, dpi = 300,
        path = "Figures/") # save plot

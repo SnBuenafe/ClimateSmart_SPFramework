@@ -90,12 +90,16 @@ loopthrough_EM_Feature <- function(solution_list, metric_list, scenario_list) {
         dplyr::select(-geometry) %>% 
         names()
       features <- append(features, "climate_layer") # add "climate_layer" to features
+      targets <- features %>% as_tibble() %>% 
+        setNames(., "Species") %>% 
+        add_column(target = 0.3) %>% 
+        mutate(target = ifelse(str_detect(Species, pattern = "climate_layer"), 30/35, 0.3))
       
       # Set up the spatial planning problem
       out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
       p <- prioritizr::problem(out_sf, features, "cost") %>%
         add_min_set_objective() %>%
-        add_relative_targets(0.3) %>% 
+        add_relative_targets(targets$target) %>% 
         add_binary_decisions() %>%
         add_gurobi_solver(gap = 0, verbose = FALSE)
       
@@ -116,6 +120,7 @@ loopthrough_EM_Feature <- function(solution_list, metric_list, scenario_list) {
       
       gc()
       rm(list = ls(pattern = metric_df))
+      print(i)
       i = i + 1
     }
   }
@@ -397,12 +402,16 @@ loopthrough_MM_Feature <- function(solution_list, metric_list, scenario_list, mo
           dplyr::select(-geometry) %>% 
           names()
         features <- append(features, "climate_layer") # add "climate_layer" to features
+        targets <- features %>% as_tibble() %>% 
+          setNames(., "Species") %>% 
+          add_column(target = 0.3) %>% 
+          mutate(target = ifelse(str_detect(Species, pattern = "climate_layer"), 30/35, 0.3))
         
         # Set up the spatial planning problem
         out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
         p <- prioritizr::problem(out_sf, features, "cost") %>%
           add_min_set_objective() %>%
-          add_relative_targets(0.3) %>% 
+          add_relative_targets(targets$target) %>% 
           add_binary_decisions() %>%
           add_gurobi_solver(gap = 0, verbose = FALSE)
         
@@ -423,6 +432,7 @@ loopthrough_MM_Feature <- function(solution_list, metric_list, scenario_list, mo
         
         gc()
         rm(list = ls(pattern = metric_df))
+        print(i)
         i = i + 1
       }
     }
