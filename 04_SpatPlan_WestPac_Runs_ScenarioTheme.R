@@ -176,9 +176,15 @@ for (i in 1:length(list)) {
   object_list[[i]] <- obj
 }
 
-# manually save corrplot
+# Save corrplot
+file_path_test = "Figures/ScenarioTheme_CorrelationMatrix.png"
+png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
+
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
+
+# Then
+dev.off()
 
 # ----- Measuring how climate-smart the solution are across scenarios using kernel density plots -----
 list <- list() # empty list

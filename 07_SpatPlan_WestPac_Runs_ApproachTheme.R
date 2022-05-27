@@ -55,7 +55,7 @@ ggsave(filename = "EM-Percentile-tos-585.png",
 #### Feature ####
 # 1. Prepare climate layer
 ClimateFeature <- create_FeatureLayer(metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585)
-# 2. Get list of features
+# 2. Get list of features and set targets
 features <- aqua_sf %>% 
   as_tibble() %>% 
   dplyr::select(-geometry) %>% 
@@ -221,9 +221,15 @@ for (i in 1:length(names)) {
   object_list[[i]] <- obj
 }
 
-# manually save corrplot
+# Save corrplot
+file_path_test = "Figures/ApproachTheme_CorrelationMatrix.png"
+png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
+
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
+
+# Then
+dev.off()
 
 # ----- Create selection frequency plot -----
 sFreq <- create_LowRegretSf(solution_list, names, PUs)

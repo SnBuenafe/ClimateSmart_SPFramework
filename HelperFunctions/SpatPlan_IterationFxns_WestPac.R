@@ -84,7 +84,7 @@ loopthrough_EM_Feature <- function(solution_list, metric_list, scenario_list) {
       # Prepare climate layer
       ClimateFeature <- create_FeatureLayer(metric_name = metric_list[metric_num], colname = "transformed", x)
       
-      # Get list of features
+      # Get list of features and targets
       features <- aqua_sf %>% 
         as_tibble() %>% 
         dplyr::select(-geometry) %>% 
