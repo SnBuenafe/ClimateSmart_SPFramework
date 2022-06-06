@@ -77,3 +77,14 @@ ggsave("Figures/nmds_metric.png", plot = plot, height = 10, width = 10, dpi = 60
 palette <- c("climate priority area" = "#E6BA7E", "feature" = "#4D3B2A", "penalty" = "#6984BF", "percentile" = "#2B8142")
 (plot <- plotOrdination("approach", palette))
 ggsave("Figures/nmds_approach.png", plot = plot, height = 10, width = 10, dpi = 600)
+
+
+# ----- Plot ordination with different colors (metrics) and shapes (approach) -----
+long <- scores(solution.mds, display = "sites") %>% bind_cols(., df_groups)
+palette <- c("climate priority area" = "#E6BA7E", "feature" = "#4D3B2A", "penalty" = "#6984BF", "percentile" = "#2B8142")
+
+long_plot <- ggplot(data = long, aes(x = NMDS1, y = NMDS2)) +
+  geom_point(aes(color = approach, shape = metric), size = 3) +
+  scale_color_manual(values = palette) +
+  theme_bw()
+ggsave("Figures/nmds_longPlot.png", plot = long_plot, height = 10, width = 10, dpi = 600)
