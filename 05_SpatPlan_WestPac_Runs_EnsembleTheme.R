@@ -287,9 +287,16 @@ for (i in 1:length(list)) {
   obj <- select_solution(solution_list[[i]], list[i])
   object_list[[i]] <- obj
 }
-# manually save corrplot
+
+# Save corrplot
+file_path_test = "Figures/EnsembleThemee_CorrelationMatrix.png"
+png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
+
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
+
+# Then
+dev.off()
 
 # ----- Measuring how climate-smart solutions are using Kernel Density plots -----
 # Kernel Density Plots

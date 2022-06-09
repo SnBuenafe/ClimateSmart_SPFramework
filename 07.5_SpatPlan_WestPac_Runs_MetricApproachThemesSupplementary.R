@@ -24,7 +24,7 @@ for(i in 1:length(metric_list)) {
 # ----- Climate warming -----
 # 1. Prepare climate layer
 ClimateFeature <- create_FeatureLayer(metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585)
-# 2. Get list of features
+# 2. Get list of features and set targets
 features <- aqua_sf %>% 
   as_tibble() %>% 
   dplyr::select(-geometry) %>% 
@@ -58,7 +58,7 @@ ggsave(filename = "EM-Feature-tos-585.png",
 # ----- Ocean acidification -----
 # 1. Prepare climate layer
 ClimateFeature <- create_FeatureLayer(metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP585)
-# 2. Get list of features
+# 2. Get list of features and set targets
 features <- aqua_sf %>% 
   as_tibble() %>% 
   dplyr::select(-geometry) %>% 
@@ -91,7 +91,7 @@ ggsave(filename = "EM-Feature-phos-585.png",
 # ----- Declining oxygen concentration -----
 # 1. Prepare climate layer
 ClimateFeature <- create_FeatureLayer(metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP585)
-# 2. Get list of features
+# 2. Get list of features and set targets
 features <- aqua_sf %>% 
   as_tibble() %>% 
   dplyr::select(-geometry) %>% 
@@ -124,7 +124,7 @@ ggsave(filename = "EM-Feature-o2os-585.png",
 # ----- Climate velocity -----
 # 1. Prepare climate layer
 ClimateFeature <- create_FeatureLayer(metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP585)
-# 2. Get list of features
+# 2. Get list of features and set targets
 features <- aqua_sf %>% 
   as_tibble() %>% 
   dplyr::select(-geometry) %>% 
@@ -155,7 +155,7 @@ ggsave(filename = "EM-Feature-velocity-585.png",
 # ----- Sum of the cumulative MHW intensity -----
 # 1. Prepare climate layer
 ClimateFeature <- create_FeatureLayer(metric_name = "MHW_SumCumInt", colname = "transformed", metric_df = MHW_SumCumInt_SSP585)
-# 2. Get list of features
+# 2. Get list of features and set targets
 features <- aqua_sf %>% 
   as_tibble() %>% 
   dplyr::select(-geometry) %>% 
@@ -262,12 +262,8 @@ for (i in 1:length(metric_list)) {
   object_list[[i]] <- obj
 }
 
-# manually save corrplot
-#(matrix <- create_corrmatrix(object_list) %>% 
-#    plot_corrplot(., length(object_list)))
-
 # Save corrplot
-file_path_test = "Figures/CorrelationMatrix_Feature.png"
+file_path_test = "Figures/MetricTheme_Feature_CorrelationMatrix.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
 (matrix <- create_corrmatrix(object_list) %>% 
@@ -491,9 +487,15 @@ for (i in 1:length(metric_list)) {
   object_list[[i]] <- obj
 }
 
-# manually save corrplot
+# Save corrplot
+file_path_test = "Figures/MetricTheme_Penalty_CorrelationMatrix.png"
+png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
+
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
+
+# Then
+dev.off()
 
 # ----- Create selection frequency plot -----
 sFreq <- create_LowRegretSf(solution_list, names, PUs)
@@ -748,9 +750,15 @@ for (i in 1:length(metric_list)) {
   object_list[[i]] <- obj
 }
 
-# manually save corrplot
+# Save corrplot
+file_path_test = "Figures/MetricTheme_ClimatePriorityArea_CorrelationMatrix.png"
+png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
+
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
+
+# Then
+dev.off()
 
 # ----- Create selection frequency plot -----
 sFreq <- create_LowRegretSf(solution_list, names, PUs)

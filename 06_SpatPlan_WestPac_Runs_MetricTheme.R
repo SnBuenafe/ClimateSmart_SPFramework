@@ -234,9 +234,15 @@ for (i in 1:length(metric_list)) {
   object_list[[i]] <- obj
 }
 
-# manually save corrplot
+# Save corrplot
+file_path_test = "Figures/MetricTheme_Percentile_CorrelationMatrix.png"
+png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
+
 (matrix <- create_corrmatrix(object_list) %>% 
     plot_corrplot(., length(object_list)))
+
+# Then
+dev.off()
 
 # ----- Create selection frequency plot -----
 sFreq <- create_LowRegretSf(solution_list, names, PUs)
