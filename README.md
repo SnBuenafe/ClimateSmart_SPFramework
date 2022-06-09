@@ -51,6 +51,25 @@ __Iterative runs__ (`08_SpatPlan_WestPac_SuppRuns_Iterations.R`)
 
 Ran all possible options across all the the 4 themes.
 
+Code for iterative runs can be set by the user, just make sure that it's consistent with all the other scripts. For our purposes, we used the following code found in `Output/nmds/df_groups.csv`.
+
 __nMDS__ (`09_SpatPlan_WestPac_nMDS.R`)
 
 Create nMDS plots for outputs in `08_SpatPlanWestPac_SuppRuns_Iterations.R`
+
+
+## Shiny Application
+
+We developed a Shiny App to run the user through what we did for the methods paper. In this application, we briefly describe the proposed framework, providing a summary of what you can ready on the manuscript. Further, you can see how climate-smart spatial plans for the Western Pacific change with different choices in the climate-smart aspects explored here. This  showcases that planning for climate change could be multidimensional and complex.
+
+To run the shiny app,
+
+1. Make sure that you have all the solutions for all runs by running `08_SpatPlan_WestPac_SuppRuns_Iterations.R`
+2. Go to the `shinyApp` folder.
+3. Open `run_app.R`.
+4. Run the script.
+
+
+# Questions? Feedback?
+
+Submit an issue or PR, or email your questions to: tinbuenafe@gmail.com
