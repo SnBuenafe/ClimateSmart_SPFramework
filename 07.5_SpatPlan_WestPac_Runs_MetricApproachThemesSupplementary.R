@@ -210,7 +210,7 @@ for(i in 1:length(names)) {
   feat_rep <- left_join(df, feat_rep, by = "feature") %>% 
     drop_na()
 }
-write.csv(feat_rep, paste0(output_summary, "MetricApproachThemes_Feature_FeatureRepresentation.csv")) # save
+write.csv(feat_rep, paste0(output_summary, "MetricTheme_Feature_FeatureRepresentation.csv")) # save
 
 # ----- Kernel distribution plots of targets -----
 x <- feat_rep %>% 
@@ -436,7 +436,7 @@ for(i in 1:length(names)) {
   feat_rep <- left_join(df, feat_rep, by = "feature") %>% 
     drop_na()
 }
-write.csv(feat_rep, paste0(output_summary, "MetricApproachThemes_Penalty_FeatureRepresentation.csv")) # save
+write.csv(feat_rep, paste0(output_summary, "MetricTheme_Penalty_FeatureRepresentation.csv")) # save
 
 # ----- Kernel distribution plots of targets -----
 x <- feat_rep %>% 
@@ -699,7 +699,7 @@ for(i in 1:length(names)) {
   df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
   feat_rep <- left_join(df, feat_rep, by = "feature") %>% drop_na()
 }
-write.csv(feat_rep, paste0(output_summary, "MetricApproachThemes_ClimatePriorityArea_FeatureRepresentation.csv")) # save
+write.csv(feat_rep, paste0(output_summary, "MetricTheme_ClimatePriorityArea_FeatureRepresentation.csv")) # save
 
 # ----- Kernel distribution plots of targets -----
 x <- feat_rep %>% 

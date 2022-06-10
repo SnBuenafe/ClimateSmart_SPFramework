@@ -7,9 +7,9 @@
 
 # This code creates the layers necessary for answering the research questions of this project. Analyses are ran in `SpatPlan_WestPac_Runs_XX.R`
 
-# To use this code, you will need to download and expand `MME1DATA-Q1215/SpatialPlanning/Data.zip` to the directory `GitHub/SpatialPlanning/Data/`. Note that the download is only 2GB, but the expanded data is 35 GB in size. If you need help subsetting the data to your region due to memory or HD space constraints, contact Jason.
-
-# To use this code, you will need to download and expand `MME1DATA-Q1215/SpatialPlanning/Data.zip` to the directory `GitHub/SpatialPlanning/Data/`. Note that the download is only 2GB, but the expanded data is 35 GB in size. If you need help subsetting the data to your region due to memory or HD space constraints, contact Jason.
+# To reproduce this code for the Western Pacific, you will need to have the raw data. Contact Tin for more details.
+# However, it's not recommended. The output files (in Output/) are restricted to just the Western Pacific.
+# So, the user is advised to start all rerunning scripts starting from 04.
 
 #### Preliminaries ####
 # Load the extras, including functions and libraries
@@ -506,13 +506,13 @@ ClimateLayer_files <- list.files(ClimateLayer_path)
 ID <- tibble(column = character(),
              metric = character(),
              save = character())
-ID %<>% add_row(column = "trend_n", metric = "MHW_num", save = "(Trend Num)") %>% 
-  add_row(column = "trend_peak_int", metric = "MHW_PeakInt", save = "(Peak Intensity)") %>% 
-  add_row(column = "trend_cum_int", metric = "MHW_CumInt", save = "(Cumulative Intensity") %>% 
-  add_row(column = "trend_dur", metric = "MHW_Dur", save = "(Mean Duration)") %>% 
-  add_row(column = "trend_cum_dur", metric = "MHW_CumDur", save = "(Cumulative Duration)") %>% 
-  add_row(column = "sum_cum_int", metric = "MHW_SumCumInt", save = "(Sum Cumulative Intensity)") %>% 
-  add_row(column = "sum_cum_dur", metric = "MHW_SumCumDur", save = "(Sum Cumulative Duration)")
+ID %<>% # add_row(column = "trend_n", metric = "MHW_num", save = "(Trend Num)") %>% 
+  # add_row(column = "trend_peak_int", metric = "MHW_PeakInt", save = "(Peak Intensity)") %>% 
+  # add_row(column = "trend_cum_int", metric = "MHW_CumInt", save = "(Cumulative Intensity") %>% 
+  # add_row(column = "trend_dur", metric = "MHW_Dur", save = "(Mean Duration)") %>% 
+  # add_row(column = "trend_cum_dur", metric = "MHW_CumDur", save = "(Cumulative Duration)") %>% 
+  add_row(column = "sum_cum_int", metric = "MHW_SumCumInt", save = "(Sum Cumulative Intensity)") # %>% 
+  # add_row(column = "sum_cum_dur", metric = "MHW_SumCumDur", save = "(Sum Cumulative Duration)")
 
 if(reprocess) {
   scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")

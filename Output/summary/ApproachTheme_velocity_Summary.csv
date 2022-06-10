@@ -1,5 +1,0 @@
-"","median_velocity","mean_log_velocity","run","scenario","approach","sum_area","total_cost","percent_area","num_pu"
-"1",11.6816825641189,2.52192687373067,"EM_Percentile_velocity_585","585","percentile",12734799,12734799,53.717256774704,19010
-"2",19.0921826965936,2.9810316467734,"EM_Feature_velocity_585","585","feature",7107639,7107639,29.9810675633672,10610
-"3",13.1547011954679,2.57886651733402,"EM_Penalty_velocity_585","585","penalty",7107639,7107639,29.9810675633672,10610
-"4",9.97688938665708,2.61690203321683,"EM_ClimatePriorityArea_velocity_585","585","climate priority area",9834801.9,9834801.9,41.4846421204329,14681

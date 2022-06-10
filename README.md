@@ -2,7 +2,9 @@
 
 The layers required for spatial planning were prepared using repository from `MathMarEcol/SpatialPlanning`. This repository makes use of the Western Pacific as its template, but most analyses can be replicated for different planning regions, whether marine or terrestrial.
 
-The layers were created in `02_SpatPlan_Master_WestPac.R` and loaded in `03_SpatPlan_Master_Preliminaries.R`.
+The layers were created in `02_SpatPlan_Master_WestPac.R` and loaded in the scripts from `04` onward using code from `03_SpatPlan_Master_Preliminaries.R`.
+
+The user is not recommended to recreate the output layers using code from `01-02`. It is recommended to start reproducing the script from `04` onward, with each script independent from the last. So, you can run them in any order you'd prefer.
 
 For a spatial planning project, the following are required:
 1. Planning Region - Western Pacific
@@ -12,6 +14,9 @@ For a spatial planning project, the following are required:
 5. `prioritizr` to create the spatial planning problems
 6. A solver (e.g. Gurobi) to solve the spatial planning problems
 
+This code can be adapted for any planning domain and any metric/s that the user needs.
+
+## Climate-smart aspects explored
 
 __"Scenario" theme__ (`04_SpatPlan_WestPac_Runs_ScenarioTheme.R`)
 

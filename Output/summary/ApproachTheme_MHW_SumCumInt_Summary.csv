@@ -1,5 +1,0 @@
-"","mean_sum_cumulative_intensity","run","scenario","approach","sum_area","total_cost","percent_area","num_pu"
-"1",41987.0284760866,"EM_Percentile_MHW_SumCumInt_585","585","percentile",1529381.7,1529381.7,6.45115713922405,2283
-"2",51904.578588558,"EM_Feature_MHW_SumCumInt_585","585","feature",1662021.9,1662021.9,7.01065302777699,2481
-"3",44484.7081772008,"EM_Penalty_MHW_SumCumInt_585","585","penalty",1438275.3,1438275.3,6.06685693294527,2147
-"4",44183.9011443898,"EM_ClimatePriorityArea_MHW_SumCumInt_585","585","climate priority area",1476459.6,1476459.6,6.22792393116505,2204
