@@ -4,7 +4,7 @@ The layers required for spatial planning were prepared using repository from `Ma
 
 The layers were created in `02_SpatPlan_Master_WestPac.R` and loaded in the scripts from `04` onward using code from `03_SpatPlan_Master_Preliminaries.R`.
 
-The user is not recommended to recreate the output layers using code from `01-02`. It is recommended to start reproducing the script from `04` onward, with each script independent from the last. So, you can run them in any order you'd prefer.
+We advise against recreating the output layers using code from `01-02` since the calculations are computationally expensive. Instead, it is recommended to start reproducing the script from `04` onward, with each script independent from the last. So, you can run them in any order you'd prefer.
 
 For a spatial planning project, the following are required:
 1. Planning Region - Western Pacific
