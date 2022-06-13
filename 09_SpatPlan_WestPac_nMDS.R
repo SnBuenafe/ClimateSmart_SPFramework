@@ -3,6 +3,12 @@
 
 #### Preliminaries ####
 # Description
+# This script creates nMDS ordination plots for all 360 spatial plans, for each of the 4 climate-smart aspects explored in the paper:
+# 1. Emission scenarios (SSP1-2.6, SSP2-4.5, and SSP5-8.5)
+# 2. Models (Ensemble mean, and all 5 models in the ensemble)
+# 3. Metrics (Warming, ocean acidification, ocean deoxygenation, climate velocity, MHW intensity)
+# 4. Approaches (feature, percentile, climate-priority-area, penalty)
+
 # Load functions
 source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functions and libraries
 source("HelperFunctions/SpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
