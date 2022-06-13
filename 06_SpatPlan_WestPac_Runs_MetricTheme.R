@@ -50,7 +50,7 @@ saveRDS(s2, paste0(output_solutions, "s2-EM-Percentile-tos-585.rds")) # save sol
 # 5. Plot the spatial design
 s2_plot <- s2 %>% 
   mutate(solution_1 = as.logical(solution_1))
-(ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Percentile-tos-585.png",
        plot = ggSol2, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -76,7 +76,7 @@ saveRDS(s3, paste0(output_solutions, "s3-EM-Percentile-phos-585.rds")) # save so
 # 5. Plot the spatial design
 s3_plot <- s3 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol3 <- fSpatPlan_PlotSolution(s3_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol3 <- fSpatPlan_PlotSolution(s3_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Percentile-phos-585.png",
        plot = ggSol3, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -102,7 +102,7 @@ saveRDS(s4, paste0(output_solutions, "s4-EM-Percentile-o2os-585.rds")) # save so
 # 5. Plot the spatial design
 s4_plot <- s4 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol4 <- fSpatPlan_PlotSolution(s4_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concetration", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol4 <- fSpatPlan_PlotSolution(s4_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concetration", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Percentile-o2os-585.png",
        plot = ggSol4, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -128,7 +128,7 @@ saveRDS(s5, paste0(output_solutions, "s5-EM-Percentile-velocity-585.rds")) # sav
 # 5. Plot the spatial design
 s5_plot <- s5 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol5 <- fSpatPlan_PlotSolution(s5_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol5 <- fSpatPlan_PlotSolution(s5_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Percentile-velocity-585.png",
        plot = ggSol5, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -154,7 +154,7 @@ saveRDS(s290, paste0(output_solutions, "s290-EM-Percentile-MHW_SumCumInt-585.rds
 # 5. Plot the spatial design
 s290_plot <- s290 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol290 <- fSpatPlan_PlotSolution(s290_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol290 <- fSpatPlan_PlotSolution(s290_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Percentile-MHW_SumCumInt-585.png",
        plot = ggSol290, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -238,8 +238,8 @@ for (i in 1:length(metric_list)) {
 file_path_test = "Figures/MetricTheme_Percentile_CorrelationMatrix.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
-(matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list)))
+matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list))
 
 # Then
 dev.off()
