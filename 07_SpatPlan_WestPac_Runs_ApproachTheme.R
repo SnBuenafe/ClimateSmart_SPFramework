@@ -47,7 +47,7 @@ saveRDS(s2, paste0(output_solutions, "s2-EM-Percentile-tos-585.rds")) # save sol
 # 5. Plot the spatial design
 s2_plot <- s2 %>% 
   mutate(solution_1 = as.logical(solution_1))
-(ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Percentile-tos-585.png",
        plot = ggSol2, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -80,7 +80,7 @@ saveRDS(s6, paste0(output_solutions, "s6-EM-Feature-tos-585.rds")) # save soluti
 # 5. Plot the spatial design
 s6_plot <- s6 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol6 <- fSpatPlan_PlotSolution(s6_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol6 <- fSpatPlan_PlotSolution(s6_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Feature-tos-585.png",
        plot = ggSol6, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
@@ -109,7 +109,7 @@ saveRDS(s10, paste0(output_solutions, "s10-EM-Penalty-tos-585.rds")) # save solu
 # 5. Plot the spatial design
 s10_plot <- s10 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol10 <- fSpatPlan_PlotSolution(s10_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol10 <- fSpatPlan_PlotSolution(s10_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Penalty-tos-585.png",
        plot = ggSol10, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
@@ -143,7 +143,7 @@ saveRDS(s34, paste0(output_solutions, "s34-EM-ClimatePriorityArea-tos-585.rds"))
 # 6. Plot the spatial design
 s34_plot <- s34 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol34 <- fSpatPlan_PlotSolution(s34_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol34 <- fSpatPlan_PlotSolution(s34_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-ClimatePriorityArea-tos-585.png",
        plot = ggSol34, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
@@ -225,8 +225,8 @@ for (i in 1:length(names)) {
 file_path_test = "Figures/ApproachTheme_CorrelationMatrix.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
-(matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list)))
+matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list))
 
 # Then
 dev.off()
