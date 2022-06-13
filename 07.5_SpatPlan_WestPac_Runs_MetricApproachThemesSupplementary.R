@@ -50,7 +50,7 @@ saveRDS(s6, paste0(output_solutions, "s6-EM-Feature-tos-585.rds")) # save soluti
 # 5. Plot the spatial design
 s6_plot <- s6 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol6 <- fSpatPlan_PlotSolution(s6_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol6 <- fSpatPlan_PlotSolution(s6_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Feature-tos-585.png",
        plot = ggSol6, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
@@ -83,7 +83,7 @@ saveRDS(s7, paste0(output_solutions, "s7-EM-Feature-phos-585.rds")) # save solut
 # 5. Plot the spatial design
 s7_plot <- s7 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol7 <- fSpatPlan_PlotSolution(s7_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol7 <- fSpatPlan_PlotSolution(s7_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Feature-phos-585.png",
        plot = ggSol7, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -116,7 +116,7 @@ saveRDS(s8, paste0(output_solutions, "s8-EM-Feature-o2os-585.rds")) # save solut
 # 5. Plot the spatial design
 s8_plot <- s8 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol8 <- fSpatPlan_PlotSolution(s8_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol8 <- fSpatPlan_PlotSolution(s8_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Feature-o2os-585.png",
        plot = ggSol8, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -147,7 +147,7 @@ saveRDS(s9, paste0(output_solutions, "s9-EM-Feature-velocity-585.rds")) # save s
 # 5. Plot the spatial design
 s9_plot <- s9 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol9 <- fSpatPlan_PlotSolution(s9_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol9 <- fSpatPlan_PlotSolution(s9_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Feature-velocity-585.png",
        plot = ggSol9, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -178,7 +178,7 @@ saveRDS(s291, paste0(output_solutions, "s291-EM-Feature-MHW_SumCumInt-585.rds"))
 # 5. Plot the spatial design
 s291_plot <- s291 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol291 <- fSpatPlan_PlotSolution(s291_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol291 <- fSpatPlan_PlotSolution(s291_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Feature-MHW_SumCumInt-585.png",
        plot = ggSol291, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -266,8 +266,8 @@ for (i in 1:length(metric_list)) {
 file_path_test = "Figures/MetricTheme_Feature_CorrelationMatrix.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
-(matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list)))
+matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list))
 
 # Then
 dev.off()
@@ -307,7 +307,7 @@ saveRDS(s10, paste0(output_solutions, "s10-EM-Penalty-tos-585.rds")) # save solu
 # 5. Plot the spatial design
 s10_plot <- s10 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol10 <- fSpatPlan_PlotSolution(s10_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol10 <- fSpatPlan_PlotSolution(s10_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Penalty-tos-585.png",
        plot = ggSol10, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
@@ -335,7 +335,7 @@ saveRDS(s11, paste0(output_solutions, "s11-EM-Penalty-phos-585.rds")) # save sol
 # 5. Plot the spatial design
 s11_plot <- s11 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol11 <- fSpatPlan_PlotSolution(s11_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol11 <- fSpatPlan_PlotSolution(s11_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Penalty-phos-585.png",
        plot = ggSol11, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -363,7 +363,7 @@ saveRDS(s12, paste0(output_solutions, "s12-EM-Penalty-o2os-585.rds")) # save sol
 # 5. Plot the spatial design
 s12_plot <- s12 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol12 <- fSpatPlan_PlotSolution(s12_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol12 <- fSpatPlan_PlotSolution(s12_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Penalty-o2os-585.png",
        plot = ggSol12, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -391,7 +391,7 @@ saveRDS(s13, paste0(output_solutions, "s13-EM-Penalty-velocity-585.rds")) # save
 # 5. Plot the spatial design
 s13_plot <- s13 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol13 <- fSpatPlan_PlotSolution(s13_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol13 <- fSpatPlan_PlotSolution(s13_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Penalty-velocity-585.png",
        plot = ggSol13, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -419,7 +419,7 @@ saveRDS(s292, paste0(output_solutions, "s292-EM-Penalty-MHW_SumCumInt-585.rds"))
 # 5. Plot the spatial design
 s292_plot <- s292 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol292 <- fSpatPlan_PlotSolution(s292_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol292 <- fSpatPlan_PlotSolution(s292_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Penalty-MHW_SumCumInt-585.png",
        plot = ggSol292, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -491,8 +491,8 @@ for (i in 1:length(metric_list)) {
 file_path_test = "Figures/MetricTheme_Penalty_CorrelationMatrix.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
-(matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list)))
+matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list))
 
 # Then
 dev.off()
@@ -542,7 +542,7 @@ saveRDS(s34, paste0(output_solutions, "s34-EM-ClimatePriorityArea-tos-585.rds"))
 # 6. Plot the spatial design
 s34_plot <- s34 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol34 <- fSpatPlan_PlotSolution(s34_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol34 <- fSpatPlan_PlotSolution(s34_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-ClimatePriorityArea-tos-585.png",
        plot = ggSol34, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
@@ -577,7 +577,7 @@ saveRDS(s35, paste0(output_solutions, "s35-EM-ClimatePriorityArea-phos-585.rds")
 # 6. Plot the spatial design
 s35_plot <- s35 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol35 <- fSpatPlan_PlotSolution(s35_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol35 <- fSpatPlan_PlotSolution(s35_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-ClimatePriorityArea-phos-585.png",
        plot = ggSol35, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -612,7 +612,7 @@ saveRDS(s36, paste0(output_solutions, "s36-EM-ClimatePriorityArea-o2os-585.rds")
 # 6. Plot the spatial design
 s36_plot <- s36 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol36 <- fSpatPlan_PlotSolution(s36_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol36 <- fSpatPlan_PlotSolution(s36_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concentration", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-ClimatePriorityArea-o2os-585.png",
        plot = ggSol36, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -647,7 +647,7 @@ saveRDS(s37, paste0(output_solutions, "s37-EM-ClimatePriorityArea-velocity-585.r
 # 6. Plot the spatial design
 s37_plot <- s37 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol37 <- fSpatPlan_PlotSolution(s37_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Important Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol37 <- fSpatPlan_PlotSolution(s37_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Important Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-ClimatePriorityArea-velocity-585.png",
        plot = ggSol37, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -682,7 +682,7 @@ saveRDS(s293, paste0(output_solutions, "s293-EM-ClimatePriorityArea-MHW_SumCumIn
 # 6. Plot the spatial design
 s293_plot <- s293 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol293 <- fSpatPlan_PlotSolution(s293_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative MHW Intensity", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol293 <- fSpatPlan_PlotSolution(s293_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative MHW Intensity", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-ClimatePriorityArea-MHW_SumCumInt-585.png",
        plot = ggSol293, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -754,8 +754,8 @@ for (i in 1:length(metric_list)) {
 file_path_test = "Figures/MetricTheme_ClimatePriorityArea_CorrelationMatrix.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
-(matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list)))
+matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list))
 
 # Then
 dev.off()
