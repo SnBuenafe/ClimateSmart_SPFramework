@@ -129,7 +129,7 @@ saveRDS(s14, paste0(output_solutions, "s14-MM-CanESM5-Percentile-tos-585.rds")) 
 # 5. Plot the spatial design
 s14_plot <- s14 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol14 <- fSpatPlan_PlotSolution(s14_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: CanESM5)") + theme(axis.text = element_text(size = 25)))
+ggSol14 <- fSpatPlan_PlotSolution(s14_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: CanESM5)") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "MM-CanESM5-Percentile-tos-585.png",
        plot = ggSol14, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -151,7 +151,7 @@ saveRDS(s15, paste0(output_solutions, "s15-MM-CMCC_ESM2-Percentile-tos-585.rds")
 # 5. Plot the spatial design
 s15_plot <- s15 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol15 <- fSpatPlan_PlotSolution(s15_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: CMCC-ESM2)") + theme(axis.text = element_text(size = 25)))
+ggSol15 <- fSpatPlan_PlotSolution(s15_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: CMCC-ESM2)") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "MM-CMCC_ESM2-Percentile-tos-585.png",
        plot = ggSol15, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -173,7 +173,7 @@ saveRDS(s16, paste0(output_solutions, "s16-MM-GFDL_ESM4-Percentile-tos-585.rds")
 # 5. Plot the spatial design
 s16_plot <- s16 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol16 <- fSpatPlan_PlotSolution(s16_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: GFDL-ESM4)") + theme(axis.text = element_text(size = 25)))
+ggSol16 <- fSpatPlan_PlotSolution(s16_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: GFDL-ESM4)") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "MM-GFDL_ESM4-Percentile-tos-585.png",
        plot = ggSol16, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -195,7 +195,7 @@ saveRDS(s17, paste0(output_solutions, "s17-MM-IPSL_CM6A_LR-Percentile-tos-585.rd
 # 5. Plot the spatial design
 s17_plot <- s17 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol17 <- fSpatPlan_PlotSolution(s17_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: IPSL-CM6A-LR)") + theme(axis.text = element_text(size = 25)))
+ggSol17 <- fSpatPlan_PlotSolution(s17_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: IPSL-CM6A-LR)") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "MM-IPSL_CM6A_LR-Percentile-tos-585.png",
        plot = ggSol17, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -217,7 +217,7 @@ saveRDS(s18, paste0(output_solutions, "s18-MM-NorESM2_MM-Percentile-tos-585.rds"
 # 5. Plot the spatial design
 s18_plot <- s18 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol18 <- fSpatPlan_PlotSolution(s18_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: NorESM2-MM)") + theme(axis.text = element_text(size = 25)))
+ggSol18 <- fSpatPlan_PlotSolution(s18_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: NorESM2-MM)") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "MM-NorESM2_MM-Percentile-tos-585.png",
        plot = ggSol18, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -292,8 +292,8 @@ for (i in 1:length(list)) {
 file_path_test = "Figures/EnsembleThemee_CorrelationMatrix.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
-(matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list)))
+matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list))
 
 # Then
 dev.off()
