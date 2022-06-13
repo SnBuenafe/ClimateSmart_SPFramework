@@ -49,7 +49,7 @@ saveRDS(s38, paste0(output_solutions, "s38-EM-Percentile-tos-126.rds")) # save s
 # 5. Plot the spatial design
 s38_plot <- s38 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol38 <- fSpatPlan_PlotSolution(s38_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 1-2.6") + theme(axis.text = element_text(size = 25)))
+ggSol38 <- fSpatPlan_PlotSolution(s38_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 1-2.6") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Percentile-tos-126.png",
        plot = ggSol38, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -75,7 +75,7 @@ saveRDS(s39, paste0(output_solutions, "s39-EM-Percentile-tos-245.rds")) # save s
 # 5. Plot the spatial design
 s39_plot <- s39 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol39 <- fSpatPlan_PlotSolution(s39_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 2-4.5") + theme(axis.text = element_text(size = 25)))
+ggSol39 <- fSpatPlan_PlotSolution(s39_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 2-4.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Percentile-tos-245.png",
        plot = ggSol39, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -102,7 +102,7 @@ saveRDS(s2, paste0(output_solutions, "s2-EM-Percentile-tos-585.rds")) # save sol
 # 5. Plot the spatial design
 s2_plot <- s2 %>% 
   mutate(solution_1 = as.logical(solution_1))
-(ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
 ggsave(filename = "EM-Percentile-tos-585.png",
        plot = ggSol2, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -180,8 +180,8 @@ for (i in 1:length(list)) {
 file_path_test = "Figures/ScenarioTheme_CorrelationMatrix.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
-(matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list)))
+matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list))
 
 # Then
 dev.off()
