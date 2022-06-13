@@ -54,9 +54,9 @@ Rerunning the Metric and Approach themes for all metrics and all approaches.
 
 __Iterative runs__ (`08_SpatPlan_WestPac_SuppRuns_Iterations.R`)
 
-Ran all possible options across all the the 4 themes.
+Run all possible options across all the the 4 themes.
 
-The solutions ran form `04-07.5` could also be ran using this script, but in `04-07.5` we singled out solutions that were reported in the manuscript. This should also hopefully help the user understand the logic in comparing the different climate-smart aspects and help the user reproduce this code for different planning domains.
+The solutions ran form `04-07.5` could also be ran using this script, but in `04-07.5` we singled out solutions that were reported in the manuscript to highlight the importance of the indiviudal aspects and allow for reproducibility and greater comparability within the aspects.
 
 Code for iterative runs can be set by the user, just make sure that it is consistent with all the other scripts. For our purposes, we used the following code found in `Output/nmds/df_groups.csv`.
 
