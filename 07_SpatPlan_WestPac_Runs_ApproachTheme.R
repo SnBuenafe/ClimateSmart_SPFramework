@@ -47,7 +47,8 @@ saveRDS(s2, paste0(output_solutions, "s2-EM-Percentile-tos-585.rds")) # save sol
 # 5. Plot the spatial design
 s2_plot <- s2 %>% 
   mutate(solution_1 = as.logical(solution_1))
-(ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) +
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5")
 ggsave(filename = "EM-Percentile-tos-585.png",
        plot = ggSol2, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -80,7 +81,8 @@ saveRDS(s6, paste0(output_solutions, "s6-EM-Feature-tos-585.rds")) # save soluti
 # 5. Plot the spatial design
 s6_plot <- s6 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol6 <- fSpatPlan_PlotSolution(s6_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Feature, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol6 <- fSpatPlan_PlotSolution(s6_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Feature, SSP 5-8.5")
 ggsave(filename = "EM-Feature-tos-585.png",
        plot = ggSol6, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
@@ -109,7 +111,8 @@ saveRDS(s10, paste0(output_solutions, "s10-EM-Penalty-tos-585.rds")) # save solu
 # 5. Plot the spatial design
 s10_plot <- s10 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol10 <- fSpatPlan_PlotSolution(s10_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Penalty, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol10 <- fSpatPlan_PlotSolution(s10_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Penalty, SSP 5-8.5")
 ggsave(filename = "EM-Penalty-tos-585.png",
        plot = ggSol10, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
@@ -143,11 +146,11 @@ saveRDS(s34, paste0(output_solutions, "s34-EM-ClimatePriorityArea-tos-585.rds"))
 # 6. Plot the spatial design
 s34_plot <- s34 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol34 <- fSpatPlan_PlotSolution(s34_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Climate Priority Area, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol34 <- fSpatPlan_PlotSolution(s34_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Climate Priority Area, SSP 5-8.5")
 ggsave(filename = "EM-ClimatePriorityArea-tos-585.png",
        plot = ggSol34, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
-rm(list = ls(pattern = "^roc_tos"))
 
 #### Summary ####
 # Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
@@ -164,13 +167,13 @@ dummy_problem <- prioritizr::problem(out_sf, features, "cost") %>%
 
 problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem)
 
-solution_list <- list(s2, s6, s10, s34)
+solution_list <- list(s6, s2, s34, s10)
 climateLayer_list <- roc_tos_SSP585
 metric_list <- "tos"
-approach_list <- c("percentile", "feature", "penalty", "ClimatePriorityArea")
+approach_list <- c("feature", "percentile", "ClimatePriorityArea", "penalty")
 
 # ----- Feature representation -----
-names <- c("EM_Percentile_tos_585", "EM_Feature_tos_585", "EM_Penalty_tos_585", "EM_ClimatePriorityArea_tos_585")
+names <- c("EM_Feature_tos_585", "EM_Percentile_tos_585", "EM_ClimatePriorityArea_tos_585", "EM_Penalty_tos_585")
 feat_rep <- tibble(feature = character()) # empty tibble
 for(i in 1:length(names)) {
   df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
@@ -179,9 +182,11 @@ for(i in 1:length(names)) {
 write.csv(feat_rep, paste0(output_summary, "ApproachTheme_tos_FeatureRepresentation.csv")) # save
 
 # ----- Kernel distribution plots of targets -----
+rev <- c("EM_Penalty_tos_585", "EM_ClimatePriorityArea_tos_585", "EM_Percentile_tos_585", "EM_Feature_tos_585")
 x <- feat_rep %>% 
   pivot_longer(!feature, names_to = "approach", values_to = "percent") %>% 
-  dplyr::mutate(row_number = row_number(feature))
+  dplyr::mutate(row_number = row_number(feature)) %>% 
+  dplyr::mutate(approach = fct_relevel(approach, rev))
 
 ggRidge <- ggplot(data = x) +
   geom_density_ridges(aes(x = percent, y = approach, group = approach, fill = approach),
@@ -191,10 +196,18 @@ ggRidge <- ggplot(data = x) +
                                `EM_Penalty_tos_585` = "#6984BF",
                                `EM_Percentile_tos_585` = "#2B8142")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
-  xlim(c(30, NA)) +
-  theme_classic()
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+  labs(x = "Protection (%)", y = "selection") +
+  theme_classic() +
+  theme(axis.ticks = element_line(color = "black", size = 1),
+        axis.line = element_line(colour = "black", size = 1),
+        axis.text.x = element_text(color = "black", size = 20),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_blank())
 ggsave(filename = "TargetDist-ApproachTheme-tos.png",
-       plot = ggRidge, width = 15, height = 10, dpi = 300,
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
 # ----- Summary statistics -----
@@ -225,8 +238,8 @@ for (i in 1:length(names)) {
 file_path_test = "Figures/ApproachTheme_CorrelationMatrix.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
-(matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list)))
+matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list))
 
 # Then
 dev.off()
@@ -235,7 +248,8 @@ dev.off()
 sFreq <- create_LowRegretSf(solution_list, names, PUs)
 saveRDS(sFreq, paste0(output_lowregret, "sFreq4-EM-tos-585.rds")) # save low-regret solution
 
-ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Approach Theme", subtitle = "Percentile (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)) +
+ggFreq <- plot_SelectionFrequency(sFreq, land) + 
+  ggtitle("Approach Theme", subtitle = "Percentile (SSP 5-8.5)") +
     inset_element(plot_inset(sFreq), 0.7, 0.7, 0.99, 0.99)
 
 ggsave(filename = "Freq-Approach-tos-585.png",
@@ -267,10 +281,19 @@ ggRidge <- ggplot(data = x) +
                                selection_3 = "#2b8cbe",
                                selection_4 = "#045a8d")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
-  theme_classic()
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+  labs(x = "Protection (%)", y = "selection") +
+  theme_classic() +
+  theme(axis.ticks = element_line(color = "black", size = 1),
+        axis.line = element_line(colour = "black", size = 1),
+        axis.text.x = element_text(color = "black", size = 20),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_blank())
 
 ggsave(filename = "Freq-Targets-ApproachTheme-tos.png",
-       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
 # ----- Measuring how climate-smart solutions are using Kernel Density plots -----
@@ -280,7 +303,8 @@ group_name = "approach"
 for(i in 1:length(names)) {
   list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name)
 }
-df <- do.call(rbind, list)
+df <- do.call(rbind, list) %>% 
+  dplyr::mutate(approach = fct_relevel(approach, rev))
 
 ggRidge <- ggplot() +
   geom_density_ridges_gradient(data = df %>% dplyr::filter(solution_1 == 1), aes(x = transformed, y = approach, fill = ..x..), scale = 1) +
@@ -288,7 +312,19 @@ ggRidge <- ggplot() +
   geom_density_ridges(data = df %>% dplyr::filter(solution_1 == 0), aes(x = transformed, y = approach), alpha = 0.25, linetype = "dotted", scale = 1) +
   geom_vline(xintercept = climate$mean_climate_warming,
              linetype = "dashed", color = "tan1", size = 0.5) +
-  theme_classic()
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+  labs(x = expression('Climate warming (Δ'^"o"*'C yr'^"-1"*')')) +
+  theme_classic() +
+  theme(axis.ticks = element_line(color = "black", size = 1),
+        axis.line = element_line(colour = "black", size = 1),
+        axis.text = element_text(color = "black", size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        legend.key.height = unit(1, "inch"),
+        legend.text = element_text(size = 15, color = "black"),
+        legend.title = element_text(size = 15, color = "black"))
 ggsave(filename = "ClimateWarmingDist-ApproachTheme-tos.png",
-       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot

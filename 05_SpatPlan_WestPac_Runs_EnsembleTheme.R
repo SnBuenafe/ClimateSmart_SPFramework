@@ -81,7 +81,8 @@ saveRDS(s2, paste0(output_solutions, "s2-EM-Percentile-tos-585.rds")) # save sol
 # 5. Plot the spatial design
 s2_plot <- s2 %>% 
   mutate(solution_1 = as.logical(solution_1))
-(ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5")
 ggsave(filename = "EM-Percentile-tos-585.png",
        plot = ggSol2, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -129,7 +130,8 @@ saveRDS(s14, paste0(output_solutions, "s14-MM-CanESM5-Percentile-tos-585.rds")) 
 # 5. Plot the spatial design
 s14_plot <- s14 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol14 <- fSpatPlan_PlotSolution(s14_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: CanESM5)") + theme(axis.text = element_text(size = 25)))
+ggSol14 <- fSpatPlan_PlotSolution(s14_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: CanESM5)")
 ggsave(filename = "MM-CanESM5-Percentile-tos-585.png",
        plot = ggSol14, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -151,7 +153,8 @@ saveRDS(s15, paste0(output_solutions, "s15-MM-CMCC_ESM2-Percentile-tos-585.rds")
 # 5. Plot the spatial design
 s15_plot <- s15 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol15 <- fSpatPlan_PlotSolution(s15_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: CMCC-ESM2)") + theme(axis.text = element_text(size = 25)))
+ggSol15 <- fSpatPlan_PlotSolution(s15_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: CMCC-ESM2)")
 ggsave(filename = "MM-CMCC_ESM2-Percentile-tos-585.png",
        plot = ggSol15, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -173,7 +176,8 @@ saveRDS(s16, paste0(output_solutions, "s16-MM-GFDL_ESM4-Percentile-tos-585.rds")
 # 5. Plot the spatial design
 s16_plot <- s16 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol16 <- fSpatPlan_PlotSolution(s16_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: GFDL-ESM4)") + theme(axis.text = element_text(size = 25)))
+ggSol16 <- fSpatPlan_PlotSolution(s16_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: GFDL-ESM4)")
 ggsave(filename = "MM-GFDL_ESM4-Percentile-tos-585.png",
        plot = ggSol16, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -195,7 +199,8 @@ saveRDS(s17, paste0(output_solutions, "s17-MM-IPSL_CM6A_LR-Percentile-tos-585.rd
 # 5. Plot the spatial design
 s17_plot <- s17 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol17 <- fSpatPlan_PlotSolution(s17_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: IPSL-CM6A-LR)") + theme(axis.text = element_text(size = 25)))
+ggSol17 <- fSpatPlan_PlotSolution(s17_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: IPSL-CM6A-LR)")
 ggsave(filename = "MM-IPSL_CM6A_LR-Percentile-tos-585.png",
        plot = ggSol17, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -217,7 +222,8 @@ saveRDS(s18, paste0(output_solutions, "s18-MM-NorESM2_MM-Percentile-tos-585.rds"
 # 5. Plot the spatial design
 s18_plot <- s18 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol18 <- fSpatPlan_PlotSolution(s18_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: NorESM2-MM)") + theme(axis.text = element_text(size = 25)))
+ggSol18 <- fSpatPlan_PlotSolution(s18_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5 (GCM: NorESM2-MM)")
 ggsave(filename = "MM-NorESM2_MM-Percentile-tos-585.png",
        plot = ggSol18, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -280,7 +286,7 @@ ggsave(filename = "Area-EnsembleTheme-Percentile-tos-585.png",
        path = "Figures/") # save plot
 
 # ----- Kappa Correlation Matrix -----
-list <- c("EnsembleMean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+list <- c("Ensemble-Mean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 object_list <- list() # empty list
 solution_list <- list(s2, s14, s15, s16, s17, s18)
 for (i in 1:length(list)) {
@@ -289,11 +295,11 @@ for (i in 1:length(list)) {
 }
 
 # Save corrplot
-file_path_test = "Figures/EnsembleThemee_CorrelationMatrix.png"
-png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
+file_path_test = "Figures/EnsembleTheme_CorrelationMatrix.png"
+png(height=2400, width=2400, res = 200, file=file_path_test, type = "cairo")
 
-(matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list)))
+matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list))
 
 # Then
 dev.off()
@@ -301,12 +307,13 @@ dev.off()
 # ----- Measuring how climate-smart solutions are using Kernel Density plots -----
 # Kernel Density Plots
 list <- list() # empty list
-names <- c("EnsembleMean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+names <- c("Ensemble-mean", "CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 group_name = "ensemble"
 for(i in 1:length(names)) {
   list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name)
 }
-df <- do.call(rbind, list)
+df <- do.call(rbind, list) %>% 
+  dplyr::mutate(ensemble = fct_relevel(ensemble, names))
 
 intercept1 <- (climate %>% dplyr::filter(grepl("NorESM2|GFDL", run)))$mean_climate_warming
 intercept2 <- (climate %>% dplyr::filter(grepl("EM|CMCC", run)))$mean_climate_warming
@@ -321,17 +328,30 @@ ggRidge <- ggplot() +
              linetype = "dashed", color = "orchid3", size = 0.5) +
   geom_vline(xintercept = intercept3,
              linetype = "dashed", color = "orchid4", size = 0.5) +
-  theme_classic()
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+  labs(x = expression('Climate warming (Δ'^"o"*'C yr'^"-1"*')')) +
+  theme_classic() +
+  theme(axis.ticks = element_line(color = "black", size = 1),
+        axis.line = element_line(colour = "black", size = 1),
+        axis.text = element_text(color = "black", size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_blank(),
+        legend.key.height = unit(1, "inch"),
+        legend.text = element_text(size = 15, color = "black"),
+        legend.title = element_text(size = 15, color = "black"))
 ggsave(filename = "ClimateWarmingDist-EnsembleTheme-Percentile-tos.png",
-       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Create selection frequency for MM -----
+ # ----- Create selection frequency for MM -----
 col_names <- c("tos_CanESM5", "tos_CMCC-ESM2", "tos_GFDL-ESM4", "tos_IPSL-CM6A-LR", "tos_NorESM2-MM")
 sFreq <- create_LowRegretSf(solution_list, col_names, PUs)
 saveRDS(sFreq, paste0(output_lowregret, "sFreq2-EM-Percentile-tos.rds")) # save solution
 
-ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Ensemble Theme", subtitle = "Climate Warming, Percentile (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)) +
+ggFreq <- plot_SelectionFrequency(sFreq, land) + 
+  ggtitle("Ensemble Theme", subtitle = "Climate Warming, Percentile (SSP 5-8.5)") + 
+  theme(axis.text = element_text(size = 50, color = "black")) +
     inset_element(plot_inset(sFreq), 0.7, 0.7, 0.99, 0.99)
   
 ggsave(filename = "Freq-Ensemble-Percentile-tos-585.png",
@@ -341,7 +361,7 @@ ggsave(filename = "Freq-Ensemble-Percentile-tos-585.png",
 # ----- Features according to frequency selection -----
 PlanUnits <- PUs %>% 
   dplyr::mutate(cellID = row_number())
-name <- c("selection_1", "selection_2", "selection_3", "selection_4", "selection_5")
+name <- c("1", "2", "3", "4", "5")
 
 solution <- frequencyTargets(sFreq, name)
 
@@ -358,14 +378,23 @@ x <- feat_rep %>%
 ggRidge <- ggplot(data = x) +
   geom_density_ridges(aes(x = percent, y = selection, group = selection, fill = selection),
                       scale = 5) +
-  scale_fill_manual(values = c(selection_1 = "#d0d1e6",
-                               selection_2 = "#a6bddb",
-                               selection_3 = "#74a9cf",
-                               selection_4 = "#2b8cbe",
-                               selection_5 = "#045a8d")) +
+  scale_fill_manual(values = c(`1` = "#d0d1e6",
+                               `2` = "#a6bddb",
+                               `3` = "#74a9cf",
+                               `4` = "#2b8cbe",
+                               `5` = "#045a8d")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
-  theme_classic()
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+  labs(x = "Protection (%)", y = "selection") +
+  theme_classic() +
+  theme(axis.ticks = element_line(color = "black", size = 1),
+        axis.line = element_line(colour = "black", size = 1),
+        axis.text.x = element_text(color = "black", size = 20),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_blank())
 
 ggsave(filename = "Freq-Targets-EnsembleTheme-Percentile-tos.png",
-       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot

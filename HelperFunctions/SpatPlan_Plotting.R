@@ -4,12 +4,15 @@ fSpatPlan_PlotSolution <- function(s1, PlanUnits, world){
     geom_sf(data = s1, aes(fill = solution_1), colour = NA, size = 0.1, show.legend = TRUE) +
 #    geom_sf(data = PlanUnits, colour = "lightblue", fill = NA, size = 0.1, show.legend = FALSE) +
     geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
+    geom_sf(data = boundary, color = "black", fill = NA, size = 0.1, show.legend = FALSE) +
     coord_sf(xlim = st_bbox(PlanUnits)$xlim, ylim = st_bbox(PlanUnits)$ylim) +
-    scale_colour_manual(values = c("TRUE" = "steelblue4",
-                                   "FALSE" = "lightsteelblue2"),
+    scale_colour_manual(values = c("TRUE" = "#7A7196",
+                                   "FALSE" = "#EDEBFF"),
                         aesthetics = "fill") + 
     theme_bw() +
-    labs(subtitle = "Solution")
+    theme(axis.ticks = element_line(color = "black", size = 2),
+          panel.border = element_rect(colour = "black", fill=NA, size=5),
+          axis.text = element_text(color = "black", size = 50))
   
 }
 

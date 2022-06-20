@@ -50,7 +50,8 @@ saveRDS(s2, paste0(output_solutions, "s2-EM-Percentile-tos-585.rds")) # save sol
 # 5. Plot the spatial design
 s2_plot <- s2 %>% 
   mutate(solution_1 = as.logical(solution_1))
-(ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5")
 ggsave(filename = "EM-Percentile-tos-585.png",
        plot = ggSol2, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -76,7 +77,8 @@ saveRDS(s3, paste0(output_solutions, "s3-EM-Percentile-phos-585.rds")) # save so
 # 5. Plot the spatial design
 s3_plot <- s3 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol3 <- fSpatPlan_PlotSolution(s3_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol3 <- fSpatPlan_PlotSolution(s3_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Percentile, SSP 5-8.5")
 ggsave(filename = "EM-Percentile-phos-585.png",
        plot = ggSol3, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -102,7 +104,8 @@ saveRDS(s4, paste0(output_solutions, "s4-EM-Percentile-o2os-585.rds")) # save so
 # 5. Plot the spatial design
 s4_plot <- s4 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol4 <- fSpatPlan_PlotSolution(s4_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Declining Oxygen Concetration", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol4 <- fSpatPlan_PlotSolution(s4_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Declining Oxygen Concetration", subtitle = "Percentile, SSP 5-8.5") 
 ggsave(filename = "EM-Percentile-o2os-585.png",
        plot = ggSol4, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -128,7 +131,8 @@ saveRDS(s5, paste0(output_solutions, "s5-EM-Percentile-velocity-585.rds")) # sav
 # 5. Plot the spatial design
 s5_plot <- s5 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol5 <- fSpatPlan_PlotSolution(s5_plot, PUs, land) + ggtitle("Climate-smart design: Climate Velocity", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol5 <- fSpatPlan_PlotSolution(s5_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Climate Velocity", subtitle = "Percentile, SSP 5-8.5")
 ggsave(filename = "EM-Percentile-velocity-585.png",
        plot = ggSol5, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -154,7 +158,8 @@ saveRDS(s290, paste0(output_solutions, "s290-EM-Percentile-MHW_SumCumInt-585.rds
 # 5. Plot the spatial design
 s290_plot <- s290 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-(ggSol290 <- fSpatPlan_PlotSolution(s290_plot, PUs, land) + ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25)))
+ggSol290 <- fSpatPlan_PlotSolution(s290_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Percentile, SSP 5-8.5")
 ggsave(filename = "EM-Percentile-MHW_SumCumInt-585.png",
        plot = ggSol290, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -238,8 +243,8 @@ for (i in 1:length(metric_list)) {
 file_path_test = "Figures/MetricTheme_Percentile_CorrelationMatrix.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
-(matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list)))
+matrix <- create_corrmatrix(object_list) %>% 
+    plot_corrplot(., length(object_list))
 
 # Then
 dev.off()
@@ -248,10 +253,11 @@ dev.off()
 sFreq <- create_LowRegretSf(solution_list, names, PUs)
 saveRDS(sFreq, paste0(output_lowregret, "sFreq3-EM-Percentile-585.rds")) # save low-regret solution
 
-ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Metric Theme", subtitle = "Percentile (SSP 5-8.5)") + theme(axis.text = element_text(size = 25)) +
+ggFreq <- plot_SelectionFrequency(sFreq, land) + 
+  ggtitle("Metric Theme", subtitle = "Percentile (SSP 5-8.5)") +
   inset_element(plot_inset(sFreq), 0.7, 0.7, 0.99, 0.99)
 
-ggsave(filename = "Freq-Percentile-Ensemble-tos-585.png",
+ggsave(filename = "Freq-Metric-Percentile-Ensemble-585.png",
         plot = ggFreq, width = 21, height = 29.7, dpi = 300,
         path = "Figures/") # save plot
 
@@ -281,8 +287,17 @@ ggRidge <- ggplot(data = x) +
                                selection_4 = "#2b8cbe",
                                selection_5 = "#045a8d")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
-  theme_classic()
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+  labs(x = "Protection (%)", y = "selection") +
+  theme_classic() +
+  theme(axis.ticks = element_line(color = "black", size = 1),
+        axis.line = element_line(colour = "black", size = 1),
+        axis.text.x = element_text(color = "black", size = 20),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_blank())
 
 ggsave(filename = "Freq-Targets-MetricTheme-Percentile-tos.png",
-       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
