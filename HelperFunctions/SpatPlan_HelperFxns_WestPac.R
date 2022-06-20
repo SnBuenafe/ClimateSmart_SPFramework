@@ -85,9 +85,9 @@ plot_corrplot <- function(matrix, num) {
   matrix_f <- matrix[,2:n]
   class(matrix_f) <- "numeric"
   
-  col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+  #col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
   plot <- corrplot(matrix_f, method = "shade", cl.lim = c(-0.2,1), tl.col = "black", addCoef.col = "black",
-                   col=col(200), tl.srt=45)
+                   col = COL2('BrBG', 200), tl.srt=45)
   return(plot)
 }
 
@@ -123,7 +123,7 @@ plot_statistics <- function(summary, col_name, y_axis, theme) {
     xlab("Run") +
     ylab(y_axis) +
     theme(legend.position = "bottom") +
-    theme_classic()
+    theme_classic() +
   
   return(plot)
   
@@ -396,11 +396,14 @@ get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenari
 plot_SelectionFrequency <- function(data, land) {
   gg <- ggplot() + geom_sf(data = data, aes(fill = as.factor(selection)), color = NA, size = 0.01) +
     geom_sf(data = land, color = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
+    geom_sf(data = boundary, color = "black", fill = NA, size = 0.1, show.legend = FALSE) +
     coord_sf(xlim = st_bbox(data)$xlim, ylim = st_bbox(data)$ylim) +
     scale_fill_brewer(name = "Selection Frequency",
                       palette = "PuBu", aesthetics = "fill") +
     theme_bw() +
-    labs(subtitle = "Variability in GCMs")
+    theme(axis.ticks = element_line(color = "black", size = 2),
+          panel.border = element_rect(colour = "black", fill=NA, size=5),
+          axis.text = element_text(size = 50, color = "black"))
 }
 
 # Create low regret areas for specific approach

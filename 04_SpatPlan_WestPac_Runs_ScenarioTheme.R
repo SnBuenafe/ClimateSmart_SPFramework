@@ -49,7 +49,8 @@ saveRDS(s38, paste0(output_solutions, "s38-EM-Percentile-tos-126.rds")) # save s
 # 5. Plot the spatial design
 s38_plot <- s38 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-ggSol38 <- fSpatPlan_PlotSolution(s38_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 1-2.6") + theme(axis.text = element_text(size = 25))
+ggSol38 <- fSpatPlan_PlotSolution(s38_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 1-2.6")
 ggsave(filename = "EM-Percentile-tos-126.png",
        plot = ggSol38, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -75,7 +76,8 @@ saveRDS(s39, paste0(output_solutions, "s39-EM-Percentile-tos-245.rds")) # save s
 # 5. Plot the spatial design
 s39_plot <- s39 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-ggSol39 <- fSpatPlan_PlotSolution(s39_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 2-4.5") + theme(axis.text = element_text(size = 25))
+ggSol39 <- fSpatPlan_PlotSolution(s39_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 2-4.5")
 ggsave(filename = "EM-Percentile-tos-245.png",
        plot = ggSol39, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -102,7 +104,8 @@ saveRDS(s2, paste0(output_solutions, "s2-EM-Percentile-tos-585.rds")) # save sol
 # 5. Plot the spatial design
 s2_plot <- s2 %>% 
   mutate(solution_1 = as.logical(solution_1))
-ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5") + theme(axis.text = element_text(size = 25))
+ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5")
 ggsave(filename = "EM-Percentile-tos-585.png",
        plot = ggSol2, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -208,16 +211,28 @@ ggRidge <- ggplot() +
   geom_vline(xintercept=(climate %>% 
                            dplyr::filter(scenario == 585))$mean_climate_warming,
              linetype = "dashed", color = "orchid4", size = 0.5) +
-  theme_classic()
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+  labs(x = expression('Climate warming (Δ'^"o"*'C yr'^"-1"*')')) +
+  theme_classic() +
+  theme(axis.ticks = element_line(color = "black", size = 1),
+        axis.line = element_line(colour = "black", size = 1),
+        axis.text = element_text(color = "black", size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_blank(),
+        legend.key.height = unit(1, "inch"),
+        legend.text = element_text(size = 15, color = "black"),
+        legend.title = element_text(size = 15, color = "black"))
 ggsave(filename = "ClimateWarmingDist-ScenarioTheme-Percentile-tos.png",
-       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
 # ----- Create selection frequency plot -----
 sFreq <- create_LowRegretSf(solution_list, scenario_list, PUs, scenario = TRUE)
 saveRDS(sFreq, paste0(output_lowregret, "sFreq1-EM-Percentile-tos.rds"))
 
-ggFreq <- plot_SelectionFrequency(sFreq, land) + ggtitle("Scenario Theme", subtitle = "Climate Warming, Percentile") + theme(axis.text = element_text(size = 25)) +
+ggFreq <- plot_SelectionFrequency(sFreq, land) + 
+  ggtitle("Scenario Theme", subtitle = "Climate Warming, Percentile") + 
   inset_element(plot_inset(sFreq), 0.7, 0.7, 0.99, 0.99)
 ggsave(filename = "Freq-EM-Percentile-Scenario-tos.png",
        plot = ggFreq, width = 21, height = 29.7, dpi = 300,
@@ -247,8 +262,17 @@ ggRidge <- ggplot(data = x) +
                                selection_2 = "#74a9cf",
                                selection_3 = "#0570b0")) +
   geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
-  theme_classic()
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+  labs(x = "Protection (%)", y = "selection") +
+  theme_classic() +
+  theme(axis.ticks = element_line(color = "black", size = 1),
+        axis.line = element_line(colour = "black", size = 1),
+        axis.text.x = element_text(color = "black", size = 20),
+        axis.text.y = element_blank(),
+        axis.title.x = element_text(color = "black", size = 20),
+        axis.title.y = element_blank())
 
 ggsave(filename = "Freq-Targets-ScenarioTheme-Percentile-tos.png",
-       plot = ggRidge, width = 10, height = 6, dpi = 300,
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot

@@ -13,6 +13,11 @@
   land <- ne_countries(scale = 'large', returnclass = 'sf') %>% 
     fSpatPlan_Convert2PacificRobinson() # Land masses; needed for plotting
   
+  # Make boundary
+  boundary <- PUs %>% 
+    st_make_valid() %>% 
+    st_union
+  
   #### Conservation Features ####
   aqua_sf <- read_rds(file.path("Output", paste(save_name, paste0("AquaMaps.rds"), sep = "_")))
   # Changing to 1s and 0s
