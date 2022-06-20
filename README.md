@@ -9,10 +9,9 @@ We advise against recreating the output layers using code from `01-02` since the
 For a spatial planning project, the following are required:
 1. Planning Region - Western Pacific
 2. Conservation Features - We used AquaMaps [AquaMaps](https://www.aquamaps.org/)
-3. Cost Layer - We used Watson's Dataset [Sea Around Us](https://www.nature.com/articles/sdata201739)
-4. Climate Layers - We created multi-model ensembles across 3 climate scenarios for 3 oceanic variables. From there, we calculated layers of 4 climate metrics (created in `01_SpatPlan_ClimateMetrics.R`)
-5. `prioritizr` to create the spatial planning problems [prioritizr](https://prioritizr.net/)
-6. A solver (e.g. Gurobi) to solve the spatial planning problems [Gurobi](https://www.gurobi.com/)
+3. Climate Layers - We created multi-model ensembles across 3 climate scenarios for 3 oceanic variables. From there, we calculated layers of 4 climate metrics (created in `01_SpatPlan_ClimateMetrics.R`)
+4. `prioritizr` to create the spatial planning problems [prioritizr](https://prioritizr.net/)
+5. A solver (e.g. Gurobi) to solve the spatial planning problems [Gurobi](https://www.gurobi.com/)
 
 This code can be adapted for any planning domain and any metric/s that the user needs.
 
