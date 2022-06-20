@@ -16,7 +16,7 @@ body_intro <- fluidPage(
 
 body_background <- fluidPage(
   titlePanel("Background"),
-  tags$div("This Shiny App serves as a visualisation tool for the work by Buenafe et al. (link to preprint?) 
+  tags$div("This Shiny App serves as a visualisation tool for the work by Buenafe et al. (submitted) 
            and allows to explore the proposed climate-smart framework applied to the Western Pacific. 
            Here we show how choosing different options certain climate-smart aspects affect the resulting climate-smart spatial plan."), 
   tags$br(),
@@ -31,7 +31,7 @@ body_background <- fluidPage(
   tags$div(
     #tags$ul(
     tags$ol(
-      tags$li(tags$b("Climate models")), tags$div("There are dozens of global climate models available (ref), 
+      tags$li(tags$b("Climate models")), tags$div("There are dozens of global climate models available, 
                                                     each with somewhat different underlying physical, chemical and biological processes representing
                                                     the carbon cycle. In our case study, the Western Pacific, 
                                                     we used five climate models (CanESM5, CMCC-ESM2, GFDL-ESM4, IPSL-CM6A-LR, NorESM2-MM)
