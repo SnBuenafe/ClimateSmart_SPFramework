@@ -9,7 +9,7 @@ do
 	 	v) var=${OPTARG};;
 		e) expt=${OPTARG};;
 		f) firstyear=${OPTARG};;
-		l) lastyear=${OPTARG}};;
+		l) lastyear=${OPTARG};;
 	esac
 done
 
