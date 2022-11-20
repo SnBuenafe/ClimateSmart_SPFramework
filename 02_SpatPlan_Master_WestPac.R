@@ -86,19 +86,19 @@ ggsave("Layer_AquaMaps.png",
        path = "Figures/")
 
 #### Creating Cost Layer ####
-if(reprocess){
-  Cost <- fSpatPlan_Get_Cost(PUs, cCRS, group = "all") # set group = all, if including all functional groups
-  saveRDS(Cost, file.path("Output", paste(save_name, paste0("Cost.rds"), sep = "_"))) # Save rds so you don't have to reprocess everytime
-} else {
-  Cost <- read_rds(file.path("Output", paste(save_name, paste0("Cost.rds"), sep = "_")))
-}
-
-# Squish the cost layers
-Cost_squish <- Cost %>% 
-  mutate(Cost_squish = scales::oob_squish(Cost, quantile(Cost, c(0.01, 0.99))))
+# if(reprocess){
+#   Cost <- fSpatPlan_Get_Cost(PUs, cCRS, group = "all") # set group = all, if including all functional groups
+#   saveRDS(Cost, file.path("Output", paste(save_name, paste0("Cost.rds"), sep = "_"))) # Save rds so you don't have to reprocess everytime
+# } else {
+#   Cost <- read_rds(file.path("Output", paste(save_name, paste0("Cost.rds"), sep = "_")))
+# }
+# 
+# # Squish the cost layers
+# Cost_squish <- Cost %>% 
+#   mutate(Cost_squish = scales::oob_squish(Cost, quantile(Cost, c(0.01, 0.99))))
 
 # Plotting the cost layer
-ggCost <- fSpatPlan_PlotCost(Cost, land)
+# ggCost <- fSpatPlan_PlotCost(Cost, land)
 
 #### Creating climate layers ####
 # Climate models considered here are: 1) CanESM5, 2) CMCC-ESM2, 3) GFDL-ESM4, 4) IPSL-CM6A-LR, and 5) NorESM2-MM

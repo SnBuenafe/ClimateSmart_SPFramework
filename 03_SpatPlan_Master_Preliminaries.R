@@ -45,6 +45,6 @@ aqua_sf <- aqua_sf %>%
 # cost <- read_rds(file.path("Output", paste(save_name, paste0("Cost.rds"), sep = "_"))) %>% 
 #  mutate(Cost_squish = scales::oob_squish(Cost, quantile(Cost, c(0.01, 0.99))))
 
-# Uniform Cost (Using the Area)
+# Uniform Cost (using 1)
 UniformCost <- PUs %>% 
-  dplyr::mutate(cost = PU_size)
+  dplyr::mutate(cost = 1)

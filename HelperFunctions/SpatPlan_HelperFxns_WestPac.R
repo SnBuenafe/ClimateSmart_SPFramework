@@ -3,25 +3,6 @@
 
 # Created Helper Functions to make running prioritizr easier.
 
-
-
-# This function computes for some of the summary statistics available for the solution
-compute_summary <- function(s, total_area, PU_size, run_name, Cost) {
-  
-  summary <- s %>% 
-    as_tibble() %>% 
-    dplyr::select(-geometry) %>% 
-    filter(solution_1 == 1) %>% 
-    summarize(sum_area = nrow(.) * PU_size, 
-              total_cost = sum(!!sym(Cost))) # total area and cost
-
-  summary %<>% mutate(percent_area = sum_area*100/total_area, 
-                      num_pu = nrow(s %>% as_tibble() %>% filter(solution_1 == 1)), 
-                      run = run_name)
-  
-  return(summary)
-}
-
 # This function arranges the object that is ultimately used to create Cohen's Kappa Correlation Matrix
 select_solution <- function(obj, col_name) {
   obj <- obj %>% 
@@ -314,62 +295,6 @@ create_RepresentationFeature <- function(df, aqua_sf) {
   
   aqua_df <- do.call(cbind, aq_tmp) %>% 
     cbind(., PUs) %>% st_as_sf(sf_column_name = "geometry")
-}
-
-# Streamlines calculating the summaries of the climate metrics of the spatial designs
-get_ClimateSummary <- function(solution_list, climate_layer, metric, col_scenario, col_approach, col_run, climateLayer = "multiple") {
-  
-  get_mean <- function(s, metric) {
-    df <- s %>% as_tibble() %>% 
-      dplyr::select(solution_1, geometry) %>% 
-      left_join(., metric) %>% 
-      filter(solution_1 == 1)
-  }
-
-  df <- list() # create empty list
-  for(i in 1:length(solution_list)) {
-    
-    if(climateLayer == "single") {
-      df[[i]] <-  get_mean(solution_list[[i]], climate_layer)
-    } else {
-      df[[i]] <-  get_mean(solution_list[[i]], climate_layer[[i]])
-    }
-    
-    if (length(metric) > 1) {
-    metric = metric[i]
-    } 
-    
-    if (metric == "tos") {
-      df[[i]] %<>% summarize(mean_climate_warming = mean(transformed))
-    } else if (metric == "phos") {
-      df[[i]] %<>% summarize(mean_ocean_acidification = mean(transformed))
-    } else if (metric == "o2os") {
-      df[[i]] %<>% summarize(mean_oxygen_decline = mean(transformed))
-    } else if (metric == "velocity") {
-      df[[i]] %<>% summarize(median_velocity = median(transformed),
-                             mean_log_velocity = mean(log(transformed)))
-    } else if (metric == "MHW_SumCumInt") {
-      df[[i]] %<>% summarize(mean_sum_cumulative_intensity = mean(transformed))
-    }
-    
-    if (length(col_scenario) > 1) {
-      df[[i]] %<>% dplyr::mutate(run = col_run[i],
-                            scenario = col_scenario[i])
-    } else {
-      df[[i]] %<>% dplyr::mutate(run = col_run[i],
-                            scenario = col_scenario)
-    }
-
-    if (length(col_approach) > 1) {
-      df[[i]] %<>% dplyr::mutate(approach = col_approach[i])
-    } else {
-      df[[i]] %<>% dplyr::mutate(approach = col_approach)
-    }
-
-  }
-  tmp <- do.call(rbind, df)
-  
-  return(tmp)
 }
 
 # Intersect solution with climate layer

@@ -23,7 +23,7 @@ for(scenario_num in 1:length(scenario_list)) {
   x <- load_metrics(metric = "tos", model = "ensemble", scenario = scenario_list[scenario_num])
   assign(paste0("roc_tos_", toupper(str_replace_all(scenario_list[scenario_num], "[^[:alnum:]]", ""))), x)
 }
-total_area = nrow(PUs) * PU_size
+total_area = nrow(PUs)
 
 ################################
 ###### SOLVE SP PROBLEMS #######
@@ -198,12 +198,22 @@ ggsave(filename = "TargetDist-ScenarioTheme-tos.png", # save ridge plot
 # ----- SUMMARY STATISTICS -----
 df <- tibble(run = character()) # empty tibble
 for(i in 1:length(names)) {
-  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  statistics <- fComputeSummary(solution_list[[i]], 
+                                total_area, 
+                                PU_size, 
+                                names[i],
+                                Cost = "cost")
   df <- rbind(statistics, df)
 }
-climate <- get_ClimateSummary(solution_list, climateLayer_list, "tos", col_scenario = scenario_list, col_approach = "percentile", col_run = names)
+climate <- fGetClimateSummary(solution_list, # list of solutions
+                              climate_list, # list of climate metric dfs
+                              "tos", # metric
+                              col_scenario = str_replace_all(scenario_list, "[^[:digit:]]+", ""), # scenarios
+                              col_approach = "percentile", # CS approach used
+                              col_run = names # tag of each row
+                              )
 
-summary <- left_join(climate, df, by = "run")
+summary <- dplyr::left_join(climate, df, by = "run")
 write.csv(summary, paste0(output_summary, "ScenarioTheme_tos_Summary.csv")) # save
 
 ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "scenario") + theme(axis.text = element_text(size = 25))
