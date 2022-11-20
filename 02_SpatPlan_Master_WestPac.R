@@ -38,7 +38,6 @@ CO <- 0.5
 # Choose CRS for analysis (Robinson: Pacific-centered)
 cCRS <- "+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
 
-
 #### Creating planning region ####
 # If Region = WestPacific, demarcating boundary and removing land areas would be different
 # The object "world" here represents the planning region (inverse = FALSE)
@@ -107,34 +106,34 @@ ggCost <- fSpatPlan_PlotCost(Cost, land)
 # Climate scenarios: 1) SSP 1-2.6, 2) SSP 2-4.5, 3) SSP 5-8.5
 
 scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
-scenario_object <- c("SSP126", "SSP245", "SSP585")
+scenario_input <- c("ssp126", "ssp245", "ssp585")
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 
 #### Ensemble Mean: Rate of Change of Temperature ####
-ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/tos/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
+var = "tos"
+path <- "Data/EnsembleMean/"
+list <- list.files(path)
 
-if(reprocess) {
-  for (i in 1:length(ClimateLayer_files)){
-    scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
-    climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
-    layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_tos", colname = "slpTrends")
+for(i in 1:length(scenario_input)) {
+  if(reprocess) {
+    param <- c("ensemble", scenario_input[i], var)
+    
+    file <- apply(outer(list, param, stringr::str_detect), 1, all) %>% as.numeric()
+    file <- which(file == 1)
+    
+    df <- readRDS(paste0(path, list[file]))
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "roc_tos", colname = "slpTrends")
     
     saveRDS(layer, file.path("Output", 
-                             paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
+                             paste(save_name, "ClimateLayer", "roc_tos", scenario_path[i], "ensemble.rds", sep = "_")))
     
     print(paste0("Saved EM", ": ", scenario_path[i]))
-  }
-
-} else {
-  scenario_object <- c("SSP126", "SSP245", "SSP585")
-  
-  for(i in 1:length(scenario_object)) {
-    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
     
-    assign(x = paste0("roc_tos_", scenario_object[i]), value = df, envir = .GlobalEnv)
+  } else {
+      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "roc_tos", scenario_path[i], "ensemble.rds", sep = "_")))
+      
+      assign(x = paste0("roc_tos_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
   }
-
 }
 
 # Plot Climate Warming Rates
@@ -154,31 +153,29 @@ ggsave("Layer_RateofClimateWarming_SSP585.png",
        path = "Figures/")
 
 #### Multi-Model Ensemble: Rate of Change of Temperature ####
-path <- "Data/Climate/ClimateMetrics_Ensemble/tos"
+path <- "Data/MultiModelEnsemble/raster/"
+list <- list.files(path)
 
-if(reprocess) {
-  for (i in 1:length(scenario_path)) {
-    ClimateLayer_files <- list.files(file.path(path, scenario_path[i]))
-    
-    for (j in 1:length(ClimateLayer_files)) {
-      climate <- readRDS(file.path(path, scenario_path[i], ClimateLayer_files[j]))
+for(m in 1:length(model_list)) {
+  for(i in 1:length(scenario_input)) {
+    if(reprocess) {
+      param <- c(model_list[m], scenario_input[i], var)
       
-      layer <- fSpatPlan_Get_ClimateLayer(PUs, climate, cCRS, metric = "roc_tos_ensemble", colname = "slpTrends")
+      file <- apply(outer(list, param, stringr::str_detect), 1, all) %>% as.numeric()
+      file <- which(file == 1)
+      
+      df <- readRDS(paste0(path, list[file]))
+      layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "roc_tos", colname = "slpTrends")
       
       saveRDS(layer, file.path("Output", 
-                               paste(save_name, "ClimateLayer", ClimateLayer_files[j], sep = "_")))
-      print(paste0("Saved ", scenario_path[i], ": ", model_list[j]))
-    }
-  }
-
-} else {
-  for (i in 1:length(scenario_path)) {
-    ClimateLayer_files <- list.files(file.path(path, scenario_path[i]))
-    
-    for (j in 1:length(ClimateLayer_files)) {
-      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer",
-                                              ClimateLayer_files[j], sep = "_")))
-      assign(x = paste(metric = "tos", model_list[j], scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+                               paste(save_name, "ClimateLayer", "roc_tos", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      
+      print(paste0("Saved EM", ": ", model_list[m], ";", scenario_path[i]))
+      
+    } else {
+      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "roc_tos", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      
+      assign(x = paste0("roc_tos_", model_list[m], "_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
     }
   }
 }
@@ -210,25 +207,29 @@ ggsave("Layer_RateofClimateWarming_NorESM2-MM_SSP585.png",
        path = "Figures/")
 
 #### Ensemble Mean: Rate of Change of pH ####
-ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/phos/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
-if(reprocess) {
-  for (i in 1:length(ClimateLayer_files)){
-    scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
-    climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
-    layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_phos", colname = "slpTrends")
+var = "phos"
+path <- "Data/EnsembleMean/"
+list <- list.files(path)
+
+for(i in 1:length(scenario_input)) {
+  if(reprocess) {
+    param <- c("ensemble", scenario_input[i], var)
+    
+    file <- apply(outer(list, param, stringr::str_detect), 1, all) %>% as.numeric()
+    file <- which(file == 1)
+    
+    df <- readRDS(paste0(path, list[file]))
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "roc_phos", colname = "slpTrends")
     
     saveRDS(layer, file.path("Output", 
-                             paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
-    print(paste0("Saved EM", ": ", scenario_path[i]))
-  }
-} else {
-  scenario_object <- c("SSP126", "SSP245", "SSP585")
-  
-  for(i in 1:length(scenario_object)) {
-    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
+                             paste(save_name, "ClimateLayer", "roc_phos", scenario_path[i], "ensemble.rds", sep = "_")))
     
-    assign(x = paste0("roc_phos_", scenario_object[i]), value = df, envir = .GlobalEnv)
+    print(paste0("Saved EM", ": ", scenario_path[i]))
+    
+  } else {
+    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "roc_phos", scenario_path[i], "ensemble.rds", sep = "_")))
+    
+    assign(x = paste0("roc_phos_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
   }
 }
 
@@ -249,82 +250,83 @@ ggsave("Layer_RateofOceanAcidification_SSP585.png",
        path = "Figures/")
 
 #### Multi-Model Ensemble: Rate of Change of pH ####
-path <- "Data/Climate/ClimateMetrics_Ensemble/phos"
+path <- "Data/MultiModelEnsemble/raster/"
+list <- list.files(path)
 
-if(reprocess) {
-  for (i in 1:length(scenario_path)) {
-    ClimateLayer_files <- list.files(file.path(path, scenario_path[i]))
-    
-    for (j in 1:length(ClimateLayer_files)) {
-      climate <- readRDS(file.path(path, scenario_path[i], ClimateLayer_files[j]))
+for(m in 1:length(model_list)) {
+  for(i in 1:length(scenario_input)) {
+    if(reprocess) {
+      param <- c(model_list[m], scenario_input[i], var)
       
-      layer <- fSpatPlan_Get_ClimateLayer(PUs, climate, cCRS, metric = "roc_phos_ensemble", colname = "slpTrends")
+      file <- apply(outer(list, param, stringr::str_detect), 1, all) %>% as.numeric()
+      file <- which(file == 1)
+      
+      df <- readRDS(paste0(path, list[file]))
+      layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "roc_phos", colname = "slpTrends")
       
       saveRDS(layer, file.path("Output", 
-                               paste(save_name, "ClimateLayer", ClimateLayer_files[j], sep = "_")))
+                               paste(save_name, "ClimateLayer", "roc_phos", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
       
-      print(paste0("Saved ", scenario_path[i], ": ", model_list[j]))
-    }
-  }
-  
-} else {
-  for (i in 1:length(scenario_path)) {
-    ClimateLayer_files <- list.files(file.path(path, scenario_path[i]))
-    
-    for (j in 1:length(ClimateLayer_files)) {
-      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer",
-                                              ClimateLayer_files[j], sep = "_")))
-      assign(x = paste(metric = "phos", model_list[j], scenario_object[i], sep = "_"), value = df, envir=.GlobalEnv)
+      print(paste0("Saved EM", ": ", model_list[m], ";", scenario_path[i]))
+      
+    } else {
+      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "roc_phos", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      
+      assign(x = paste0("roc_phos_", model_list[m], "_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
     }
   }
 }
 
 # Plot Ocean Acidification Rates per model
-gg_phos_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = phos_CanESM5_SSP585, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+gg_phos_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = roc_phos_CanESM5_SSP585, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
 ggsave("Layer_RateofOceanAcidification_CanESM5_SSP585.png",
          plot = gg_phos_CanESM5, width = 21, height = 29.7, dpi = 300,
          path = "Figures/")
   
-`gg_phos_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `phos_CMCC-ESM2_SSP585`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+`gg_phos_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_phos_CMCC-ESM2_SSP585`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
 ggsave("Layer_RateofOceanAcidification_CMCC-ESM2_SSP585.png",
        plot = `gg_phos_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_phos_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `phos_GFDL-ESM4_SSP585`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+`gg_phos_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_phos_GFDL-ESM4_SSP585`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
 ggsave("Layer_RateofOceanAcidification_GFDL-ESM4_SSP585.png",
        plot = `gg_phos_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_phos_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `phos_IPSL-CM6A-LR_SSP585`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+`gg_phos_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_phos_IPSL-CM6A-LR_SSP585`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
 ggsave("Layer_RateofOceanAcidification_IPSL-CM6A-LR_SSP585.png",
        plot = `gg_phos_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_phos_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `phos_NorESM2-MM_SSP585`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+`gg_phos_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_phos_NorESM2-MM_SSP585`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
 ggsave("Layer_RateofOceanAcidification_NorESM2-MM_SSP585.png",
        plot = `gg_phos_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
 #### Ensemble Mean: Rate of Change of O2 ####
-ClimateLayer_path <- "Data/Climate/ClimateMetrics/RateOfChange/o2os/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
-if(reprocess) {
-  for (i in 1:length(ClimateLayer_files)){
-    scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
-    climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
-    layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "roc_o2os", colname = "slpTrends")
+var = "o2os"
+path <- "Data/EnsembleMean/"
+list <- list.files(path)
+
+for(i in 1:length(scenario_input)) {
+  if(reprocess) {
+    param <- c("ensemble", scenario_input[i], var)
+    
+    file <- apply(outer(list, param, stringr::str_detect), 1, all) %>% as.numeric()
+    file <- which(file == 1)
+    
+    df <- readRDS(paste0(path, list[file]))
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "roc_o2os", colname = "slpTrends")
     
     saveRDS(layer, file.path("Output", 
-                             paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
-    print(paste0("Saved EM", ": ", scenario_path[i]))
-  }
-} else {
-  scenario_object <- c("SSP126", "SSP245", "SSP585")
-  
-  for(i in 1:length(scenario_object)) {
-    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
+                             paste(save_name, "ClimateLayer", "roc_o2os", scenario_path[i], "ensemble.rds", sep = "_")))
     
-    assign(x = paste0("roc_o2os_", scenario_object[i]), value = df, envir = .GlobalEnv)
+    print(paste0("Saved EM", ": ", scenario_path[i]))
+    
+  } else {
+    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "roc_o2os", scenario_path[i], "ensemble.rds", sep = "_")))
+    
+    assign(x = paste0("roc_o2os_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
   }
 }
 
@@ -345,83 +347,83 @@ ggsave("Layer_RateofDecliningOxygenConcentration_SSP585.png",
        path = "Figures/")
 
 #### Multi-Model Ensemble: Rate of Change of Oxygen Concentration ####
-path <- "Data/Climate/ClimateMetrics_Ensemble/o2os"
+path <- "Data/MultiModelEnsemble/raster/"
+list <- list.files(path)
 
-if(reprocess) {
-  for (i in 1:length(scenario_path)) {
-    ClimateLayer_files <- list.files(file.path(path, scenario_path[i]))
-    
-    for (j in 1:length(ClimateLayer_files)) {
-      climate <- readRDS(file.path(path, scenario_path[i], ClimateLayer_files[j]))
+for(m in 1:length(model_list)) {
+  for(i in 1:length(scenario_input)) {
+    if(reprocess) {
+      param <- c(model_list[m], scenario_input[i], var)
       
-      layer <- fSpatPlan_Get_ClimateLayer(PUs, climate, cCRS, metric = "roc_o2os_ensemble", colname = "slpTrends")
+      file <- apply(outer(list, param, stringr::str_detect), 1, all) %>% as.numeric()
+      file <- which(file == 1)
+      
+      df <- readRDS(paste0(path, list[file]))
+      layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "roc_o2os", colname = "slpTrends")
       
       saveRDS(layer, file.path("Output", 
-                               paste(save_name, "ClimateLayer", ClimateLayer_files[j], sep = "_")))
+                               paste(save_name, "ClimateLayer", "roc_o2os", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
       
-      print(paste0("Saved ", scenario_path[i], ": ", model_list[j]))
-    }
-  }
-  
-} else {
-  for (i in 1:length(scenario_path)) {
-    ClimateLayer_files <- list.files(file.path(path, scenario_path[i]))
-    
-    for (j in 1:length(ClimateLayer_files)) {
-      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer",
-                                              ClimateLayer_files[j], sep = "_")))
-      assign(x = paste(metric = "o2os", model_list[j], scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      print(paste0("Saved EM", ": ", model_list[m], ";", scenario_path[i]))
+      
+    } else {
+      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "roc_o2os", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      
+      assign(x = paste0("roc_o2os_", model_list[m], "_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
     }
   }
 }
 
 # Plot Declining Oxygen Concentration Rates per model
-gg_o2os_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = o2os_CanESM5_SSP585, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+gg_o2os_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = roc_o2os_CanESM5_SSP585, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
 ggsave("Layer_RateofDecliningOxygenConcentration_CanESM5_SSP585.png",
        plot = gg_o2os_CanESM5, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_o2os_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `o2os_CMCC-ESM2_SSP585`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+`gg_o2os_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_o2os_CMCC-ESM2_SSP585`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
 ggsave("Layer_RateofDecliningOxygenConcentration_CMCC-ESM2_SSP585.png",
        plot = `gg_o2os_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_o2os_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `o2os_GFDL-ESM4_SSP585`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+`gg_o2os_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_o2os_GFDL-ESM4_SSP585`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
 ggsave("Layer_RateofDecliningOxygenConcentration_GFDL-ESM4_SSP585.png",
        plot = `gg_o2os_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_o2os_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `o2os_IPSL-CM6A-LR_SSP585`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+`gg_o2os_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_o2os_IPSL-CM6A-LR_SSP585`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
 ggsave("Layer_RateofDecliningOxygenConcentration_IPSL-CM6A-LR_SSP585.png",
        plot = `gg_o2os_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-(`gg_o2os_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `o2os_NorESM2-MM_SSP585`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25)))
+`gg_o2os_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_o2os_NorESM2-MM_SSP585`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
 ggsave("Layer_RateofDecliningOxygenConcentration_NorESM2-MM_SSP585.png",
        plot = `gg_o2os_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
 #### Ensemble Mean: Climate Velocity ####
-ClimateLayer_path <- "Data/Climate/ClimateMetrics/ClimateVelocity/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
-if(reprocess) {
-  scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
-  for (i in 1:length(ClimateLayer_files)){
-    climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
-    layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "velocity", colname = "voccMag")
+var = "velocity"
+path <- "Data/EnsembleMean/"
+list <- list.files(path)
+
+for(i in 1:length(scenario_input)) {
+  if(reprocess) {
+    param <- c("ensemble", scenario_input[i], var)
+    
+    file <- apply(outer(list, param, stringr::str_detect), 1, all) %>% as.numeric()
+    file <- which(file == 1)
+    
+    df <- readRDS(paste0(path, list[file]))
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "velocity", colname = "voccMag")
     
     saveRDS(layer, file.path("Output", 
-                             paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
+                             paste(save_name, "ClimateLayer", "velocity", scenario_path[i], "ensemble.rds", sep = "_")))
     
     print(paste0("Saved EM", ": ", scenario_path[i]))
-  }
-} else {
-  scenario_object <- c("SSP126", "SSP245", "SSP585")
-  
-  for(i in 1:length(scenario_object)) {
-    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", ClimateLayer_files[i], sep = "_")))
     
-    assign(x = paste0("velocity_", scenario_object[i]), value = df, envir = .GlobalEnv)
+  } else {
+    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "velocity", scenario_path[i], "ensemble.rds", sep = "_")))
+    
+    assign(x = paste0("velocity_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
   }
 }
 
@@ -442,32 +444,29 @@ ggsave("Layer_ClimateVelocity_SSP585.png",
        path = "Figures/")
 
 #### Multi-Model Ensemble: Climate Velocity ####
-path <- "Data/Climate/ClimateMetrics_Ensemble/velocity"
+path <- "Data/MultiModelEnsemble/raster/"
+list <- list.files(path)
 
-if(reprocess) {
-  for (i in 1:length(scenario_path)) {
-    ClimateLayer_files <- list.files(file.path(path, scenario_path[i]))
-    
-    for (j in 1:length(ClimateLayer_files)) {
-      climate <- readRDS(file.path(path, scenario_path[i], ClimateLayer_files[j]))
+for(m in 1:length(model_list)) {
+  for(i in 1:length(scenario_input)) {
+    if(reprocess) {
+      param <- c(model_list[m], scenario_input[i], var)
       
-      layer <- fSpatPlan_Get_ClimateLayer(PUs, climate, cCRS, metric = "velocity_ensemble", colname = "voccMag")
+      file <- apply(outer(list, param, stringr::str_detect), 1, all) %>% as.numeric()
+      file <- which(file == 1)
+      
+      df <- readRDS(paste0(path, list[file]))
+      layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "velocity", colname = "voccMag")
       
       saveRDS(layer, file.path("Output", 
-                               paste(save_name, "ClimateLayer", ClimateLayer_files[j], sep = "_")))
+                               paste(save_name, "ClimateLayer", "velocity", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
       
-      print(paste0("Saved ", scenario_path[i], ": ", model_list[j]))
-    }
-  }
-  
-} else {
-  for (i in 1:length(scenario_path)) {
-    ClimateLayer_files <- list.files(file.path(path, scenario_path[i]))
-    
-    for (j in 1:length(ClimateLayer_files)) {
-      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer",
-                                              ClimateLayer_files[j], sep = "_")))
-      assign(x = paste(metric = "velocity", model_list[j], scenario_obj[i], sep = "_"), value = df, envir=.GlobalEnv)
+      print(paste0("Saved EM", ": ", model_list[m], ";", scenario_path[i]))
+      
+    } else {
+      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "velocity", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      
+      assign(x = paste0("velocity_", model_list[m], "_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
     }
   }
 }
@@ -500,119 +499,177 @@ ggsave("Layer_ClimateVelocity_NorESM2-MM_SSP585.png",
 
 
 #### Ensemble Mean: MHW ####
-ClimateLayer_path <- "Data/Climate/ClimateMetrics/MHW/"
-ClimateLayer_files <- list.files(ClimateLayer_path)
+var = "MHW"
+path <- "Data/EnsembleMean/"
+list <- list.files(path)
 
-ID <- tibble(column = character(),
-             metric = character(),
-             save = character())
-ID %<>% # add_row(column = "trend_n", metric = "MHW_num", save = "(Trend Num)") %>% 
-  # add_row(column = "trend_peak_int", metric = "MHW_PeakInt", save = "(Peak Intensity)") %>% 
-  # add_row(column = "trend_cum_int", metric = "MHW_CumInt", save = "(Cumulative Intensity") %>% 
-  # add_row(column = "trend_dur", metric = "MHW_Dur", save = "(Mean Duration)") %>% 
-  # add_row(column = "trend_cum_dur", metric = "MHW_CumDur", save = "(Cumulative Duration)") %>% 
-  add_row(column = "sum_cum_int", metric = "MHW_SumCumInt", save = "(Sum Cumulative Intensity)") # %>% 
-  # add_row(column = "sum_cum_dur", metric = "MHW_SumCumDur", save = "(Sum Cumulative Duration)")
-
-if(reprocess) {
-  scenario_path <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
-  
-  for (i in 1:length(ClimateLayer_files)){
-    for (j in 1:nrow(ID)) {
-      climate_layer <- readRDS(paste0(ClimateLayer_path, ClimateLayer_files[i]))
-      layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "MHW", colname = ID$column[j])
-      
-      saveRDS(layer, file.path("Output", 
-                               paste(save_name, "ClimateLayer", ID$metric[j], paste0(scenario_path[i], ".rds"), sep = "_")))
-      
-      print(paste0("Saved EM", ": ", scenario_path[i], ID$save[j]))
-    }
+for(i in 1:length(scenario_input)) {
+  if(reprocess) {
+    param <- c("ensemble", scenario_input[i], var)
     
-  }
-} else {
-  scenario_object <- c("SSP126", "SSP245", "SSP585")
-  
-  for(i in 1:length(scenario_object)) {
-    for(j in 1:nrow(ID)) {
-      
-      df <- readRDS(file.path("Output", 
-                              paste(save_name, "ClimateLayer", ID$metric[j], paste0(scenario_path[i], ".rds"), sep = "_")))
-      
-      assign(x = paste0(ID$metric[j], "_", scenario_object[i]), value = df, envir = .GlobalEnv)
-      
-    }
+    file <- apply(outer(list, param, stringr::str_detect), 1, all) %>% as.numeric()
+    file <- which(file == 1)
+    
+    df <- readRDS(paste0(path, list[file]))
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "MHW", colname = "sum_cum_int")
+    
+    saveRDS(layer, file.path("Output", 
+                             paste(save_name, "ClimateLayer", "MHW", scenario_path[i], "ensemble.rds", sep = "_")))
+    
+    print(paste0("Saved EM", ": ", scenario_path[i]))
+    
+  } else {
+    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "MHW", scenario_path[i], "ensemble.rds", sep = "_")))
+    
+    assign(x = paste0("MHW_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
   }
 }
 
 # Plot MHW metrics
-scenario_object <- c("SSP126", "SSP245", "SSP585")
+gg_MHW_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = MHW_SSP126, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+ggsave("Layer_MHW_SSP126.png",
+       plot = gg_MHW_SSP126, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
 
-for(j in 1:length(scenario_object)) {
-  for(i in 1:nrow(ID)) {
-    x <- get(paste0(ID$metric[i], "_", scenario_object[j]))
-    gg_MHW <- fSpatPlan_PlotClimate(ClimateLayer = x, 
-                                    world = land,
-                                    metric = ID$metric[i]) +
-      theme(axis.text = element_text(size = 25))
-    ggsave(paste0(paste("Layer", ID$metric[i], scenario_object[j], sep="_"), ".png"),
-           plot = gg_MHW, width = 21, height = 29.7, dpi = 300,
-           path = "Figures/")
-  }
-}
+gg_MHW_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = MHW_SSP245, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+ggsave("Layer_MHW_SSP245.png",
+       plot = gg_MHW_SSP245, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+gg_MHW_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = MHW_SSP585, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+ggsave("Layer_MHW_SSP585.png",
+       plot = gg_MHW_SSP585, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
 
 #### Multi-Model Ensemble: MHW metrics ####
-path <- "Data/Climate/ClimateMetrics_Ensemble/"
-model <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
+path <- "Data/MultiModelEnsemble/raster/"
+list <- list.files(path)
 
-if(reprocess) {
-  for(i in 1:length(scenario_path)) {
-    ClimateLayer_files <- list.files(file.path(path, "MHW",scenario_path[i]))
-    
-    for (j in 1:length(ClimateLayer_files)){
-      for (k in 1:nrow(ID)) {
-        climate_layer <- readRDS(paste0(path, "MHW/", scenario_path[i], "/", ClimateLayer_files[j]))
-        layer <- fSpatPlan_Get_ClimateLayer(PUs, climate_layer, cCRS, metric = "MHW", colname = ID$column[k])
-        
-        saveRDS(layer, file.path("Output", 
-                                 paste(save_name, "ClimateLayer", ID$metric[k], model[j], paste0(scenario_path[i], ".rds"), sep = "_")))
-        
-        print(paste0("Saved MM: ", scenario_path[i], ": ", model[j], ID$save[k]))
-      }
-    }
-  }
-
-} else {
-  for(i in 1:length(scenario_path)) {
-    ClimateLayer_files <- list.files(file.path(path, "MHW", scenario_path[i]))
-    
-    for (j in 1:length(ClimateLayer_files)){
-      for (k in 1:nrow(ID)) {
-        
-        df <- readRDS(file.path("Output", 
-                                paste(save_name, "ClimateLayer", ID$metric[k], model[j], paste0(scenario_path[i], ".rds"), sep = "_")))
-        assign(x = paste(ID$metric[k], model[j], scenario_object[i], sep = "_"), value = df, envir=.GlobalEnv)
-        
-      }
-    }
-  }
+for(m in 1:length(model_list)) {
+  for(i in 1:length(scenario_input)) {
+    if(reprocess) {
+      param <- c(model_list[m], scenario_input[i], var)
       
+      file <- apply(outer(list, param, stringr::str_detect), 1, all) %>% as.numeric()
+      file <- which(file == 1)
+      
+      df <- readRDS(paste0(path, list[file]))
+      layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "MHW", colname = "sum_cum_int")
+      
+      saveRDS(layer, file.path("Output", 
+                               paste(save_name, "ClimateLayer", "MHW", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      
+      print(paste0("Saved EM", ": ", model_list[m], ";", scenario_path[i]))
+      
+    } else {
+      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "MHW", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      
+      assign(x = paste0("MHW_", model_list[m], "_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
+    }
+  }
 }
 
 # Plot MHW metrics
-scenario_object <- c("SSP126", "SSP245", "SSP585")
+gg_MHW_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = MHW_CanESM5_SSP585, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+ggsave("Layer_MHW_CanESM5_SSP585.png",
+       plot = gg_MHW_CanESM5, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
 
-for(k in 1:length(model_list)) {
-  for(j in 1:length(scenario_object)) {
-    for(i in 1:nrow(ID)) {
-      x <- get(paste0(ID$metric[i], "_", model_list[k], "_", scenario_object[j]))
-      gg_MHW <- fSpatPlan_PlotClimate(ClimateLayer = x, 
-                                      world = land,
-                                      metric = ID$metric[i]) +
-        theme(axis.text = element_text(size = 25))
-      ggsave(paste0(paste("Layer", ID$metric[i], model_list[k], scenario_object[j], sep="_"), ".png"),
-             plot = gg_MHW, width = 21, height = 29.7, dpi = 300,
-             path = "Figures/")
+`gg_MHW_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `MHW_CMCC-ESM2_SSP585`, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+ggsave("Layer_MHW_CMCC-ESM2_SSP585.png",
+       plot = `gg_MHW_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+`gg_MHW_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `MHW_GFDL-ESM4_SSP585`, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+ggsave("Layer_MHW_GFDL-ESM4_SSP585.png",
+       plot = `gg_MHW_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+`gg_MHW_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `MHW_IPSL-CM6A-LR_SSP585`, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+ggsave("Layer_MHW_IPSL-CM6A-LR_SSP585.png",
+       plot = `gg_MHW_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+`gg_MHW_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `MHW_NorESM2-MM_SSP585`, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+ggsave("Layer_MHW_NorESM2-MM_SSP585.png",
+       plot = `gg_MHW_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+
+#### Ensemble Mean: Combined metric ####
+for(i in 1:length(scenario_path)) {
+  if(reprocess) {
+    combined_df <- combineMetric(scenario = scenario_path[i], model = "ensemble")
+    saveRDS(combined_df, file.path("Output", 
+                                   paste(save_name, "ClimateLayer", "CombinedMetric", scenario_path[i], "ensemble.rds", sep = "_")))
+  } else {
+    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "CombinedMetric", scenario_path[i], "ensemble.rds", sep = "_")))
+    
+    assign(x = paste0("CombinedMetric_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
+  }
+}
+
+# Plot Combined metric
+gg_Combined_SSP126 <- fSpatPlan_PlotCombinedClimate(ClimateLayer = CombinedMetric_SSP126, world = land) + 
+  theme(axis.text = element_text(size = 25))
+ggsave("Layer_Combined_SSP126.png",
+       plot = gg_Combined_SSP126, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+gg_Combined_SSP245 <- fSpatPlan_PlotCombinedClimate(ClimateLayer = CombinedMetric_SSP245, world = land) + 
+  theme(axis.text = element_text(size = 25))
+ggsave("Layer_Combined_SSP245.png",
+       plot = gg_Combined_SSP245, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+gg_Combined_SSP585 <- fSpatPlan_PlotCombinedClimate(ClimateLayer = CombinedMetric_SSP585, world = land) + 
+  theme(axis.text = element_text(size = 25))
+ggsave("Layer_Combined_SSP585.png",
+       plot = gg_Combined_SSP585, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+#### Multi-model Ensemble Mean: Combined metric ####
+for(i in 1:length(scenario_path)) {
+  for(j in 1:length(model_list)) {
+    if(reprocess) {
+      combined_df <- combineMetric(scenario = scenario_path[i], model = model_list[m])
+      saveRDS(combined_df, file.path("Output", 
+                                     paste(save_name, "ClimateLayer", "CombinedMetric", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+    } else {
+      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "CombinedMetric", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      
+      assign(x = paste0("CombinedMetric_", model_list[j], "_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
     }
+  }
 }
 
-}
+# Plot Combined Metrics
+gg_CombinedMetric_CanESM5 <- fSpatPlan_PlotCombinedClimate(ClimateLayer = CombinedMetric_CanESM5_SSP585, world = land) + 
+  theme(axis.text = element_text(size = 25))
+ggsave("Layer_CombinedMetric_CanESM5_SSP585.png",
+       plot = gg_CombinedMetric_CanESM5, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+`gg_CombinedMetric_CMCC-ESM2` <- fSpatPlan_PlotCombinedClimate(ClimateLayer = `CombinedMetric_CMCC-ESM2_SSP585`, world = land) + 
+  theme(axis.text = element_text(size = 25))
+ggsave("Layer_CombinedMetric_CMCC-ESM2_SSP585.png",
+       plot = `gg_CombinedMetric_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+`gg_CombinedMetric_GFDL-ESM4` <- fSpatPlan_PlotCombinedClimate(ClimateLayer = `CombinedMetric_GFDL-ESM4_SSP585`, world = land) + 
+  theme(axis.text = element_text(size = 25))
+ggsave("Layer_CombinedMetric_GFDL-ESM4_SSP585.png",
+       plot = `gg_CombinedMetric_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+`gg_CombinedMetric_IPSL-CM6A-LR` <- fSpatPlan_PlotCombinedClimate(ClimateLayer = `CombinedMetric_IPSL-CM6A-LR_SSP585`, world = land) + 
+  theme(axis.text = element_text(size = 25))
+ggsave("Layer_CombinedMetric_IPSL-CM6A-LR_SSP585.png",
+       plot = `gg_CombinedMetric_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")
+
+`gg_CombinedMetric_NorESM2-MM` <- fSpatPlan_PlotCombinedClimate(ClimateLayer = `CombinedMetric_NorESM2-MM_SSP585`, world = land) + 
+  theme(axis.text = element_text(size = 25))
+ggsave("Layer_CombinedMetric_NorESM2-MM_SSP585.png",
+       plot = `gg_CombinedMetric_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/")

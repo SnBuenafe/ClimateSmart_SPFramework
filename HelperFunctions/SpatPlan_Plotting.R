@@ -1,8 +1,8 @@
 
+# Plot solutions
 fSpatPlan_PlotSolution <- function(s1, PlanUnits, world){
   gg <- ggplot() + 
     geom_sf(data = s1, aes(fill = solution_1), colour = NA, size = 0.1, show.legend = TRUE) +
-#    geom_sf(data = PlanUnits, colour = "lightblue", fill = NA, size = 0.1, show.legend = FALSE) +
     geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
     geom_sf(data = boundary, color = "black", fill = NA, size = 0.1, show.legend = FALSE) +
     coord_sf(xlim = st_bbox(PlanUnits)$xlim, ylim = st_bbox(PlanUnits)$ylim) +
@@ -16,7 +16,7 @@ fSpatPlan_PlotSolution <- function(s1, PlanUnits, world){
   
 }
 
-
+# Plot planning units
 fSpatPlan_PlotPUs <- function(PlanUnits, world){
   gg <- ggplot() +
     geom_sf(data = PlanUnits, fill = "lightsteelblue2", color = "grey64", size = 0.05, show.legend = FALSE) +
@@ -27,24 +27,7 @@ fSpatPlan_PlotPUs <- function(PlanUnits, world){
   
 }
 
-
-fSpatPlan_PlotMPAs <- function(LockedIn, world){
-  gg <- ggplot() +
-    geom_sf(data = LockedIn, aes(fill = locked_in), colour = "lightblue", size = 0.1, show.legend = FALSE) +
-    geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
-    scale_colour_manual(values = c("TRUE" = "blue",
-                                   "FALSE" = "grey50")) + 
-    scale_fill_manual(values = c("TRUE" = "blue",
-                                 "FALSE" = "white")) +
-    theme_bw() +
-    coord_sf(
-      xlim = st_bbox(LockedIn)$xlim,
-      ylim = st_bbox(LockedIn)$ylim) +
-    labs(subtitle = "Locked In Areas")
-  
-}
-
-
+# Plot cost
 fSpatPlan_PlotCost <- function(Cost, world){
   gg <- ggplot() + 
     geom_sf(data = Cost, aes(fill = Cost), colour = "grey80", size = 0.1, show.legend = TRUE) +
@@ -60,31 +43,30 @@ fSpatPlan_PlotCost <- function(Cost, world){
   
 }
 
+# Plot climate layers
 fSpatPlan_PlotClimate <- function(ClimateLayer, world, metric){
+  
   if (metric == "velocity") {
     palette = rev(brewer.pal(11, "RdYlBu"))
     expression = expression('km yr'^"-1"*'')
     subtitle = "Climate Velocity"
-  } else if (metric %in% c("roc_tos", "roc_phos", "roc_o2os")) {
-    quantile = ClimateLayer$slpTrends
-    if (metric == "roc_tos") {
+  } else if (metric == "roc_tos") {
       palette = brewer.pal(9, "YlGn")
       expression = expression('Δ'^"o"*'C yr'^"-1"*'')
       subtitle = "Rate of Change in Temperature"
-    } else if (metric == "roc_phos") {
+  } else if (metric == "roc_phos") {
       palette = rev(brewer.pal(9, "YlOrBr"))
       expression = expression('Δ pH yr'^"-1"*'')
       subtitle = "Rate of Change in pH"
-    } else if (metric == "roc_o2os") {
+  } else if (metric == "roc_o2os") {
       palette = rev(brewer.pal(9, "YlGnBu"))
       expression = expression('Δ mol m'^"-3"*' yr'^"-1"*'')
       subtitle = "Rate of Change in Oxygen"
-    } 
   } else if (str_detect(metric, "MHW")) {
-      palette = brewer.pal(9, "BuPu")
-      expression = expression('MHW yr'^"-1"*'')
+      palette = brewer.pal(9, "Purples")
+      expression = expression('total degree days')
       subtitle = "MHW metrics"
-    }
+  } 
   
   gg <- ggplot() +
       geom_sf(data = ClimateLayer, aes(fill = transformed), color = NA, size = 0.1, show.legend = TRUE) +
@@ -98,6 +80,26 @@ fSpatPlan_PlotClimate <- function(ClimateLayer, world, metric){
            subtitle = subtitle) +
       theme_bw()
       
+}
+
+fSpatPlan_PlotCombinedClimate <- function(ClimateLayer, world) {
+  
+  expression = expression('Metric score')
+  subtitle = "Combined climate-smart metric"
+  
+  gg <- ggplot() +
+    geom_sf(data = ClimateLayer, aes(fill = combined), color = NA, size = 0.1, show.legend = TRUE) +
+    geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) + 
+    coord_sf(xlim = st_bbox(ClimateLayer)$xlim, ylim = st_bbox(ClimateLayer)$ylim) +
+    scale_fill_viridis_c(name = expression,
+                         option = "viridis",
+                         direction = -1,
+                         oob = scales::squish,
+                         na.value = "grey64") +
+    labs(fill = expression,
+         subtitle = subtitle) +
+    theme_bw()
+
 }
 
 fSpatPlan_PlotComparison <- function(soln1, soln2, world){
