@@ -632,11 +632,11 @@ ggsave("Layer_Combined_SSP585.png",
 for(i in 1:length(scenario_path)) {
   for(j in 1:length(model_list)) {
     if(reprocess) {
-      combined_df <- combineMetric(scenario = scenario_path[i], model = model_list[m])
+      combined_df <- combineMetric(scenario = scenario_path[i], model = model_list[j])
       saveRDS(combined_df, file.path("Output", 
-                                     paste(save_name, "ClimateLayer", "CombinedMetric", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+                                     paste(save_name, "ClimateLayer", "CombinedMetric", scenario_path[i], paste0(model_list[j], ".rds"), sep = "_")))
     } else {
-      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "CombinedMetric", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "CombinedMetric", scenario_path[i], paste0(model_list[j], ".rds"), sep = "_")))
       
       assign(x = paste0("CombinedMetric_", model_list[j], "_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
     }

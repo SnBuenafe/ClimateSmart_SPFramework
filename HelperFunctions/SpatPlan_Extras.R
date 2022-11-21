@@ -260,10 +260,6 @@ fSpatPlan_Get_Boundary <- function(Limits, cCRS){
   
   # Added Western Pacific
   if (Limits == "WestPacific"){
-    source("HelperFunctions/SpatPlan_Extras.R")
-    source("HelperFunctions/fSpatPlan_Convert2PacificRobinson.R")
-    source("HelperFunctions/fSpatPlan_Get_MaskedPolygon.R")
-    
     ocean_sf <- ne_download(scale = "large", category = "physical", type = "geography_marine_polys", returnclass = "sf") 
     
     # Check the seas listed in ocean_sf
@@ -705,7 +701,7 @@ fSpatPlan_Get_ClimateLayer <- function(PlanUnits,
   if (str_detect(metric, "MHW")) {
     
     temp_ClimateLayer <- ClimateLayer %>% 
-      st_as_sf(coords = c("X", "Y"), crs = longlat) %>% 
+      sf::st_as_sf(coords = c("X", "Y"), crs = longlat) %>% 
       fSpatPlan_Convert2PacificRobinson() %>% 
       dplyr::select(sum_cum_int)
     
