@@ -3,63 +3,6 @@
 
 # Created Helper Functions to make running prioritizr easier.
 
-# This function arranges the object that is ultimately used to create Cohen's Kappa Correlation Matrix
-select_solution <- function(obj, col_name) {
-  obj <- obj %>% 
-    as_tibble() %>% 
-    dplyr::select(solution_1) %>% 
-    dplyr::rename(!!sym(col_name) := solution_1)
-}
-
-# This function creates Cohen's Kappa Correlation Matrix
-create_corrmatrix <- function(list_plans) {
-  
-  pacman::p_load(irr)
-
-  y = 1
-  s_matrix <- list() # empty list
-  for(i in 1:length(list_plans)){
-    for(j in 1:length(list_plans)){
-      kappa_temp <- irr::kappa2(bind_cols(list_plans[[i]], list_plans[[j]]))
-      kappa_corrvalue <- kappa_temp$value
-      kappa_pvalue <- kappa_temp$p.value
-      s_matrix[[y]] <- cbind(colnames(list_plans[[i]]), # first plan
-                             colnames(list_plans[[j]]), # second plan
-                             kappa_corrvalue, # correlation value
-                             kappa_pvalue) # p value
-      y = y+1
-    }
-  }
-  
-  s_matrix_all <- do.call(rbind, s_matrix) %>% 
-    as_tibble()
-  colnames(s_matrix_all)[1:2] <- c('plan1','plan2')
-  
-  matrix <- s_matrix_all %>% 
-    as_tibble() %>% 
-    dplyr::select(-kappa_pvalue) %>% 
-    pivot_wider(names_from = plan2, values_from = kappa_corrvalue) %>% 
-    as.matrix()
-  
-  return(matrix)
-}
-
-# This plots the Correlation Matrix.
-plot_corrplot <- function(matrix, num) {
-  pacman::p_load(corrplot)
-  
-  # creating corrplot
-  rownames(matrix) <- matrix[,1]
-  n <- num + 1 # num represents the number of inputted spatial plans
-  matrix_f <- matrix[,2:n]
-  class(matrix_f) <- "numeric"
-  
-  #col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
-  plot <- corrplot(matrix_f, method = "shade", cl.lim = c(-0.2,1), tl.col = "black", addCoef.col = "black",
-                   col = COL2('BrBG', 200), tl.srt=45)
-  return(plot)
-}
-
 # Plot statistics
 plot_statistics <- function(summary, col_name, y_axis, theme) {
   
@@ -305,60 +248,6 @@ create_RepresentationFeature <- function(df, aqua_sf) {
 #    filter(solution_1 == 1)
 #}
 
-# Create selection frequency plot
-plot_SelectionFrequency <- function(data, land) {
-  gg <- ggplot() + geom_sf(data = data, aes(fill = as.factor(selection)), color = NA, size = 0.01) +
-    geom_sf(data = land, color = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
-    geom_sf(data = boundary, color = "black", fill = NA, size = 0.1, show.legend = FALSE) +
-    coord_sf(xlim = st_bbox(data)$xlim, ylim = st_bbox(data)$ylim) +
-    scale_fill_brewer(name = "Selection Frequency",
-                      palette = "PuBu", aesthetics = "fill") +
-    theme_bw() +
-    theme(axis.ticks = element_line(color = "black", size = 2),
-          panel.border = element_rect(colour = "black", fill=NA, size=5),
-          axis.text = element_text(size = 50, color = "black"))
-}
-
-# Create low regret areas for specific approach
-create_LowRegretSf <- function(solution_list, col_names, PUs, scenario = FALSE) {
-   
-  df <- list() # empty list
-  for (i in 1:length(col_names)) {
-    df[[i]] <- solution_list[[i]] %>% dplyr::select(solution_1) %>% 
-      rename(!!sym(col_names[i]) := solution_1) %>% 
-      as_tibble()
-  }
-  
-  tmp <- df[[1]]
-  for (i in 2:length(col_names)) {
-    tmp <- tmp %>% 
-      left_join(df[[i]], .)
-  }
-  
-  tmp %<>% dplyr::select(-geometry) %>% 
-    mutate(selection = rowSums(., na.rm = TRUE)) %>% 
-    dplyr::mutate(cellID = row_number())
-  
-  PUs_temp <- PUs %>% 
-    dplyr::mutate(cellID = row_number())
-  
-  # Create the low-regret sf object
-  low_regret <- full_join(tmp, PUs_temp, by = "cellID") %>% 
-    st_as_sf(sf_column_name = "geometry") %>% 
-    left_join(., UniformCost %>% as_tibble(), by = "geometry") %>% 
-    st_as_sf(sf_column_name = "geometry") 
-  
-  if (isTRUE(scenario)) {
-    low_regret %<>% 
-      dplyr::mutate(solution_1 = ifelse(selection == 3, 1, 0))
-  } else {
-    low_regret %<>% 
-      dplyr::mutate(solution_1 = ifelse(selection == 4, 1, 0))    
-  }
-
-  return(low_regret)
-}
-
 # Create penalty scaling values for the "penalty" approach
 create_Scaling <- function(cost, climate_metric, metric) {
   # I calculated scaling using this equation:
@@ -399,76 +288,6 @@ plot_AQMFeatures <- function(s1, PlanUnits, world, column){
   
 }
 
-# Make Kernel for Climate Data
-make_kernel <- function(solution, name, group, metric = NA) {
-  
-  if(is.na(metric)) {
-    df <- solution %>% 
-      as_tibble() %>% 
-     # dplyr::filter(solution_1 == 1) %>% 
-      dplyr::select(solution_1, transformed) %>% 
-      dplyr::rename(!!sym(name) := transformed) %>% 
-      pivot_longer(!!sym(name), names_to = group, values_to = "transformed")
-  } else {
-    metric_df <- metric %>% 
-      as_tibble()
-    
-    df <- solution %>% 
-      as_tibble() %>%
-      left_join(., metric_df) %>% 
-     # dplyr::filter(solution_1 == 1) %>% 
-      dplyr::select(transformed) %>% 
-      dplyr::rename(!!sym(name) := transformed) %>% 
-      pivot_longer(!!sym(name), names_to = group, values_to = "transformed")
-  }
-  
-  
-  return(df)
-}
-
-# Make inset histogram
-plot_inset <- function(sFreq) {
-  
-  temp <- sFreq %>% as_tibble %>% 
-    dplyr::select(selection) %>% 
-    dplyr::group_by(selection) %>% 
-    dplyr::summarize(total = n()) %>% 
-    dplyr::mutate(proportion = total/nrow(PUs)) %>% 
-    #arrange(., desc(selection)) %>%  # commenting this out because want to get areas with exact selection frequencies
-    #dplyr::mutate(proportion = ifelse(selection == 0, yes = total/nrow(PUs), no = cumsum(total)/nrow(PUs))) %>% 
-    arrange(selection)
-  
-  inset <- ggplot(temp, aes(x = as.factor(selection), y = proportion, fill = as.factor(selection))) +
-    scale_fill_brewer(name = "Selection Frequency",
-                      palette = "PuBu", aesthetics = "fill") +
-    geom_col(width = 1, show.legend = FALSE) +
-    theme_bw() + 
-    xlab(element_blank()) +
-    ylab(element_blank()) +
-    scale_y_continuous(expand = c(0,0)) +
-    labs(title = element_blank()) +
-    theme(axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
-  
-  return(inset)
-}
-
-# Preprocess frequencies of selection to create KD plots of targets
-frequencyTargets <- function(sFreq, name) {
-  
-  solution <- list() # empty list
-  for(i in 1:(length(name))){
-    solution[[i]] <- sFreq %>% 
-      as_tibble() %>% 
-      dplyr::filter(selection == i) %>% 
-      dplyr::select(selection, cellID) %>% 
-      left_join(PlanUnits, ., by = "cellID") %>% 
-      dplyr::mutate(solution_1 = ifelse(is.na(selection), yes = 0, no = 1))
-    
-  }
-  
-  return(solution)
-}
 
 # Calculating the combined metric
 combineMetric <- function(scenario, model) {

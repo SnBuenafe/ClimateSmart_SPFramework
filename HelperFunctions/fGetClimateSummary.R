@@ -33,6 +33,7 @@ fGetClimateSummary <- function(solution_list, # list of solutions
                                   climate_layer[[i]])
     }
     
+    # If more than one metric is used in this function, make sure to only take one at a time
     if (length(metric) > 1) {
       metric = metric[i]
     } 
@@ -53,6 +54,7 @@ fGetClimateSummary <- function(solution_list, # list of solutions
                                  scenario = col_scenario)
     }
     
+    # Attach CS approach
     if (length(col_approach) > 1) {
       df[[i]] %<>% dplyr::mutate(approach = col_approach[i])
     } else {
@@ -60,7 +62,8 @@ fGetClimateSummary <- function(solution_list, # list of solutions
     }
     
   }
-  tmp <- do.call(rbind, df)
+  tmp <- do.call(rbind, df) %>% 
+    dplyr::select(run, scenario, approach, everything()) # arrange columns
   
   return(tmp)
 }

@@ -56,7 +56,7 @@ p38 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>%
   add_binary_decisions() %>%
-  add_cbc_solver(gap = 0, verbose = FALSE) # change this to cbc
+  add_cbc_solver(gap = 0, verbose = FALSE)
 
 # 4. Solve the planning problem 
 s38 <- prioritizr::solve(p38)
@@ -117,7 +117,7 @@ ggsave(filename = "EM-Percentile-tos-245.png",
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
                                           percentile = 35,
-                                          metricDF = rename_metric(roc_tos_SSP126),
+                                          metricDF = rename_metric(roc_tos_SSP585),
                                           direction = -1 # lower values are more climate-smart
 )
 
@@ -140,7 +140,7 @@ p2 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0, verbose = FALSE)
 
 # 4. Solve the planning problem 
 s2 <- prioritizr::solve(p2)
@@ -160,7 +160,7 @@ ggsave(filename = "EM-Percentile-tos-585.png",
 #####################################
 
 dummy <- call_dummy() # Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
-problem_list <- rep(dummy, 3)
+problem_list <- list(dummy, dummy, dummy)
 solution_list <- list(s38, s39, s2)
 climate_list <- list(roc_tos_SSP126, roc_tos_SSP245, roc_tos_SSP585)
 scenario_list <- c("126", "245", "585") # USE THIS INSTEAD: str_replace_all(scenario_list[i], "[^[:digit:]]+", "")
@@ -176,7 +176,7 @@ write.csv(feat_rep, paste0(summary_dir, "ScenarioTheme_tos_FeatureRepresentation
 
 # ----- KERNEL DENSITY PLOTS OF TARGETS -----
 x <- feat_rep %>% 
-  dplyr::pivot_longer(!feature, names_to = "scenario", values_to = "percent") %>% 
+  tidyr::pivot_longer(!feature, names_to = "scenario", values_to = "percent") %>% 
   dplyr::mutate(row_number = row_number(feature))
 
 ggRidge <- ggplot(data = x) +
@@ -197,14 +197,15 @@ ggsave(filename = "TargetDist-ScenarioTheme-tos.png", # save ridge plot
 
 # ----- SUMMARY STATISTICS -----
 df <- tibble(run = character()) # empty tibble
+# calculate % area for all solutions
 for(i in 1:length(names)) {
   statistics <- fComputeSummary(solution_list[[i]], 
                                 total_area, 
                                 PU_size, 
-                                names[i],
-                                Cost = "cost")
+                                names[i])
   df <- rbind(statistics, df)
 }
+# calculate mean/median metric values for all solutions
 climate <- fGetClimateSummary(solution_list, # list of solutions
                               climate_list, # list of climate metric dfs
                               "tos", # metric
@@ -221,11 +222,10 @@ ggsave(filename = "Area-Percentile-tos.png",
        plot = ggArea, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Get Kappa Correlation Matrix -----
-list <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
+# ----- KAPPA CORRELATION MATRIX -----
 object_list <- list() # empty list
-for (i in 1:length(list)) {
-  obj <- select_solution(solution_list[[i]], list[i])
+for (i in 1:length(scenario_list)) {
+  obj <- select_solution(solution_list[[i]], scenario_list[i])
   object_list[[i]] <- obj
 }
 
@@ -233,95 +233,53 @@ for (i in 1:length(list)) {
 file_path_test = "Figures/ScenarioTheme_CorrelationMatrix.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
-matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list))
+matrix <- fGetCorrMatrix(object_list) %>% 
+    fPlot_CorrPlot(., length(object_list))
 
 # Then
 dev.off()
 
-# ----- Measuring how climate-smart the solution are across scenarios using kernel density plots -----
+# ----- KERNEL DENSITY PLOTS OF CLIMATE METRICS -----
 list <- list() # empty list
-names <- c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
 group_name = "scenario"
-for(i in 1:length(names)) {
-  list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name)
+for(i in 1:length(scenario_list)) {
+  list[[i]] <- make_kernel(solution_list[[i]], scenario_list[i], group_name)
 }
 df <- do.call(rbind, list)
 
-ggRidge <- ggplot() +
-  geom_density_ridges_gradient(data = df %>% dplyr::filter(solution_1 == 1), aes(x = transformed, y = scenario, fill = ..x..), scale = 3) +
-  scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), option = "C") +
-  geom_density_ridges(data = df %>% dplyr::filter(solution_1 == 0), aes(x = transformed, y = scenario), alpha = 0.25, linetype = "dotted", scale = 3) +
-  geom_vline(xintercept=(climate %>% 
-                           dplyr::filter(scenario == 126))$mean_climate_warming,
-             linetype = "dashed", color = "tan1", size = 0.5) +
-  geom_vline(xintercept=(climate %>% 
-                           dplyr::filter(scenario == 245))$mean_climate_warming,
-             linetype = "dashed", color = "orchid3", size = 0.5) +
-  geom_vline(xintercept=(climate %>% 
-                           dplyr::filter(scenario == 585))$mean_climate_warming,
-             linetype = "dashed", color = "orchid4", size = 0.5) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
-  labs(x = expression('Climate warming (Δ'^"o"*'C yr'^"-1"*')')) +
-  theme_classic() +
-  theme(axis.ticks = element_line(color = "black", size = 1),
-        axis.line = element_line(colour = "black", size = 1),
-        axis.text = element_text(color = "black", size = 20),
-        axis.title.x = element_text(size = 20),
-        axis.title.y = element_blank(),
-        legend.key.height = unit(1, "inch"),
-        legend.text = element_text(size = 15, color = "black"),
-        legend.title = element_text(size = 15, color = "black"))
+ggRidge <- fPlot_RidgeClimateScenario(df)
 ggsave(filename = "ClimateWarmingDist-ScenarioTheme-Percentile-tos.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Create selection frequency plot -----
-sFreq <- create_LowRegretSf(solution_list, scenario_list, PUs, scenario = TRUE)
-saveRDS(sFreq, paste0(output_lowregret, "sFreq1-EM-Percentile-tos.rds"))
+# ----- SELECTION FREQUENCY PLOT -----
+sFreq <- fGetSelFrequency(solution_list, scenario_list, PUs)
+saveRDS(sFreq, paste0(lowregret_dir, "sFreq1-EM-Percentile-tos.rds"))
 
-ggFreq <- plot_SelectionFrequency(sFreq, land) + 
-  ggtitle("Scenario Theme", subtitle = "Climate Warming, Percentile") + 
-  inset_element(plot_inset(sFreq), 0.7, 0.7, 0.99, 0.99)
+ggFreq <- fPlot_SelFrequency(sFreq, land) + 
+  ggplot::ggtitle("Scenario Theme", 
+          subtitle = "Climate Warming, Percentile") + 
+  patchwork::inset_element(plot_inset(sFreq), 
+                0.7, 0.7, 0.99, 0.99)
 ggsave(filename = "Freq-EM-Percentile-Scenario-tos.png",
        plot = ggFreq, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Features according to frequency selection -----
-PlanUnits <- PUs %>% 
-  dplyr::mutate(cellID = row_number())
+# ----- KERNEL DENSITY PLOTS OF TARGETS ACCORDING TO SEL FREQUENCY -----
 name <- c("selection_1", "selection_2", "selection_3")
-
-solution <- frequencyTargets(sFreq, name)
+solution <- frequency_targets(sFreq, name) # prepare the object
 
 feat_rep <- tibble(feature = character()) # empty tibble
 for(i in 1:length(name)) {
-  df <- represent_feature(dummy_problem, solution[[i]], name[i])
-  feat_rep <- left_join(df, feat_rep, by = "feature")
+  df <- fFeatureRepresent(dummy, solution[[i]], name[i])
+  feat_rep <- dplyr::left_join(df, feat_rep, by = "feature")
 }
 
 x <- feat_rep %>% 
-  pivot_longer(!feature, names_to = "selection", values_to = "percent") %>% 
+  tidyr::pivot_longer(!feature, names_to = "selection", values_to = "percent") %>% 
   dplyr::mutate(row_number = row_number(feature))
 
-ggRidge <- ggplot(data = x) +
-  geom_density_ridges(aes(x = percent, y = selection, group = selection, fill = selection),
-                      scale = 5) +
-  scale_fill_manual(values = c(selection_1 = "#bdc9e1",
-                               selection_2 = "#74a9cf",
-                               selection_3 = "#0570b0")) +
-  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
-  labs(x = "Protection (%)", y = "selection") +
-  theme_classic() +
-  theme(axis.ticks = element_line(color = "black", size = 1),
-        axis.line = element_line(colour = "black", size = 1),
-        axis.text.x = element_text(color = "black", size = 20),
-        axis.text.y = element_blank(),
-        axis.title.x = element_text(color = "black", size = 20),
-        axis.title.y = element_blank())
+ggRidge <- fPlot_RidgeSelectionScenario(x)
 
 ggsave(filename = "Freq-Targets-ScenarioTheme-Percentile-tos.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,

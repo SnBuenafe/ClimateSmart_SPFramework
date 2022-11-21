@@ -51,8 +51,9 @@ Bndry <- fSpatPlan_Get_Boundary(Limits, cCRS)
 
 # Create the planning units
 if(reprocess){
-PUs <- fSpatPlan_Get_PlanningUnits(Bndry, world, PU_size, Shape, inverse)
-saveRDS(PUs, file.path("Output", paste(save_name, paste0("PlanningRegion.rds"), sep = "_")))
+  PUs <- fSpatPlan_Get_PlanningUnits(Bndry, world, PU_size, Shape, inverse) %>% 
+    dplyr::mutate(cellID = row_number())
+  saveRDS(PUs, file.path("Output", paste(save_name, paste0("PlanningRegion.rds"), sep = "_")))
 } else {
   PUs <- read_rds(file.path("Output", paste(save_name, paste0("PlanningRegion.rds"), sep = "_")))
 }
