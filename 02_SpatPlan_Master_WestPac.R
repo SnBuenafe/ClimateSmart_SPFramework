@@ -61,7 +61,7 @@ if(reprocess){
 land <- ne_countries(scale = 'large', returnclass = 'sf') %>% 
   fSpatPlan_Convert2PacificRobinson() 
 # Plotting the planning region
-(ggPU <- fSpatPlan_PlotPUs(PUs, land) + theme(axis.text = element_text(size = 25)))
+(ggPU <- fSpatPlan_PlotPUs(PUs, land))
 ggsave("Layer_PlanningRegion.png",
        plot = ggPU, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -81,7 +81,7 @@ if(reprocess){
 }
 
 # Plotting the # of features in AquaMaps
-ggFeatureNo <- fSpatPlan_FeatureNo(aqua_sf, land) + theme(axis.text = element_text(size = 25))
+ggFeatureNo <- fSpatPlan_FeatureNo(aqua_sf, land)
 ggsave("Layer_AquaMaps.png",
        plot = ggFeatureNo, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -138,17 +138,17 @@ for(i in 1:length(scenario_input)) {
 }
 
 # Plot Climate Warming Rates
-gg_roc_tos_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = roc_tos_SSP126, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25))
+gg_roc_tos_SSP126 <- fPlot_ClimateWarming(roc_tos_SSP126, world = land)
 ggsave("Layer_RateofClimateWarming_SSP126.png",
        plot = gg_roc_tos_SSP126, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-gg_roc_tos_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = roc_tos_SSP245, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25))
+gg_roc_tos_SSP245 <- fPlot_ClimateWarming(roc_tos_SSP245, world = land)
 ggsave("Layer_RateofClimateWarming_SSP245.png",
        plot = gg_roc_tos_SSP245, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-gg_roc_tos_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = roc_tos_SSP585, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25))
+gg_roc_tos_SSP585 <- fPlot_ClimateWarming(roc_tos_SSP585, world = land)
 ggsave("Layer_RateofClimateWarming_SSP585.png",
        plot = gg_roc_tos_SSP585, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -182,27 +182,27 @@ for(m in 1:length(model_list)) {
 }
 
 # Plot Climate Warming Rates per model (SSP 5-8.5)
-gg_tos_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = tos_CanESM5_SSP585, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25))
+gg_tos_CanESM5 <- fPlot_ClimateWarming(roc_tos_CanESM5_SSP585, world = land)
 ggsave("Layer_RateofClimateWarming_CanESM5_SSP585.png",
        plot = gg_tos_CanESM5, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_tos_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `tos_CMCC-ESM2_SSP585`, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25))
+`gg_tos_CMCC-ESM2` <- fPlot_ClimateWarming(`roc_tos_CMCC-ESM2_SSP585`, world = land)
 ggsave("Layer_RateofClimateWarming_CMCC-ESM2_SSP585.png",
        plot = `gg_tos_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_tos_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `tos_GFDL-ESM4_SSP585`, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25))
+`gg_tos_GFDL-ESM4` <- fPlot_ClimateWarming(`roc_tos_GFDL-ESM4_SSP585`, world = land)
 ggsave("Layer_RateofClimateWarming_GFDL-ESM4_SSP585.png",
        plot = `gg_tos_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_tos_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `tos_IPSL-CM6A-LR_SSP585`, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25))
+`gg_tos_IPSL-CM6A-LR` <- fPlot_ClimateWarming(`roc_tos_IPSL-CM6A-LR_SSP585`, world = land)
 ggsave("Layer_RateofClimateWarming_IPSL-CM6A-LR_SSP585.png",
        plot = `gg_tos_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_tos_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `tos_NorESM2-MM_SSP585`, world = land, metric = "roc_tos") + theme(axis.text = element_text(size = 25))
+`gg_tos_NorESM2-MM` <- fPlot_ClimateWarming(`roc_tos_NorESM2-MM_SSP585`, world = land)
 ggsave("Layer_RateofClimateWarming_NorESM2-MM_SSP585.png",
        plot = `gg_tos_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -235,17 +235,17 @@ for(i in 1:length(scenario_input)) {
 }
 
 # Plot Rates of Change in pH
-gg_roc_phos_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = roc_phos_SSP126, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+gg_roc_phos_SSP126 <- fPlot_OceanAcidification(roc_phos_SSP126, world = land)
 ggsave("Layer_RateofOceanAcidification_SSP126.png",
        plot = gg_roc_phos_SSP126, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-gg_roc_phos_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = roc_phos_SSP245, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+gg_roc_phos_SSP245 <- fPlot_OceanAcidification(roc_phos_SSP245, world = land)
 ggsave("Layer_RateofOceanAcidification_SSP245.png",
        plot = gg_roc_phos_SSP245, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-gg_roc_phos_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = roc_phos_SSP585, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+gg_roc_phos_SSP585 <- fPlot_OceanAcidification(roc_phos_SSP585, world = land)
 ggsave("Layer_RateofOceanAcidification_SSP585.png",
        plot = gg_roc_phos_SSP585, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -279,27 +279,27 @@ for(m in 1:length(model_list)) {
 }
 
 # Plot Ocean Acidification Rates per model
-gg_phos_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = roc_phos_CanESM5_SSP585, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+gg_phos_CanESM5 <- fPlot_OceanAcidification(roc_phos_CanESM5_SSP585, world = land)
 ggsave("Layer_RateofOceanAcidification_CanESM5_SSP585.png",
          plot = gg_phos_CanESM5, width = 21, height = 29.7, dpi = 300,
          path = "Figures/")
   
-`gg_phos_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_phos_CMCC-ESM2_SSP585`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+`gg_phos_CMCC-ESM2` <- fPlot_OceanAcidification(`roc_phos_CMCC-ESM2_SSP585`, world = land)
 ggsave("Layer_RateofOceanAcidification_CMCC-ESM2_SSP585.png",
        plot = `gg_phos_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_phos_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_phos_GFDL-ESM4_SSP585`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+`gg_phos_GFDL-ESM4` <- fPlot_OceanAcidification(`roc_phos_GFDL-ESM4_SSP585`, world = land)
 ggsave("Layer_RateofOceanAcidification_GFDL-ESM4_SSP585.png",
        plot = `gg_phos_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_phos_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_phos_IPSL-CM6A-LR_SSP585`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+`gg_phos_IPSL-CM6A-LR` <- fPlot_OceanAcidification(`roc_phos_IPSL-CM6A-LR_SSP585`, world = land)
 ggsave("Layer_RateofOceanAcidification_IPSL-CM6A-LR_SSP585.png",
        plot = `gg_phos_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_phos_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_phos_NorESM2-MM_SSP585`, world = land, metric = "roc_phos") + theme(axis.text = element_text(size = 25))
+`gg_phos_NorESM2-MM` <- fPlot_OceanAcidification(`roc_phos_NorESM2-MM_SSP585`, world = land)
 ggsave("Layer_RateofOceanAcidification_NorESM2-MM_SSP585.png",
        plot = `gg_phos_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -332,17 +332,17 @@ for(i in 1:length(scenario_input)) {
 }
 
 # Plot Rates of Declining Oxygen Concentration
-gg_roc_o2os_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = roc_o2os_SSP126, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+gg_roc_o2os_SSP126 <- fPlot_OceanDeoxygenation(roc_o2os_SSP126, world = land)
 ggsave("Layer_RateofDecliningOxygenConcentration_SSP126.png",
        plot = gg_roc_o2os_SSP126, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-gg_roc_o2os_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = roc_o2os_SSP245, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+gg_roc_o2os_SSP245 <- fPlot_OceanDeoxygenation(roc_o2os_SSP245, world = land)
 ggsave("Layer_RateofDecliningOxygenConcentration_SSP245.png",
        plot = gg_roc_o2os_SSP245, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-gg_roc_o2os_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = roc_o2os_SSP585, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+gg_roc_o2os_SSP585 <- fPlot_OceanDeoxygenation(roc_o2os_SSP585, world = land)
 ggsave("Layer_RateofDecliningOxygenConcentration_SSP585.png",
        plot = gg_roc_o2os_SSP585, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -376,27 +376,27 @@ for(m in 1:length(model_list)) {
 }
 
 # Plot Declining Oxygen Concentration Rates per model
-gg_o2os_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = roc_o2os_CanESM5_SSP585, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+gg_o2os_CanESM5 <- fPlot_OceanDeoxygenation(roc_o2os_CanESM5_SSP585, world = land)
 ggsave("Layer_RateofDecliningOxygenConcentration_CanESM5_SSP585.png",
        plot = gg_o2os_CanESM5, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_o2os_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_o2os_CMCC-ESM2_SSP585`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+`gg_o2os_CMCC-ESM2` <- fPlot_OceanDeoxygenation(`roc_o2os_CMCC-ESM2_SSP585`, world = land)
 ggsave("Layer_RateofDecliningOxygenConcentration_CMCC-ESM2_SSP585.png",
        plot = `gg_o2os_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_o2os_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_o2os_GFDL-ESM4_SSP585`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+`gg_o2os_GFDL-ESM4` <- fPlot_OceanDeoxygenation(`roc_o2os_GFDL-ESM4_SSP585`, world = land)
 ggsave("Layer_RateofDecliningOxygenConcentration_GFDL-ESM4_SSP585.png",
        plot = `gg_o2os_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_o2os_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_o2os_IPSL-CM6A-LR_SSP585`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+`gg_o2os_IPSL-CM6A-LR` <- fPlot_OceanDeoxygenation(`roc_o2os_IPSL-CM6A-LR_SSP585`, world = land)
 ggsave("Layer_RateofDecliningOxygenConcentration_IPSL-CM6A-LR_SSP585.png",
        plot = `gg_o2os_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_o2os_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `roc_o2os_NorESM2-MM_SSP585`, world = land, metric = "roc_o2os") + theme(axis.text = element_text(size = 25))
+`gg_o2os_NorESM2-MM` <- fPlot_OceanDeoxygenation(`roc_o2os_NorESM2-MM_SSP585`, world = land)
 ggsave("Layer_RateofDecliningOxygenConcentration_NorESM2-MM_SSP585.png",
        plot = `gg_o2os_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -429,17 +429,17 @@ for(i in 1:length(scenario_input)) {
 }
 
 # Plot Climate velocity
-gg_velocity_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = velocity_SSP126, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25))
+gg_velocity_SSP126 <- fPlot_ClimateVelocity(velocity_SSP126, world = land)
 ggsave("Layer_ClimateVelocity_SSP126.png",
        plot = gg_velocity_SSP126, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-gg_velocity_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = velocity_SSP245, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25))
+gg_velocity_SSP245 <- fPlot_ClimateVelocity(velocity_SSP245, world = land)
 ggsave("Layer_ClimateVelocity_SSP245.png",
        plot = gg_velocity_SSP245, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-gg_velocity_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = velocity_SSP585, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25))
+gg_velocity_SSP585 <- fPlot_ClimateVelocity(velocity_SSP585, world = land)
 ggsave("Layer_ClimateVelocity_SSP585.png",
        plot = gg_velocity_SSP585, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -473,27 +473,27 @@ for(m in 1:length(model_list)) {
 }
 
 # Plot Climate Velocity per model
-gg_velocity_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = velocity_CanESM5_SSP585, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25))
+gg_velocity_CanESM5 <- fPlot_ClimateVelocity(velocity_CanESM5_SSP585, world = land)
 ggsave("Layer_ClimateVelocity_CanESM5_SSP585.png",
        plot = gg_velocity_CanESM5, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_velocity_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `velocity_CMCC-ESM2_SSP585`, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25))
+`gg_velocity_CMCC-ESM2` <- fPlot_ClimateVelocity(`velocity_CMCC-ESM2_SSP585`, world = land)
 ggsave("Layer_ClimateVelocity_CMCC-ESM2_SSP585.png",
        plot = `gg_velocity_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_velocity_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `velocity_GFDL-ESM4_SSP585`, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25))
+`gg_velocity_GFDL-ESM4` <- fPlot_ClimateVelocity(`velocity_GFDL-ESM4_SSP585`, world = land)
 ggsave("Layer_ClimateVelocity_GFDL-ESM4_SSP585.png",
        plot = `gg_velocity_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_velocity_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `velocity_IPSL-CM6A-LR_SSP585`, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25))
+`gg_velocity_IPSL-CM6A-LR` <- fPlot_ClimateVelocity(`velocity_IPSL-CM6A-LR_SSP585`, world = land)
 ggsave("Layer_ClimateVelocity_IPSL-CM6A-LR_SSP585.png",
        plot = `gg_velocity_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_velocity_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `velocity_NorESM2-MM_SSP585`, world = land, metric = "velocity") + theme(axis.text = element_text(size = 25))
+`gg_velocity_NorESM2-MM` <- fPlot_ClimateVelocity(`velocity_NorESM2-MM_SSP585`, world = land)
 ggsave("Layer_ClimateVelocity_NorESM2-MM_SSP585.png",
        plot = `gg_velocity_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -527,17 +527,17 @@ for(i in 1:length(scenario_input)) {
 }
 
 # Plot MHW metrics
-gg_MHW_SSP126 <- fSpatPlan_PlotClimate(ClimateLayer = MHW_SSP126, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+gg_MHW_SSP126 <- fPlot_MHW(MHW_SSP126, world = land)
 ggsave("Layer_MHW_SSP126.png",
        plot = gg_MHW_SSP126, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-gg_MHW_SSP245 <- fSpatPlan_PlotClimate(ClimateLayer = MHW_SSP245, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+gg_MHW_SSP245 <- fPlot_MHW(MHW_SSP245, world = land)
 ggsave("Layer_MHW_SSP245.png",
        plot = gg_MHW_SSP245, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-gg_MHW_SSP585 <- fSpatPlan_PlotClimate(ClimateLayer = MHW_SSP585, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+gg_MHW_SSP585 <- fPlot_MHW(MHW_SSP585, world = land)
 ggsave("Layer_MHW_SSP585.png",
        plot = gg_MHW_SSP585, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -571,27 +571,27 @@ for(m in 1:length(model_list)) {
 }
 
 # Plot MHW metrics
-gg_MHW_CanESM5 <- fSpatPlan_PlotClimate(ClimateLayer = MHW_CanESM5_SSP585, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+gg_MHW_CanESM5 <- fPlot_MHW(MHW_CanESM5_SSP585, world = land)
 ggsave("Layer_MHW_CanESM5_SSP585.png",
        plot = gg_MHW_CanESM5, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_MHW_CMCC-ESM2` <- fSpatPlan_PlotClimate(ClimateLayer = `MHW_CMCC-ESM2_SSP585`, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+`gg_MHW_CMCC-ESM2` <- fPlot_MHW(`MHW_CMCC-ESM2_SSP585`, world = land)
 ggsave("Layer_MHW_CMCC-ESM2_SSP585.png",
        plot = `gg_MHW_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_MHW_GFDL-ESM4` <- fSpatPlan_PlotClimate(ClimateLayer = `MHW_GFDL-ESM4_SSP585`, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+`gg_MHW_GFDL-ESM4` <- fPlot_MHW(`MHW_GFDL-ESM4_SSP585`, world = land)
 ggsave("Layer_MHW_GFDL-ESM4_SSP585.png",
        plot = `gg_MHW_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_MHW_IPSL-CM6A-LR` <- fSpatPlan_PlotClimate(ClimateLayer = `MHW_IPSL-CM6A-LR_SSP585`, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+`gg_MHW_IPSL-CM6A-LR` <- fPlot_MHW(`MHW_IPSL-CM6A-LR_SSP585`, world = land)
 ggsave("Layer_MHW_IPSL-CM6A-LR_SSP585.png",
        plot = `gg_MHW_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_MHW_NorESM2-MM` <- fSpatPlan_PlotClimate(ClimateLayer = `MHW_NorESM2-MM_SSP585`, world = land, metric = "MHW") + theme(axis.text = element_text(size = 25))
+`gg_MHW_NorESM2-MM` <- fPlot_MHW(`MHW_NorESM2-MM_SSP585`, world = land)
 ggsave("Layer_MHW_NorESM2-MM_SSP585.png",
        plot = `gg_MHW_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -611,20 +611,17 @@ for(i in 1:length(scenario_path)) {
 }
 
 # Plot Combined metric
-gg_Combined_SSP126 <- fSpatPlan_PlotCombinedClimate(ClimateLayer = CombinedMetric_SSP126, world = land) + 
-  theme(axis.text = element_text(size = 25))
+gg_Combined_SSP126 <- fSpatPlan_PlotCombinedClimate(CombinedMetric_SSP126, world = land)
 ggsave("Layer_Combined_SSP126.png",
        plot = gg_Combined_SSP126, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-gg_Combined_SSP245 <- fSpatPlan_PlotCombinedClimate(ClimateLayer = CombinedMetric_SSP245, world = land) + 
-  theme(axis.text = element_text(size = 25))
+gg_Combined_SSP245 <- fSpatPlan_PlotCombinedClimate(CombinedMetric_SSP245, world = land)
 ggsave("Layer_Combined_SSP245.png",
        plot = gg_Combined_SSP245, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-gg_Combined_SSP585 <- fSpatPlan_PlotCombinedClimate(ClimateLayer = CombinedMetric_SSP585, world = land) + 
-  theme(axis.text = element_text(size = 25))
+gg_Combined_SSP585 <- fSpatPlan_PlotCombinedClimate(CombinedMetric_SSP585, world = land)
 ggsave("Layer_Combined_SSP585.png",
        plot = gg_Combined_SSP585, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
@@ -645,32 +642,27 @@ for(i in 1:length(scenario_path)) {
 }
 
 # Plot Combined Metrics
-gg_CombinedMetric_CanESM5 <- fSpatPlan_PlotCombinedClimate(ClimateLayer = CombinedMetric_CanESM5_SSP585, world = land) + 
-  theme(axis.text = element_text(size = 25))
+gg_CombinedMetric_CanESM5 <- fSpatPlan_PlotCombinedClimate(CombinedMetric_CanESM5_SSP585, world = land)
 ggsave("Layer_CombinedMetric_CanESM5_SSP585.png",
        plot = gg_CombinedMetric_CanESM5, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_CombinedMetric_CMCC-ESM2` <- fSpatPlan_PlotCombinedClimate(ClimateLayer = `CombinedMetric_CMCC-ESM2_SSP585`, world = land) + 
-  theme(axis.text = element_text(size = 25))
+`gg_CombinedMetric_CMCC-ESM2` <- fSpatPlan_PlotCombinedClimate(`CombinedMetric_CMCC-ESM2_SSP585`, world = land)
 ggsave("Layer_CombinedMetric_CMCC-ESM2_SSP585.png",
        plot = `gg_CombinedMetric_CMCC-ESM2`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_CombinedMetric_GFDL-ESM4` <- fSpatPlan_PlotCombinedClimate(ClimateLayer = `CombinedMetric_GFDL-ESM4_SSP585`, world = land) + 
-  theme(axis.text = element_text(size = 25))
+`gg_CombinedMetric_GFDL-ESM4` <- fSpatPlan_PlotCombinedClimate(`CombinedMetric_GFDL-ESM4_SSP585`, world = land)
 ggsave("Layer_CombinedMetric_GFDL-ESM4_SSP585.png",
        plot = `gg_CombinedMetric_GFDL-ESM4`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_CombinedMetric_IPSL-CM6A-LR` <- fSpatPlan_PlotCombinedClimate(ClimateLayer = `CombinedMetric_IPSL-CM6A-LR_SSP585`, world = land) + 
-  theme(axis.text = element_text(size = 25))
+`gg_CombinedMetric_IPSL-CM6A-LR` <- fSpatPlan_PlotCombinedClimate(`CombinedMetric_IPSL-CM6A-LR_SSP585`, world = land)
 ggsave("Layer_CombinedMetric_IPSL-CM6A-LR_SSP585.png",
        plot = `gg_CombinedMetric_IPSL-CM6A-LR`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-`gg_CombinedMetric_NorESM2-MM` <- fSpatPlan_PlotCombinedClimate(ClimateLayer = `CombinedMetric_NorESM2-MM_SSP585`, world = land) + 
-  theme(axis.text = element_text(size = 25))
+`gg_CombinedMetric_NorESM2-MM` <- fSpatPlan_PlotCombinedClimate(`CombinedMetric_NorESM2-MM_SSP585`, world = land)
 ggsave("Layer_CombinedMetric_NorESM2-MM_SSP585.png",
        plot = `gg_CombinedMetric_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
