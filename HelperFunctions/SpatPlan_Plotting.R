@@ -1,8 +1,8 @@
 
 # Plot solutions
-fSpatPlan_PlotSolution <- function(s1, PlanUnits, world){
+fSpatPlan_PlotSolution <- function(s, PlanUnits, world){
   gg <- ggplot() + 
-    geom_sf(data = s1, aes(fill = solution_1), colour = NA, size = 0.1, show.legend = TRUE) +
+    geom_sf(data = s, aes(fill = solution_1), colour = NA, size = 0.1, show.legend = TRUE) +
     geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
     geom_sf(data = boundary, color = "black", fill = NA, size = 0.1, show.legend = FALSE) +
     coord_sf(xlim = st_bbox(PlanUnits)$xlim, ylim = st_bbox(PlanUnits)$ylim) +
@@ -10,8 +10,8 @@ fSpatPlan_PlotSolution <- function(s1, PlanUnits, world){
                                    "FALSE" = "#EDEBFF"),
                         aesthetics = "fill") + 
     theme_bw() +
-    theme(axis.ticks = element_line(color = "black", size = 2),
-          panel.border = element_rect(colour = "black", fill=NA, size=5),
+    theme(axis.ticks = element_line(color = "black", linewidth = 2),
+          panel.border = element_rect(colour = "black", fill=NA, linewidth = 5),
           axis.text = element_text(color = "black", size = 50))
   
 }
@@ -247,8 +247,38 @@ fPlot_SelFrequency <- function(data, land) {
 }
 
 #### Plots for scenario Theme ####
+# Plot statistics
+fPlot_StatisticsScenario <- function(summary, col_name, y_axis) {
+  string <- "as.factor(scenario)"
+  gg <- ggplot(data = summary, aes_string(x = string)) +
+    geom_bar(aes_string(y = col_name, fill = string), stat = 'identity', position = position_dodge()) +
+    scale_fill_manual(name = 'Run',
+                      values = c("126" = "#289E3D", "245" = "#E6C173", "585" = "#855600")
+                      ) +
+    xlab("Run") +
+    ylab(y_axis) +
+    theme(legend.position = "bottom") +
+    theme_classic() + 
+    theme(axis.text = element_text(size = 25))
+}
+
+# Plot ridge plot for Scenario Theme's features
+fPlot_RidgeTargetScenario <- function(df) {
+  gg <- ggplot(data = df) +
+    geom_density_ridges(aes(x = percent, 
+                            y = scenario, 
+                            group = scenario, 
+                            fill = scenario),
+                        scale = 2) +
+    scale_fill_manual(values = c(`EM-Percentile-tos-126` = "#289E3D",
+                                 `EM-Percentile-tos-245` = "#E6C173",
+                                 `EM-Percentile-tos-585` = "#855600")) +
+    geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+    theme_classic()
+}
+
 # Plot ridge plot for Scenario Theme (i.e., comparing climate warming across the three scenarios)
-fPlot_RidgeClimateScenario <- function(df) {
+fPlot_RidgeClimateScenario <- function(df, climate) {
   gg <- ggplot() +
     geom_density_ridges_gradient(data = df %>% dplyr::filter(solution_1 == 1), aes(x = transformed, y = scenario, fill = ..x..), scale = 3) +
     scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), option = "C") +
@@ -299,3 +329,103 @@ fPlot_RidgeSelectionScenario <- function(df) {
   return(gg)
 }
 
+#### Plots for ensemble theme ####
+# Plot statistics
+fPlot_StatisticsEnsemble <- function(summary, col_name, y_axis) {
+  string <- "as.factor(run)"
+  plot <- ggplot(data = summary, aes_string(x = string)) +
+    geom_bar(aes_string(y = col_name, fill = string), stat = 'identity', position = position_dodge()) +
+    scale_fill_manual(name = 'Run',
+                      values = c("#FAF7B7", "#E6C173", "#855600", "#5075BA", "#81B0CC", "#5A9E67")) +
+    xlab("Run") +
+    ylab(y_axis) +
+    theme(legend.position = "bottom") +
+    theme_classic() +
+    theme(axis.text = element_text(size = 25))
+}
+# Plot ridge plot for Ensemble Theme's features
+fPlot_RidgeTargetEnsemble <- function(df) {
+  gg <- ggplot(data = df) +
+    geom_density_ridges(aes(x = percent, y = ensemble, group = ensemble, fill = ensemble),
+                        scale = 2) +
+    scale_fill_manual(values = c(`EM_Percentile_tos_585` = "#FAF7B7",
+                                 `MM-CanESM5_Percentile_tos_585` = "#E6C173",
+                                 `MM-CMCC-ESM2_Percentile_tos_585` = "#855600",
+                                 `MM-GFDL-ESM4_Percentile_tos_585` = "#5075BA",
+                                 `MM-IPSL-CM6A-LR_Percentile_tos_585` = "#81B0CC",
+                                 `MM-NorESM2-MM_Percentile_tos_585` = "#5A9E67")) +
+    geom_vline(xintercept=c(30), linetype="dashed", color = "red", linewidth = 1) +
+    xlim(c(min(df$percent), NA)) +
+    theme_classic()
+}
+# Plot ridge plot for Ensemble Theme (i.e., comparing climate warming across the five models + EM approach)
+fPlot_RidgeClimateEnsemble <- function(df, climate) {
+  intercept1 <- (climate %>% dplyr::filter(grepl("NorESM2|GFDL", run)))$mean_tos
+  intercept2 <- (climate %>% dplyr::filter(grepl("EM|CMCC", run)))$mean_tos
+  intercept3 <- (climate %>% dplyr::filter(grepl("IPSL|CanESM5", run)))$mean_tos
+  
+  gg <- ggplot() +
+    geom_density_ridges_gradient(data = df %>% 
+                                   dplyr::filter(solution_1 == 1),
+                                 aes(x = transformed, 
+                                     y = ensemble, 
+                                     fill = ..x..), 
+                                 scale = 1) +
+    scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), 
+                         option = "C") +
+    geom_density_ridges(data = df %>% 
+                          dplyr::filter(solution_1 == 0), 
+                        aes(x = transformed, 
+                            y = ensemble), 
+                        alpha = 0.25, 
+                        linetype = "dotted", 
+                        scale = 1) +
+    geom_vline(xintercept = intercept1,
+               linetype = "dashed", 
+               color = "tan1", 
+               size = 0.5) +
+    geom_vline(xintercept = intercept2,
+               linetype = "dashed", 
+               color = "orchid3", 
+               size = 0.5) +
+    geom_vline(xintercept = intercept3,
+               linetype = "dashed", 
+               color = "orchid4", 
+               size = 0.5) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+    labs(x = expression('Climate warming (Δ'^"o"*'C yr'^"-1"*')')) +
+    theme_classic() +
+    theme(axis.ticks = element_line(color = "black", size = 1),
+          axis.line = element_line(colour = "black", size = 1),
+          axis.text = element_text(color = "black", size = 20),
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_blank(),
+          legend.key.height = unit(1, "inch"),
+          legend.text = element_text(size = 15, color = "black"),
+          legend.title = element_text(size = 15, color = "black"))
+  
+  return(gg)
+}
+# Plot ridge plot for Scenario Theme: Selection Frequency
+fPlot_RidgeSelectionEnsemble <- function(df) {
+  gg <- ggplot(data = x) +
+    geom_density_ridges(aes(x = percent, y = selection, group = selection, fill = selection),
+                        scale = 5) +
+    scale_fill_manual(values = c(`selection_1` = "#d0d1e6",
+                                 `selection_2` = "#a6bddb",
+                                 `selection_3` = "#74a9cf",
+                                 `selection_4` = "#2b8cbe",
+                                 `selection_5` = "#045a8d")) +
+    geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+    labs(x = "Protection (%)", y = "selection") +
+    theme_classic() +
+    theme(axis.ticks = element_line(color = "black", size = 1),
+          axis.line = element_line(colour = "black", size = 1),
+          axis.text.x = element_text(color = "black", size = 20),
+          axis.text.y = element_blank(),
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_blank())
+}

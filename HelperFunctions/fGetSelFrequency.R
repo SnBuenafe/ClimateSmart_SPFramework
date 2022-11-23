@@ -19,14 +19,13 @@ fGetSelFrequency <- function(solution_list,
     dplyr::mutate(cellID = row_number())
   
   # Create the selection frequency sf object
-  low_regret <- dplyr::full_join(tmp, PUs %>% 
-                                   dplyr::mutate(cellID = row_number()), 
+  low_regret <- dplyr::full_join(tmp, PUs, 
                                  by = "cellID") %>% 
     sf::st_as_sf(sf_column_name = "geometry") %>% 
     dplyr::left_join(., 
                      UniformCost %>% 
-                       as_tibble(), 
-                     by = "geometry") %>% 
+                       tibble::as_tibble(), 
+                     by = c("geometry", "cellID")) %>% 
     sf::st_as_sf(sf_column_name = "geometry") 
   
   return(low_regret)

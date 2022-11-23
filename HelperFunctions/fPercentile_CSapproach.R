@@ -32,7 +32,7 @@ fPercentile_CSapproach <- function(featuresDF,
   percentileList <- list()
   for(i in 1:length(spp)) {
     df <- featuresDF %>%
-      as_tibble() %>%
+      tibble::as_tibble() %>%
       dplyr::select(!!sym(spp[i]), cellID) %>% # Select 1 feature at a time
       left_join(., metric, by = "cellID") %>% # Join with the metric layer
       dplyr::select(-cellID)

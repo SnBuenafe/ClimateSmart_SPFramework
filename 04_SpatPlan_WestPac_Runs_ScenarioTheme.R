@@ -12,11 +12,7 @@
 # targets: using Effective 30% Protection
 # Since we only retained planning units that intersect with both biodiversity features and areas <= 35th percentile (0.35), by multiplying this by ~0.857 target (30/35), we effectively protect only 30%.
 
-# TODO: Delete these from here: Load functions
-source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functions and libraries
-source("HelperFunctions/SpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
-
-# Load files
+# Load preliminaries files
 source("03_SpatPlan_Master_Preliminaries.R")
 scenario_list = c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
 for(scenario_num in 1:length(scenario_list)) {
@@ -39,7 +35,7 @@ aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf,
 
 # 2. Set up features and targets
 features <- aqua_sf %>% 
-  as_tibble() %>% 
+  tibble::as_tibble() %>% 
   dplyr::select(-geometry, -cellID) %>% 
   names()
 # Using fixed targets of 30
@@ -144,7 +140,7 @@ p2 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
 
 # 4. Solve the planning problem 
 s2 <- prioritizr::solve(p2)
-saveRDS(s2, paste0(output_solutions, "s2-EM-Percentile-tos-585.rds")) # save solution
+saveRDS(s2, paste0(solutions_dir, "s2-EM-Percentile-tos-585.rds")) # save solution
 
 # 5. Plot the spatial design
 s2_plot <- s2 %>% 
@@ -163,7 +159,6 @@ dummy <- call_dummy() # Make a "dummy problem" where the features are the origin
 problem_list <- list(dummy, dummy, dummy)
 solution_list <- list(s38, s39, s2)
 climate_list <- list(roc_tos_SSP126, roc_tos_SSP245, roc_tos_SSP585)
-scenario_list <- c("126", "245", "585") # USE THIS INSTEAD: str_replace_all(scenario_list[i], "[^[:digit:]]+", "")
 
 # ----- FEATURE REPRESENTATION -----
 names <- c("EM-Percentile-tos-126", "EM-Percentile-tos-245", "EM-Percentile-tos-585")
@@ -172,26 +167,16 @@ for (i in 1:length(names)) {
   df <- fFeatureRepresent(problem_list[[i]], solution_list[[i]], names[i])
   feat_rep <- dplyr::left_join(df, feat_rep, by = "feature")
 }
-write.csv(feat_rep, paste0(summary_dir, "ScenarioTheme_tos_FeatureRepresentation.csv")) # save
+write.csv(feat_rep, paste0(summary_dir, "ScenarioTheme_FeatureRepresentation.csv")) # save
 
 # ----- KERNEL DENSITY PLOTS OF TARGETS -----
 x <- feat_rep %>% 
   tidyr::pivot_longer(!feature, names_to = "scenario", values_to = "percent") %>% 
   dplyr::mutate(row_number = row_number(feature))
 
-ggRidge <- ggplot(data = x) +
-  geom_density_ridges(aes(x = percent, 
-                          y = scenario, 
-                          group = scenario, 
-                          fill = scenario),
-                      scale = 2) +
-  scale_fill_manual(values = c(`EM-Percentile-tos-126` = "#289E3D",
-                              `EM-Percentile-tos-245` = "#E6C173",
-                              `EM-Percentile-tos-585` = "#855600")) +
-  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
-  theme_classic()
+ggRidge <- fPlot_RidgeTargetScenario(x)
 
-ggsave(filename = "TargetDist-ScenarioTheme-tos.png", # save ridge plot
+ggsave(filename = "TargetRidge-ScenarioTheme.png", # save ridge plot
        plot = ggRidge, width = 10, height = 6, dpi = 300,
        path = "Figures/") # save plot
 
@@ -215,10 +200,12 @@ climate <- fGetClimateSummary(solution_list, # list of solutions
                               )
 
 summary <- dplyr::left_join(climate, df, by = "run")
-write.csv(summary, paste0(output_summary, "ScenarioTheme_tos_Summary.csv")) # save
+write.csv(summary, paste0(output_summary, "ScenarioTheme_Summary.csv")) # save
 
-ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "scenario") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Area-Percentile-tos.png",
+ggArea <- fPlot_StatisticsScenario(summary, 
+                                   col_name = "percent_area", 
+                                   y_axis = "% area")
+ggsave(filename = "Area-ScenarioTheme.png",
        plot = ggArea, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
 
@@ -230,7 +217,7 @@ for (i in 1:length(scenario_list)) {
 }
 
 # Save corrplot
-file_path_test = "Figures/ScenarioTheme_CorrelationMatrix.png"
+file_path_test = "Figures/CorrMatrix-ScenarioTheme.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
 matrix <- fGetCorrMatrix(object_list) %>% 
@@ -247,8 +234,8 @@ for(i in 1:length(scenario_list)) {
 }
 df <- do.call(rbind, list)
 
-ggRidge <- fPlot_RidgeClimateScenario(df)
-ggsave(filename = "ClimateWarmingDist-ScenarioTheme-Percentile-tos.png",
+ggRidge <- fPlot_RidgeClimateScenario(df, climate)
+ggsave(filename = "ClimateSmartRidge-ScenarioTheme.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
@@ -260,8 +247,8 @@ ggFreq <- fPlot_SelFrequency(sFreq, land) +
   ggplot::ggtitle("Scenario Theme", 
           subtitle = "Climate Warming, Percentile") + 
   patchwork::inset_element(plot_inset(sFreq), 
-                0.7, 0.7, 0.99, 0.99)
-ggsave(filename = "Freq-EM-Percentile-Scenario-tos.png",
+                           0.7, 0.7, 0.99, 0.99)
+ggsave(filename = "FreqPlot-ScenarioTheme.png",
        plot = ggFreq, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
@@ -281,6 +268,6 @@ x <- feat_rep %>%
 
 ggRidge <- fPlot_RidgeSelectionScenario(x)
 
-ggsave(filename = "Freq-Targets-ScenarioTheme-Percentile-tos.png",
+ggsave(filename = "FreqRidge-ScenarioTheme.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot

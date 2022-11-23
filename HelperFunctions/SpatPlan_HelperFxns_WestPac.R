@@ -11,10 +11,6 @@ plot_statistics <- function(summary, col_name, y_axis, theme) {
     color_legend <- c("#FAF7B7", "#E6C173", "#855600", "#5075BA", "#81B0CC", "#5A9E67")
     string <- "as.factor(run)"
   } 
-  else if (theme == "scenario"){
-    color_legend <- c("126" = "#289E3D", "245" = "#E6C173", "585" = "#855600")
-    string <- "as.factor(scenario)"
-  } 
   else if (theme == "metric") {
     color_legend <- c("#3C6342", "#289E3D", "#E6C173", "#81B0CC", "#855600")
     string <- "as.factor(run)"
@@ -35,72 +31,10 @@ plot_statistics <- function(summary, col_name, y_axis, theme) {
     xlab("Run") +
     ylab(y_axis) +
     theme(legend.position = "bottom") +
-    theme_classic() +
+    theme_classic()
   
   return(plot)
   
-}
-
-# Streamlines the creation of the climate layer for the "percentile" approach
-create_PercentileLayer <- function(aqua_sf, metric_name, colname, metric_df, PUs) {
-  
-  spp <- aqua_sf %>% as_tibble() %>% 
-    dplyr::select(-geometry) %>% 
-    names()
-  
-  metric_df <- metric_df %>% 
-    dplyr::mutate(cellID = row_number()) %>% 
-    as_tibble() %>% 
-    dplyr::select(-geometry)
-  
-  # Commence Parallel Loop.
-  
-  ncores <- detectCores(logical = FALSE) - 1 
-  cl <- makeCluster(ncores)
-  registerDoParallel(cl)
-  
-  list <- vector("list", length = length(spp)) # create empty list
-  
-  aq_tmp <- foreach(i = 1:length(spp), .packages = c('tidyverse', 'sf', 'magrittr')) %dopar% {
-    
-    # Select 1 species at a time
-    df <- aqua_sf %>% 
-      as_tibble() %>% 
-      dplyr::select(!!sym(spp[i])) %>% 
-      dplyr::mutate(cellID = row_number()) %>% 
-      left_join(., metric_df, by = "cellID") %>% 
-      dplyr::select(-cellID)
-    
-    if (metric_name %in% c("tos", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")) {
-      
-      # Get 35th percentile of climate metric under the range of the species
-      quantile <- df %>% 
-        dplyr::filter(!!sym(spp[i]) == 1) %>%  # filter out those that have biodiversity values
-        summarize(quantile = quantile(.data[[ colname ]], 0.35)) %>%  # get 35th percentile of climate metric
-        pull()
-      
-      df %<>% dplyr::mutate(!!sym(spp[i]) := case_when(((!!sym(colname) <= quantile) & !!sym(spp[i]) == 1) ~ 1, TRUE ~ 0))
-      
-    } else if (metric_name %in% c("phos", "o2os")) {
-      
-      # Get 65th percentile of climate metric under range of the species
-      quantile <- df %>% 
-        dplyr::filter(!!sym(spp[i]) == 1) %>%  # filter out those that have biodiversity values
-        summarize(quantile = quantile(.data[[ colname ]], 0.65)) %>%  # get 65th percentile of climate metric
-        pull()
-      
-      df %<>% dplyr::mutate(!!sym(spp[i]) := case_when(((!!sym(colname) >= quantile) & !!sym(spp[i]) == 1) ~ 1, TRUE ~ 0))
-    }
-    
-    list[[i]] <- df %>%  dplyr::select(1) # always just select the species
-    
-  }
-  stopCluster(cl)
-  
-  aqua_df <- do.call(cbind, aq_tmp) %>% 
-    cbind(., PUs) %>% st_as_sf(sf_column_name = "geometry")
-  
-  return(aqua_df)
 }
 
 # Streamlines the creation of the climate layer for the "feature" approach

@@ -1,3 +1,21 @@
+# Load packages
+#install.packages("pacman")
+#devtools::install_github("JorGarMol/VoCC", dependencies = TRUE, build_vignettes = TRUE)
+
+#install.packages("remotes")
+#remotes::install_github("jfq3/ggordiplots", force = TRUE)
+
+#install.packages("/Library/gurobi911/mac64/R/gurobi_9.1-1_R_4.0.2.tgz", repos=NULL)
+
+# devtools::install_github("ropensci/rfishbase")
+
+# install lpsymphony
+# BiocManager::install("lpsymphony")
+
+pacman::p_load(sf, terra, tidyverse, rnaturalearth, prioritizr, stars, patchwork, proj4, magrittr, doParallel, ggridges, viridis, vegan, irr, corrplot, vegan, BiocManager, ncdf4, PCICt, ncdf4.helpers, VoCC, RColorBrewer, ggordiplots, gurobi, rfishbase)
+
+longlat <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+
 # Load a climate metric depending on arguments
 load_metrics <- function(metric, 
                          model = "ensemble", # default is ensemble mean
@@ -92,15 +110,15 @@ plot_inset <- function(sFreq) {
                   aes(x = as.factor(selection), 
                       y = proportion, 
                       fill = as.factor(selection))) +
-    ggplot::scale_fill_brewer(name = "Selection Frequency",
+    ggplot2::scale_fill_brewer(name = "Selection Frequency",
                       palette = "PuBu", aesthetics = "fill") +
-    ggplot::geom_col(width = 1, show.legend = FALSE) +
-    ggplot::theme_bw() + 
-    ggplot::xlab(element_blank()) +
-    ggplot::ylab(element_blank()) +
-    ggplot::scale_y_continuous(expand = c(0,0)) +
-    ggplot::labs(title = element_blank()) +
-    ggplot::theme(axis.text.x=element_blank(),
+    ggplot2::geom_col(width = 1, show.legend = FALSE) +
+    ggplot2::theme_bw() + 
+    ggplot2::xlab(element_blank()) +
+    ggplot2::ylab(element_blank()) +
+    ggplot2::scale_y_continuous(expand = c(0,0)) +
+    ggplot2::labs(title = element_blank()) +
+    ggplot2::theme(axis.text.x=element_blank(),
                   axis.ticks.x=element_blank())
   
   return(inset)
