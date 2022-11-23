@@ -437,13 +437,13 @@ fPlot_RidgeSelectionEnsemble <- function(df) {
                                  `selection_3` = "#74a9cf",
                                  `selection_4` = "#2b8cbe",
                                  `selection_5` = "#045a8d")) +
-    geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+    geom_vline(xintercept=c(30), linetype="dashed", color = "red", linewidth = 1) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
     labs(x = "Protection (%)", y = "selection") +
     theme_classic() +
-    theme(axis.ticks = element_line(color = "black", size = 1),
-          axis.line = element_line(colour = "black", size = 1),
+    theme(axis.ticks = element_line(color = "black", linewidth = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
           axis.text.x = element_text(color = "black", size = 20),
           axis.text.y = element_blank(),
           axis.title.x = element_text(size = 20),
