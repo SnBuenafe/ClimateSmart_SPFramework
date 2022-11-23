@@ -47,16 +47,23 @@ targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
                                      targetsDF = target_df)
 
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, roc_tos_SSP126, UniformCost)
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                roc_tos_SSP126 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+                )
 p38 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>%
   add_binary_decisions() %>%
-  add_cbc_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
 
 # 4. Solve the planning problem 
-s38 <- prioritizr::solve(p38)
-saveRDS(s38, paste0(output_solutions, "s38-EM-Percentile-tos-126.rds")) # save solution
+s38 <- solve_SPproblem(p38)
+saveRDS(s38, paste0(solutions_dir, "s38-EM-Percentile-tos-126.rds")) # save solution
 
 # 5. Plot the spatial design
 s38_plot <- s38 %>% 
@@ -89,15 +96,22 @@ targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
                                      targetsDF = target_df)
 
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, roc_tos_SSP245, UniformCost)
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                roc_tos_SSP245 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
 p39 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>%
   add_binary_decisions() %>%
-  add_cbc_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
 
 # 4. Solve the planning problem 
-s39 <- prioritizr::solve(p39)
+s39 <- solve_SPproblem(p39)
 saveRDS(s39, paste0(output_solutions, "s39-EM-Percentile-tos-245.rds")) # save solution
 
 # 5. Plot the spatial design
@@ -131,15 +145,22 @@ targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
                                      targetsDF = target_df)
 
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, roc_tos_SSP585, UniformCost)
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                roc_tos_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
 p2 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
-  add_cbc_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
 
 # 4. Solve the planning problem 
-s2 <- prioritizr::solve(p2)
+s2 <- solve_SPproblem(p2)
 saveRDS(s2, paste0(solutions_dir, "s2-EM-Percentile-tos-585.rds")) # save solution
 
 # 5. Plot the spatial design
@@ -200,7 +221,7 @@ climate <- fGetClimateSummary(solution_list, # list of solutions
                               )
 
 summary <- dplyr::left_join(climate, df, by = "run")
-write.csv(summary, paste0(output_summary, "ScenarioTheme_Summary.csv")) # save
+write.csv(summary, paste0(summary_dir, "ScenarioTheme_Summary.csv")) # save
 
 ggArea <- fPlot_StatisticsScenario(summary, 
                                    col_name = "percent_area", 
@@ -244,7 +265,7 @@ sFreq <- fGetSelFrequency(solution_list, scenario_list, PUs)
 saveRDS(sFreq, paste0(lowregret_dir, "sFreq1-EM-Percentile-tos.rds"))
 
 ggFreq <- fPlot_SelFrequency(sFreq, land) + 
-  ggplot::ggtitle("Scenario Theme", 
+  ggplot2::ggtitle("Scenario Theme", 
           subtitle = "Climate Warming, Percentile") + 
   patchwork::inset_element(plot_inset(sFreq), 
                            0.7, 0.7, 0.99, 0.99)

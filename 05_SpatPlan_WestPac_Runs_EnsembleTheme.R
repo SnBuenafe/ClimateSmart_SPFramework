@@ -91,7 +91,14 @@ targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
                                      targetsDF = target_df)
 
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, roc_tos_SSP585, UniformCost)
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                roc_tos_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
 p2 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>% 
@@ -99,7 +106,7 @@ p2 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE)
 
 # 4. Solve the planning problem 
-s2 <- prioritizr::solve(p2)
+s2 <- solve_SPproblem(p2)
 saveRDS(s2, paste0(solutions_dir, "s2-EM-Percentile-tos-585.rds")) # save solution
 
 # 5. Plot the spatial design
@@ -129,7 +136,8 @@ climate <- fGetClimateSummary(list(s2), # list of solutions
                               "percentile", # CS approach used
                               "EM_Percentile_tos_585" # tag of each row
                               )
-summary %<>% left_join(., climate, by = c("run"))
+summary %<>% 
+  dplyr::left_join(., climate, by = c("run"))
 
 ###############################################
 ###### MULTI-MODEL ENSEMBLE APPROACH #########
@@ -157,7 +165,14 @@ targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
                                      targetsDF = target_df)
 
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, `roc_tos_CanESM5_SSP585`, UniformCost)
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                `roc_tos_CanESM5_SSP585` %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
 p14 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>% 
@@ -165,7 +180,7 @@ p14 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE)
 
 # 4. Solve the planning problem 
-s14 <- prioritizr::solve(p14)
+s14 <- solve_SPproblem(p14)
 saveRDS(s14, paste0(output_solutions, "s14-MM-CanESM5-Percentile-tos-585.rds")) # save solution
 
 # 5. Plot the spatial design
@@ -199,7 +214,14 @@ targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
                                      targetsDF = target_df)
 
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, `roc_tos_CMCC-ESM2_SSP585`, UniformCost)
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                `roc_tos_CMCC-ESM2_SSP585` %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
 p15 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>% 
@@ -207,7 +229,7 @@ p15 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE)
 
 # 4. Solve the planning problem 
-s15 <- prioritizr::solve(p15)
+s15 <- solve_SPproblem(p15)
 saveRDS(s15, paste0(solutions_dir, "s15-MM-CMCC_ESM2-Percentile-tos-585.rds")) # save solution
 
 # 5. Plot the spatial design
@@ -241,7 +263,14 @@ targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
                                      targetsDF = target_df)
 
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, `roc_tos_GFDL-ESM4_SSP585`, UniformCost)
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                `roc_tos_GFDL-ESM4_SSP585` %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
 p16 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>%
@@ -249,7 +278,7 @@ p16 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE)
 
 # 4. Solve the planning problem 
-s16 <- prioritizr::solve(p16)
+s16 <- solve_SPproblem(p16)
 saveRDS(s16, paste0(solutions_dir, "s16-MM-GFDL_ESM4-Percentile-tos-585.rds")) # save solution
 
 # 5. Plot the spatial design
@@ -283,7 +312,14 @@ targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
                                      targetsDF = target_df)
 
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, `roc_tos_IPSL-CM6A-LR_SSP585`, UniformCost)
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                `roc_tos_IPSL-CM6A-LR_SSP585` %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
 p17 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>%
@@ -291,7 +327,7 @@ p17 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE)
 
 # 4. Solve the planning problem 
-s17 <- prioritizr::solve(p17)
+s17 <- solve_SPproblem(p17)
 saveRDS(s17, paste0(solutions_dir, "s17-MM-IPSL_CM6A_LR-Percentile-tos-585.rds")) # save solution
 
 # 5. Plot the spatial design
@@ -325,7 +361,14 @@ targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
                                      targetsDF = target_df)
 
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, `roc_tos_NorESM2-MM_SSP585`, UniformCost)
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                `roc_tos_NorESM2-MM_SSP585` %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
 p18 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>%
@@ -333,7 +376,7 @@ p18 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE)
 
 # 4. Solve the planning problem 
-s18 <- prioritizr::solve(p18)
+s18 <- solve_SPproblem(p18)
 saveRDS(s18, paste0(solutions_dir, "s18-MM-NorESM2_MM-Percentile-tos-585.rds")) # save solution
 
 # 5. Plot the spatial design
@@ -350,7 +393,7 @@ ggsave(filename = "MM-NorESM2_MM-Percentile-tos-585.png",
 #####################################
 
 dummy <- call_dummy() # Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
-problem_list <- list(dummy, dummy, dummy, dummy, dummy, dummy)
+problem_list <- list(dummy, dummy, dummy, dummy, dummy)
 solution_list <- list(s2, s14, s15, s16, s17, s18)
 climate_list <- list(roc_tos_SSP585, 
                      `roc_tos_CanESM5_SSP585`, 
@@ -390,11 +433,15 @@ for(i in 1:length(names)) {
   df <- rbind(statistics, df)
 }
 # calculate mean/median metric values for all solutions (multi-model ensemble; so, remove the ENSEMBLE-MEAN in the lists)
-solution_list[[1]] <- NULL
-climate_list[[1]] <- NULL
+trunc_solution_list <- list(s14, s15, s16, s17, s18)
+trunc_climate_list <- list(`roc_tos_CanESM5_SSP585`, 
+                           `roc_tos_CMCC-ESM2_SSP585`, 
+                           `roc_tos_GFDL-ESM4_SSP585`, 
+                           `roc_tos_IPSL-CM6A-LR_SSP585`, 
+                           `roc_tos_NorESM2-MM_SSP585`)
 
-climate <- fGetClimateSummary(solution_list, # list of solutions
-                              climate_list, # list of climate dfs
+climate <- fGetClimateSummary(trunc_solution_list, # list of solutions
+                              trunc_climate_list, # list of climate dfs
                               "tos",  # metric
                               col_scenario = "585", # scenario
                               col_approach = "percentile", # CS approach used
@@ -448,8 +495,7 @@ ggsave(filename = "ClimateSmartRidge-EnsembleTheme.png",
 
 # ----- SELECTION FREQUENCY PLOT -----
 # Just for the 5 models
-solution_list[[1]] <- NULL
-sFreq <- fGetSelFrequency(solution_list, model_list, PUs)
+sFreq <- fGetSelFrequency(trunc_solution_list, model_list, PUs)
 saveRDS(sFreq, paste0(lowregret_dir, "sFreq2-EM-Percentile-tos.rds")) # save solution
 
 ggFreq <- fPlot_SelFrequency(sFreq, land) + 

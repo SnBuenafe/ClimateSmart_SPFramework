@@ -240,8 +240,10 @@ fPlot_SelFrequency <- function(data, land) {
     scale_fill_brewer(name = "Selection Frequency",
                       palette = "PuBu", aesthetics = "fill") +
     theme_bw() +
-    theme(axis.ticks = element_line(color = "black", size = 2),
-          panel.border = element_rect(colour = "black", fill=NA, size=5),
+    theme(axis.ticks = element_line(color = "black", linewidth = 2),
+          panel.border = element_rect(colour = "black", 
+                                      fill=NA, 
+                                      linewidth=5),
           axis.text = element_text(size = 50, color = "black"))
   return(gg)
 }
@@ -273,31 +275,46 @@ fPlot_RidgeTargetScenario <- function(df) {
     scale_fill_manual(values = c(`EM-Percentile-tos-126` = "#289E3D",
                                  `EM-Percentile-tos-245` = "#E6C173",
                                  `EM-Percentile-tos-585` = "#855600")) +
-    geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
+    geom_vline(xintercept=c(30), linetype="dashed", color = "red", linewidth = 1) +
     theme_classic()
 }
 
 # Plot ridge plot for Scenario Theme (i.e., comparing climate warming across the three scenarios)
 fPlot_RidgeClimateScenario <- function(df, climate) {
   gg <- ggplot() +
-    geom_density_ridges_gradient(data = df %>% dplyr::filter(solution_1 == 1), aes(x = transformed, y = scenario, fill = ..x..), scale = 3) +
-    scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), option = "C") +
-    geom_density_ridges(data = df %>% dplyr::filter(solution_1 == 0), aes(x = transformed, y = scenario), alpha = 0.25, linetype = "dotted", scale = 3) +
+    geom_density_ridges_gradient(data = df %>% 
+                                   dplyr::filter(solution_1 == 1), 
+                                 aes(x = transformed, y = scenario, fill = ..x..), 
+                                 scale = 3) +
+    scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), 
+                         option = "C") +
+    geom_density_ridges(data = df %>% 
+                          dplyr::filter(solution_1 == 0), 
+                        aes(x = transformed, y = scenario), 
+                        alpha = 0.25, 
+                        linetype = "dotted", 
+                        scale = 3) +
     geom_vline(xintercept=(climate %>% 
                              dplyr::filter(scenario == 126))$mean_tos,
-               linetype = "dashed", color = "tan1", size = 0.5) +
+               linetype = "dashed", 
+               color = "tan1", 
+               linewidth = 0.5) +
     geom_vline(xintercept=(climate %>% 
                              dplyr::filter(scenario == 245))$mean_tos,
-               linetype = "dashed", color = "orchid3", size = 0.5) +
+               linetype = "dashed", 
+               color = "orchid3", 
+               linewidth = 0.5) +
     geom_vline(xintercept=(climate %>% 
                              dplyr::filter(scenario == 585))$mean_tos,
-               linetype = "dashed", color = "orchid4", size = 0.5) +
+               linetype = "dashed", 
+               color = "orchid4", 
+               linewidth = 0.5) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
     labs(x = expression('Climate warming (Δ'^"o"*'C yr'^"-1"*')')) +
     theme_classic() +
-    theme(axis.ticks = element_line(color = "black", size = 1),
-          axis.line = element_line(colour = "black", size = 1),
+    theme(axis.ticks = element_line(color = "black", linewidth = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
           axis.text = element_text(color = "black", size = 20),
           axis.title.x = element_text(size = 20),
           axis.title.y = element_blank(),

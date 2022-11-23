@@ -1,4 +1,4 @@
-"","run","scenario","approach","mean_tos","sum_area","total_cost","percent_area","num_pu"
-"1","EM-Percentile-tos-126","126","percentile",0.00627115067606031,20212,13540018.8,57.1137924213739,20212
-"2","EM-Percentile-tos-245","245","percentile",0.0163521173318106,19744,13226505.6,55.7913475938851,19744
-"3","EM-Percentile-tos-585","585","percentile",0.0366531293729961,21007,14072589.3,59.3602531860183,21007
+"","run","scenario","approach","mean_tos","num_pu","percent_area"
+"1","EM-Percentile-tos-126","126","percentile",0.00626761822045519,20235,57.178784368024
+"2","EM-Percentile-tos-245","245","percentile",0.0163578483981851,19778,55.8874226454548
+"3","EM-Percentile-tos-585","585","percentile",0.0366603646323947,21052,59.4874113425076

@@ -140,3 +140,9 @@ frequency_targets <- function(sFreq, name) {
   
   return(solution)
 }
+
+# Solve spatial planning problems
+solve_SPproblem <- function(p) {
+  s <- prioritizr::solve(p) %>% 
+    dplyr::select(cellID, cost, slpTrends, seTrends, sigTrends, transformed, everything()) # arrange column names
+}
