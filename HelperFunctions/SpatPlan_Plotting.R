@@ -377,9 +377,12 @@ fPlot_RidgeTargetEnsemble <- function(df) {
 }
 # Plot ridge plot for Ensemble Theme (i.e., comparing climate warming across the five models + EM approach)
 fPlot_RidgeClimateEnsemble <- function(df, climate) {
-  intercept1 <- (climate %>% dplyr::filter(grepl("NorESM2|GFDL", run)))$mean_tos
-  intercept2 <- (climate %>% dplyr::filter(grepl("EM|CMCC", run)))$mean_tos
-  intercept3 <- (climate %>% dplyr::filter(grepl("IPSL|CanESM5", run)))$mean_tos
+  intercept1 <- (climate %>% 
+                   dplyr::filter(grepl("NorESM2|GFDL", run)))$mean_tos
+  intercept2 <- (climate %>% 
+                   dplyr::filter(grepl("EM|CMCC", run)))$mean_tos
+  intercept3 <- (climate %>% 
+                   dplyr::filter(grepl("IPSL|CanESM5", run)))$mean_tos
   
   gg <- ggplot() +
     geom_density_ridges_gradient(data = df %>% 
@@ -400,21 +403,21 @@ fPlot_RidgeClimateEnsemble <- function(df, climate) {
     geom_vline(xintercept = intercept1,
                linetype = "dashed", 
                color = "tan1", 
-               size = 0.5) +
+               linewidth = 0.5) +
     geom_vline(xintercept = intercept2,
                linetype = "dashed", 
                color = "orchid3", 
-               size = 0.5) +
+               linewidth = 0.5) +
     geom_vline(xintercept = intercept3,
                linetype = "dashed", 
                color = "orchid4", 
-               size = 0.5) +
+               linewidth = 0.5) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
     labs(x = expression('Climate warming (Δ'^"o"*'C yr'^"-1"*')')) +
     theme_classic() +
-    theme(axis.ticks = element_line(color = "black", size = 1),
-          axis.line = element_line(colour = "black", size = 1),
+    theme(axis.ticks = element_line(color = "black", linewidth = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
           axis.text = element_text(color = "black", size = 20),
           axis.title.x = element_text(size = 20),
           axis.title.y = element_blank(),

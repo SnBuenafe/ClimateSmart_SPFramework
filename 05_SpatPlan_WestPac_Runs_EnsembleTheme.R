@@ -181,7 +181,7 @@ p14 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
 
 # 4. Solve the planning problem 
 s14 <- solve_SPproblem(p14)
-saveRDS(s14, paste0(output_solutions, "s14-MM-CanESM5-Percentile-tos-585.rds")) # save solution
+saveRDS(s14, paste0(solutions_dir, "s14-MM-CanESM5-Percentile-tos-585.rds")) # save solution
 
 # 5. Plot the spatial design
 s14_plot <- s14 %>% 
@@ -393,7 +393,7 @@ ggsave(filename = "MM-NorESM2_MM-Percentile-tos-585.png",
 #####################################
 
 dummy <- call_dummy() # Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
-problem_list <- list(dummy, dummy, dummy, dummy, dummy)
+problem_list <- list(dummy, dummy, dummy, dummy, dummy, dummy)
 solution_list <- list(s2, s14, s15, s16, s17, s18)
 climate_list <- list(roc_tos_SSP585, 
                      `roc_tos_CanESM5_SSP585`, 
@@ -445,12 +445,12 @@ climate <- fGetClimateSummary(trunc_solution_list, # list of solutions
                               "tos",  # metric
                               col_scenario = "585", # scenario
                               col_approach = "percentile", # CS approach used
-                              col_run = names[-1] # tag of each row
+                              col_run = names # tag of each row
                               )
 
 summary <- dplyr::left_join(climate, df, by = "run") %>% 
   rbind(., summary)
-write.csv(summary, paste0(output_summary, "EnsembleTheme_Summary.csv")) # save
+write.csv(summary, paste0(summary_dir, "EnsembleTheme_Summary.csv")) # save
 
 ggArea <- fPlot_StatisticsEnsemble(summary, 
                                    col_name = "percent_area", 
