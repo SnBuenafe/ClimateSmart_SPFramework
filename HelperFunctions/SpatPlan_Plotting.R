@@ -427,7 +427,7 @@ fPlot_RidgeClimateEnsemble <- function(df, climate) {
   
   return(gg)
 }
-# Plot ridge plot for Scenario Theme: Selection Frequency
+# Plot ridge plot for Ensemble Theme: Selection Frequency
 fPlot_RidgeSelectionEnsemble <- function(df) {
   gg <- ggplot(data = x) +
     geom_density_ridges(aes(x = percent, y = selection, group = selection, fill = selection),
@@ -437,6 +437,65 @@ fPlot_RidgeSelectionEnsemble <- function(df) {
                                  `selection_3` = "#74a9cf",
                                  `selection_4` = "#2b8cbe",
                                  `selection_5` = "#045a8d")) +
+    geom_vline(xintercept=c(30), linetype="dashed", color = "red", linewidth = 1) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+    labs(x = "Protection (%)", y = "selection") +
+    theme_classic() +
+    theme(axis.ticks = element_line(color = "black", linewidth = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
+          axis.text.x = element_text(color = "black", size = 20),
+          axis.text.y = element_blank(),
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_blank())
+}
+
+#### Plots for metric theme ####
+# Plot statistics
+fPlot_StatisticsMetric <- function(summary, col_name, y_axis) {
+  string <- "as.factor(run)"
+  gg <- ggplot(data = summary, aes_string(x = string)) +
+    geom_bar(aes_string(y = col_name, fill = string), stat = 'identity', position = position_dodge()) +
+    scale_fill_manual(name = 'Run',
+                      values = c(`EM_Percentile_tos_585` = "#289E3D",
+                                 `EM_Percentile_phos_585` = "#E6C173",
+                                 `EM_Percentile_o2os_585` = "#81B0CC",
+                                 `EM_Percentile_velocity_585` = "#855600",
+                                 `EM_Percentile_MHW_585` = "#3C6342",
+                                 `EM_Percentile_CombinedMetric_585` = "#BFA1BD")
+    ) +
+    xlab("Run") +
+    ylab(y_axis) +
+    theme(legend.position = "bottom") +
+    theme_classic() + 
+    theme(axis.text = element_text(size = 25))
+}
+# Plot ridge plot for Metric Theme's features
+fPlot_RidgeTargetMetric <- function(df) {
+  gg <- ggplot(data = df) +
+    geom_density_ridges(aes(x = percent, y = metric, group = metric, fill = metric),
+                        scale = 2) +
+    scale_fill_manual(values = c(`EM_Percentile_tos_585` = "#289E3D",
+                                 `EM_Percentile_phos_585` = "#E6C173",
+                                 `EM_Percentile_o2os_585` = "#81B0CC",
+                                 `EM_Percentile_velocity_585` = "#855600",
+                                 `EM_Percentile_MHW_585` = "#3C6342",
+                                 `EM_Percentile_CombinedMetric_585` = "#BFA1BD")) +
+    geom_vline(xintercept=c(30), linetype="dashed", color = "red", linewidth = 1) +
+    xlim(c(30, NA)) +
+    theme_classic()
+}
+# Plot ridge plot for Metric Theme: Selection Frequency
+fPlot_RidgeSelectionMetric <- function(df) {
+  ggplot(data = df) +
+    geom_density_ridges(aes(x = percent, y = selection, group = selection, fill = selection),
+                        scale = 5) +
+    scale_fill_manual(values = c(selection_1 = "#d0d1e6",
+                                 selection_2 = "#a6bddb",
+                                 selection_3 = "#74a9cf",
+                                 selection_4 = "#2b8cbe",
+                                 selection_5 = "#045a8d",
+                                 selection_6 = "#023858")) +
     geom_vline(xintercept=c(30), linetype="dashed", color = "red", linewidth = 1) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
