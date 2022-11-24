@@ -59,7 +59,8 @@ fAssignTargets_Feature <- function(climateSmartDF,
   )
   
   finalDF <- targetsDF %>%
-    dplyr::bind_rows(., climate_layerDF)
+    dplyr::bind_rows(., climate_layerDF) %>% 
+    dplyr::mutate(target = target/100) # Convert target to proportions
   
   return(finalDF)
 }

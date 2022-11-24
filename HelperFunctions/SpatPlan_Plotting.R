@@ -508,3 +508,95 @@ fPlot_RidgeSelectionMetric <- function(df) {
           axis.title.x = element_text(size = 20),
           axis.title.y = element_blank())
 }
+
+#### Plotting for approach theme ####
+# Plot statistics
+fPlot_StatisticsApproach <- function(summary, col_name, y_axis) {
+  string <- "as.factor(run)"
+  gg <- ggplot(data = summary, aes_string(x = string)) +
+    geom_bar(aes_string(y = col_name, fill = string), stat = 'identity', position = position_dodge()) +
+    scale_fill_manual(name = 'Run',
+                      values = c("#E6BA7E", "#4D3B2A", "#6984BF", "#2B8142")
+    ) +
+    xlab("Run") +
+    ylab(y_axis) +
+    theme(legend.position = "bottom") +
+    theme_classic() + 
+    theme(axis.text = element_text(size = 25))
+}
+# Plot ridge plot for Approach Theme's features
+fPlot_RidgeTargetApproach <- function(df) {
+  gg <- ggplot(data = df) +
+    geom_density_ridges(aes(x = percent, y = approach, group = approach, fill = approach),
+                        scale = 2) +
+    scale_fill_manual(values = c(`EM_ClimatePriorityArea_tos_585` = "#E6BA7E",
+                                 `EM_Feature_tos_585` = "#4D3B2A",
+                                 `EM_Penalty_tos_585` = "#6984BF",
+                                 `EM_Percentile_tos_585` = "#2B8142")) +
+    geom_vline(xintercept=c(30), linetype="dashed", color = "red", linewidth = 1) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+    labs(x = "Protection (%)", y = "selection") +
+    theme_classic() +
+    theme(axis.ticks = element_line(color = "black", linewidth = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
+          axis.text.x = element_text(color = "black", size = 20),
+          axis.text.y = element_blank(),
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_blank())
+}
+# Plot ridge plot for Metric Theme: Selection Frequency
+fPlot_RidgeSelectionApproach <- function(df) {
+  ggplot(data = df) +
+    geom_density_ridges(aes(x = percent, y = selection, group = selection, fill = selection),
+                        scale = 2) +
+    scale_fill_manual(values = c(selection_1 = "#bdc9e1",
+                                 selection_2 = "#74a9cf",
+                                 selection_3 = "#2b8cbe",
+                                 selection_4 = "#045a8d")) +
+    geom_vline(xintercept=c(30), linetype="dashed", color = "red", linewidth = 1) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+    labs(x = "Protection (%)", y = "selection") +
+    theme_classic() +
+    theme(axis.ticks = element_line(color = "black", linewidth = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
+          axis.text.x = element_text(color = "black", size = 20),
+          axis.text.y = element_blank(),
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_blank())
+}
+# Plot ridge plot for Approach Theme (i.e., comparing climate warming across the four CS approaches)
+fPlot_RidgeClimateApproach <- function(df, climate) {
+  gg <- ggplot() +
+    geom_density_ridges_gradient(data = df %>% 
+                                   dplyr::filter(solution_1 == 1), 
+                                 aes(x = transformed, 
+                                     y = approach, 
+                                     fill = ..x..), 
+                                 scale = 1) +
+    scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), option = "C") +
+    geom_density_ridges(data = df %>% 
+                          dplyr::filter(solution_1 == 0), 
+                        aes(x = transformed, y = approach), 
+                        alpha = 0.25, 
+                        linetype = "dotted", 
+                        scale = 1) +
+    geom_vline(xintercept = climate$mean_tos,
+               linetype = "dashed", 
+               color = "tan1", 
+               linewidth = 0.5) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+    labs(x = expression('Climate warming (Δ'^"o"*'C yr'^"-1"*')')) +
+    theme_classic() +
+    theme(axis.ticks = element_line(color = "black", linewidth = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
+          axis.text = element_text(color = "black", size = 20),
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.key.height = unit(1, "inch"),
+          legend.text = element_text(size = 15, color = "black"),
+          legend.title = element_text(size = 15, color = "black"))
+}

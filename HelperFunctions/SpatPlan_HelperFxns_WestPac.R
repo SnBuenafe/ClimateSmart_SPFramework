@@ -182,31 +182,7 @@ create_RepresentationFeature <- function(df, aqua_sf) {
 #    filter(solution_1 == 1)
 #}
 
-# Create penalty scaling values for the "penalty" approach
-create_Scaling <- function(cost, climate_metric, metric) {
-  # I calculated scaling using this equation:
-  # scaling$_ClimateMetric$ $= \frac{(Cost_{Max} - Cost_{Min})}{(ClimateMetric_{Max} - ClimateMetric_{Min})} \cdot (Scaling_{percent})$
 
-  percentage <- c(seq(from  = 20, to = 100, by = 10), seq(from = 120, to = 200, by = 20), 400)
-  
-  #x = (max(cost) - min(cost)) / (max(climate_metric) - min(climate_metric))
-  x = (max(cost)) / (max(climate_metric) - min(climate_metric)) #  Used max cost instead of range of cost because we're using a uniform cost layer
-  
-  scaling <- tibble(scaling = numeric(), penalty_value = numeric())
-  
-  if (metric %in% c("tos", "velocity", "MHW_num", "MHW_PeakInt", "MHW_CumInt", "MHW_Dur", "MHW_CumDur", "MHW_SumCumInt")) {
-    for (i in 1:length(percentage)) {
-      scaling %<>% add_row(scaling = percentage[i], penalty_value = x*percentage[i]/100)
-    }
-  } else if (metric %in% c("phos", "o2os")) {
-    for (i in 1:length(percentage)) {
-      scaling %<>% add_row(scaling = percentage[i], penalty_value = -x*percentage[i]/100)
-    }
-  }
-
-  return(scaling)
-
-}
 
 # Plot features for the workflow figure
 plot_AQMFeatures <- function(s1, PlanUnits, world, column){

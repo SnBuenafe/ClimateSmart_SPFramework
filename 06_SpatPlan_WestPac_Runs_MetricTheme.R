@@ -387,7 +387,7 @@ summary <- dplyr::left_join(climate, df, by = "run")
 write.csv(summary, paste0(summary_dir, "MetricTheme_Summary.csv")) # save
 
 ggArea <- fPlot_StatisticsMetric(summary, col_name = "percent_area", y_axis = "% area")
-ggsave(filename = "Area-MetricTheme-Percentile-585.png",
+ggsave(filename = "Area-MetricTheme.png",
        plot = ggArea, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
 
