@@ -42,7 +42,6 @@ fPercentile_CSapproach <- function(featuresDF,
     
     prct <- percentile/100 # Convert percentiles to proportions
     qntl <- quantile(filteredDF$metric, prct)[[1]] # Get the percentile
-    
     if(direction == 1) {
       if(i == 1) {
         print("Higher values mean more climate-smart areas.") # Sanity check

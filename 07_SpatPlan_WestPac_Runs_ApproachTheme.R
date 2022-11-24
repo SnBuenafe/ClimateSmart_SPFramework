@@ -14,48 +14,71 @@
 # 3. Penalty: uses the climate layer as a linear penalty
 # 4. Climate priority area: filters the lower 5th percentile, assigns it with a 100% target, and gets the rest of the distirbution and assigns it with a lower target (30% divided by the 95th percentile)
 
-# Load functions
-source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functions and libraries
-source("HelperFunctions/SpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
-output_solutions <- "Output/solutions/"
-output_summary <- "Output/summary/"
-output_lowregret <- "Output/lowregret/"
+# Load preliminaries
+source("03_SpatPlan_Master_Preliminaries.R") # climate layers are loaded in the script
+roc_tos_SSP585 <- load_metrics(metric = "tos", model = "ensemble", scenario = "SSP 5-8.5") # Load climate metric for ens mean
+total_area = nrow(PUs)
 
-# Load files
-source("03_SpatPlan_Master_Preliminaries.R")
-total_area = nrow(PUs) * PU_size
-LoadClimateMetrics(metric = "tos", model = NA, scenario = "SSP 5-8.5")
-
-#### Percentile ####
+#########################
+###### PERCENTILE #######
+#########################
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585, PUs = PUs)
-# 2. Get list of features
-features <- aqua_percentile %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
+                                          percentile = 35,
+                                          metricDF = rename_metric(roc_tos_SSP585),
+                                          direction = -1 # lower values are more climate-smart
+)
+
+# 2. Set up features and targets
+features <- aqua_sf %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 30)
+targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
+                                     climateSmartDF = aqua_percentile,
+                                     targetsDF = target_df)
+
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, roc_tos_SSP585, UniformCost)
-p2 <- prioritizr::problem(out_sf, features, "cost") %>%
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                roc_tos_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+p2 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(30/35) %>% 
+  add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
+
 # 4. Solve the planning problem 
-s2 <- prioritizr::solve(p2)
-saveRDS(s2, paste0(output_solutions, "s2-EM-Percentile-tos-585.rds")) # save solution
+s2 <- solve_SPproblem(p2)
+saveRDS(s2, paste0(solutions_dir, "s2-EM-Percentile-tos-585.rds")) # save solution
+
 # 5. Plot the spatial design
 s2_plot <- s2 %>% 
   mutate(solution_1 = as.logical(solution_1))
-ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) +
+ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + 
   ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5")
 ggsave(filename = "EM-Percentile-tos-585.png",
        plot = ggSol2, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
-#### Feature ####
+#########################
+###### FEATURE #######
+#########################
 # 1. Prepare climate layer
-ClimateFeature <- create_FeatureLayer(metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585)
+aqua_feature <- fFeature_CSapproach(featuresDF = aqua_sf, 
+                                    percentile = 35, 
+                                    metricDF = rename_metric(roc_tos_SSP585),
+                                    direction = -1 # lower values are more climate-smart
+                                    )
 # 2. Get list of features and set targets
 features <- aqua_sf %>% 
   as_tibble() %>% 

@@ -79,7 +79,7 @@ ggsave(filename = "EM-Percentile-tos-585.png",
 ##################################
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
-                                          percentile = 35,
+                                          percentile = 65,
                                           metricDF = rename_metric(phos_SSP585),
                                           direction = 1 # higher values are more climate-smart (less acidification)
 )
@@ -130,7 +130,7 @@ ggsave(filename = "EM-Percentile-phos-585.png",
 ##################################
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
-                                          percentile = 35,
+                                          percentile = 65,
                                           metricDF = rename_metric(o2os_SSP585),
                                           direction = 1 # higher values are more climate-smart (more positive)
 )
@@ -284,8 +284,8 @@ ggsave(filename = "EM-Percentile-MHW-585.png",
 ######################################
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
-                                          percentile = 35,
-                                          metricDF = rename_combined(CombinedMetric_SSP585),
+                                          percentile = 65,
+                                          metricDF = rename_metric(CombinedMetric_SSP585),
                                           direction = 1 # higher values are more climate-smart
 )
 

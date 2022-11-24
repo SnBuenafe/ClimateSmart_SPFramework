@@ -41,15 +41,6 @@ rename_metric <- function(df) {
     dplyr::rename(metric = transformed)
 }
 
-
-# Rename combined metric data.frame
-rename_combined <- function(df) {
-  metric_df <- df %>% 
-    tibble::as_tibble() %>% 
-    dplyr::select(cellID, combined) %>% 
-    dplyr::rename(metric = combined)
-}
-
 # Create a dummy problem for calculating representation of features
 call_dummy <- function() {
   out_sf <- cbind(aqua_sf, UniformCost)
