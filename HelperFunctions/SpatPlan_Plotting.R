@@ -453,16 +453,24 @@ fPlot_RidgeSelectionEnsemble <- function(df) {
 #### Plots for metric theme ####
 # Plot statistics
 fPlot_StatisticsMetric <- function(summary, col_name, y_axis) {
-  string <- "as.factor(run)"
+  string <- "as.factor(metric)"
+  summary %<>% 
+    dplyr::mutate(metric = case_when(str_detect(run, "tos") ~ "tos",
+                                     str_detect(run, "phos") ~ "phos",
+                                     str_detect(run, "o2os") ~ "o2os",
+                                     str_detect(run, "velocity") ~ "velocity",
+                                     str_detect(run, "MHW") ~ "MHW",
+                                     str_detect(run, "CombinedMetric") ~ "CombinedMetric")) # mutating metric
+  
   gg <- ggplot(data = summary, aes_string(x = string)) +
     geom_bar(aes_string(y = col_name, fill = string), stat = 'identity', position = position_dodge()) +
     scale_fill_manual(name = 'Run',
-                      values = c(`EM_Percentile_tos_585` = "#289E3D",
-                                 `EM_Percentile_phos_585` = "#E6C173",
-                                 `EM_Percentile_o2os_585` = "#81B0CC",
-                                 `EM_Percentile_velocity_585` = "#855600",
-                                 `EM_Percentile_MHW_585` = "#3C6342",
-                                 `EM_Percentile_CombinedMetric_585` = "#BFA1BD")
+                      values = c(tos = "#289E3D",
+                                 phos = "#E6C173",
+                                 o2os = "#81B0CC",
+                                 velocity = "#855600",
+                                 MHW = "#3C6342",
+                                 CombinedMetric = "#BFA1BD")
     ) +
     xlab("Run") +
     ylab(y_axis) +
@@ -472,18 +480,34 @@ fPlot_StatisticsMetric <- function(summary, col_name, y_axis) {
 }
 # Plot ridge plot for Metric Theme's features
 fPlot_RidgeTargetMetric <- function(df) {
+  df %<>% 
+    dplyr::mutate(met = case_when(str_detect(metric, "tos") ~ "tos",
+                                     str_detect(metric, "phos") ~ "phos",
+                                     str_detect(metric, "o2os") ~ "o2os",
+                                     str_detect(metric, "velocity") ~ "velocity",
+                                     str_detect(metric, "MHW") ~ "MHW",
+                                     str_detect(metric, "CombinedMetric") ~ "CombinedMetric")) # mutating metric
+  
   gg <- ggplot(data = df) +
-    geom_density_ridges(aes(x = percent, y = metric, group = metric, fill = metric),
+    geom_density_ridges(aes(x = percent, y = met, group = met, fill = met),
                         scale = 2) +
-    scale_fill_manual(values = c(`EM_Percentile_tos_585` = "#289E3D",
-                                 `EM_Percentile_phos_585` = "#E6C173",
-                                 `EM_Percentile_o2os_585` = "#81B0CC",
-                                 `EM_Percentile_velocity_585` = "#855600",
-                                 `EM_Percentile_MHW_585` = "#3C6342",
-                                 `EM_Percentile_CombinedMetric_585` = "#BFA1BD")) +
+    scale_fill_manual(values = c(tos = "#289E3D",
+                                 phos = "#E6C173",
+                                 o2os = "#81B0CC",
+                                 velocity = "#855600",
+                                 MHW = "#3C6342",
+                                 CombinedMetric = "#BFA1BD")) +
     geom_vline(xintercept=c(30), linetype="dashed", color = "red", linewidth = 1) +
-    xlim(c(30, NA)) +
-    theme_classic()
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+    labs(x = "Protection (%)", y = "selection") +
+    theme_classic() +
+    theme(axis.ticks = element_line(color = "black", linewidth = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
+          axis.text.x = element_text(color = "black", size = 20),
+          axis.text.y = element_blank(),
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_blank())
 }
 # Plot ridge plot for Metric Theme: Selection Frequency
 fPlot_RidgeSelectionMetric <- function(df) {

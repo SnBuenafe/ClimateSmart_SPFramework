@@ -131,8 +131,8 @@ scaling <- fPenalty_CSapproach(UniformCost$cost,
 
 # 2. Get list of features
 features <- aqua_sf %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+  dplyr::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
 
 # 3. Set up the spatial planning problem
@@ -144,7 +144,7 @@ out_sf <- cbind(UniformCost,
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
-penalty <- scaling %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+penalty <- scaling %>% dplyr::filter(scaling == 30) %>% pull() # get scaling for 30%
 p10 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% # using 30% targets

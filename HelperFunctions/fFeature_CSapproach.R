@@ -35,7 +35,7 @@ fFeature_CSapproach <- function(featuresDF,
   
   # Get the most climate-smart areas
   climateSmartDF <- df %>%
-    as_tibble() %>%
+    tibble::as_tibble() %>%
     dplyr::select(cellID, climate_layer)
   
   # Attach "climate_layer" to the features df and have this as the output

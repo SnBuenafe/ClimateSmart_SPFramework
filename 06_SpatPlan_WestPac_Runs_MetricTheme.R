@@ -215,7 +215,8 @@ p5 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE)
 
 # 4. Solve the planning problem 
-s5 <- solve_SPproblem(p5)
+s5 <- prioritizr::solve(p5) %>% 
+  dplyr::select(cellID, cost, transformed, everything())
 saveRDS(s5, paste0(solutions_dir, "s5-EM-Percentile-velocity-585.rds")) # save solution
 
 # 5. Plot the spatial design
