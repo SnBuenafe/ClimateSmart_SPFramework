@@ -23,7 +23,7 @@ total_area = nrow(PUs)
 # ----- A. Climate Warming -----
 # 1. Prepare the climate layers and features
 aqua_CPA <- fClimatePriorityArea_CSapproach(featuresDF = aqua_sf,
-                                            percentile = 5, # Considering the top 5 percentile of each feature as climate-smart areas
+                                            percentile = 5, # lowest 5th percentile of warming
                                             metricDF = rename_metric(tos_SSP585),
                                             direction = -1 # lower values are more climate-smart
 )
@@ -71,69 +71,98 @@ ggsave(filename = "EM-ClimatePriorityArea-tos-585.png",
        path = "Figures/") # save
 rm(list = ls(pattern = "^tos"))
 
-# ----- Ocean acidification -----
-LoadClimateMetrics(metric = "phos", model = NA, scenario = "SSP 5-8.5")
+# ----- B. Ocean acidification -----
 # 1. Prepare the climate layers and features
-ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP585)
-RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
-Features <- cbind(ImptFeat, RepFeat) %>% 
-  dplyr::select(-geometry.1)
-# 2. Get list of features
-features <- Features %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>%
+aqua_CPA <- fClimatePriorityArea_CSapproach(featuresDF = aqua_sf,
+                                            percentile = 95, # Highest 5th percentile of ocean acidification
+                                            metricDF = rename_metric(phos_SSP585),
+                                            direction = 1 # higher values are more climate-smart
+)
+
+# 2. Set up features and targets
+features <- aqua_sf %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
-# 3. Differentiate targets for important features and representative features
-targets <- features %>% as_tibble() %>% 
-  setNames(., "Species") %>% 
-  add_column(target = 1) %>% 
-  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
-# 4. Set up the spatial planning problem
-out_sf <- cbind(Features, roc_phos_SSP585, UniformCost)
-p35 <- prioritizr::problem(out_sf, features, "cost") %>%
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 0.3) # this approach needs proportions as targets
+targets <- fAssignTargets_CPA(climateSmartDF = aqua_CPA,
+                              targetsDF = target_df,
+                              refugiaTarget = 1 # 100% protection to the most climate-smart areas
+)
+
+# 3. Set up the spatial planning problem
+out_sf <- cbind(UniformCost,
+                aqua_CPA %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                phos_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+p35 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>%
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
-# 5. Solve the planning problem 
-s35 <- prioritizr::solve(p35)
-saveRDS(s35, paste0(output_solutions, "s35-EM-ClimatePriorityArea-phos-585.rds")) # save solution
-# 6. Plot the spatial design
-s35_plot <- s35 %>% 
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
+
+# 4. Solve the planning problem 
+s35 <- solve_SPproblem(p35)
+saveRDS(s35, paste0(solutions_dir, "s35-EM-ClimatePriorityArea-phos-585.rds")) # save solution
+
+# 5. Plot the spatial design
+s35_plot <- s35 %>%  
   mutate(solution_1 = as.logical(solution_1)) 
 ggSol35 <- fSpatPlan_PlotSolution(s35_plot, PUs, land) + 
   ggtitle("Climate-smart design: Rate of Ocean Acidification", subtitle = "Climate Priority Area, SSP 5-8.5")
 ggsave(filename = "EM-ClimatePriorityArea-phos-585.png",
        plot = ggSol35, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
-rm(list = ls(pattern = "^roc_phos"))
-# ----- Declining Oxygen Concentration -----
-LoadClimateMetrics(metric = "o2os", model = NA, scenario = "SSP 5-8.5")
+rm(list = ls(pattern = "^phos"))
+
+# ----- C. Declining Oxygen Concentration -----
 # 1. Prepare the climate layers and features
-ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP585)
-RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
-Features <- cbind(ImptFeat, RepFeat) %>% 
-  dplyr::select(-geometry.1)
-# 2. Get list of features
-features <- Features %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+aqua_CPA <- fClimatePriorityArea_CSapproach(featuresDF = aqua_sf,
+                                            percentile = 95, # Highest 5th percentile of ocean deoxygenation
+                                            metricDF = rename_metric(phos_SSP585),
+                                            direction = 1 # higher values are more climate-smart
+)
+
+# 2. Set up features and targets
+features <- aqua_sf %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
-# 3. Differentiate targets for important features and representative features
-targets <- features %>% as_tibble() %>% 
-  setNames(., "Species") %>% 
-  add_column(target = 1) %>% 
-  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
-# 4. Set up the spatial planning problem
-out_sf <- cbind(Features, roc_o2os_SSP585, UniformCost)
-p36 <- prioritizr::problem(out_sf, features, "cost") %>%
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 0.3) # this approach needs proportions as targets
+targets <- fAssignTargets_CPA(climateSmartDF = aqua_CPA,
+                              targetsDF = target_df,
+                              refugiaTarget = 1 # 100% protection to the most climate-smart areas
+)
+
+# 3. Set up the spatial planning problem
+out_sf <- cbind(UniformCost,
+                aqua_CPA %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                o2os_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+p36 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>%
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
+
 # 5. Solve the planning problem 
-s36 <- prioritizr::solve(p36)
-saveRDS(s36, paste0(output_solutions, "s36-EM-ClimatePriorityArea-o2os-585.rds")) # save solution
+s36 <-solve_SPproblem(p36)
+saveRDS(s36, paste0(solutions_dir, "s36-EM-ClimatePriorityArea-o2os-585.rds")) # save solution
+
 # 6. Plot the spatial design
 s36_plot <- s36 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
@@ -142,34 +171,50 @@ ggSol36 <- fSpatPlan_PlotSolution(s36_plot, PUs, land) +
 ggsave(filename = "EM-ClimatePriorityArea-o2os-585.png",
        plot = ggSol36, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
-rm(list = ls(pattern = "^roc_o2os"))
-# ----- Climate Velocity -----
-LoadClimateMetrics(metric = "velocity", model = NA, scenario = "SSP 5-8.5")
+rm(list = ls(pattern = "^o2os"))
+
+# ----- D. Climate Velocity -----
 # 1. Prepare the climate layers and features
-ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP585)
-RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
-Features <- cbind(ImptFeat, RepFeat) %>% 
-  dplyr::select(-geometry.1)
-# 2. Get list of features
-features <- Features %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+aqua_CPA <- fClimatePriorityArea_CSapproach(featuresDF = aqua_sf,
+                                            percentile = 5, # Lowest 5th percentile of climate velocity
+                                            metricDF = rename_metric(velocity_SSP585),
+                                            direction = -1 # lower values are more climate-smart
+)
+
+# 2. Set up features and targets
+features <- aqua_sf %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
-# 3. Differentiate targets for important features and representative features
-targets <- features %>% as_tibble() %>% 
-  setNames(., "Species") %>% 
-  add_column(target = 1) %>% 
-  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
-# 4. Set up the spatial planning problem
-out_sf <- cbind(Features, velocity_SSP585, UniformCost)
-p37 <- prioritizr::problem(out_sf, features, "cost") %>%
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 0.3) # this approach needs proportions as targets
+targets <- fAssignTargets_CPA(climateSmartDF = aqua_CPA,
+                              targetsDF = target_df,
+                              refugiaTarget = 1 # 100% protection to the most climate-smart areas
+)
+
+# 3. Set up the spatial planning problem
+out_sf <- cbind(UniformCost,
+                aqua_CPA %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                velocity_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+p37 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>%
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
+
 # 5. Solve the planning problem 
-s37 <- prioritizr::solve(p37)
-saveRDS(s37, paste0(output_solutions, "s37-EM-ClimatePriorityArea-velocity-585.rds")) # save solution
+s37 <- prioritizr::solve(p37) %>% 
+  dplyr::select(cellID, cost, transformed, everything())
+saveRDS(s37, paste0(solutions_dir, "s37-EM-ClimatePriorityArea-velocity-585.rds")) # save solution
+
 # 6. Plot the spatial design
 s37_plot <- s37 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
@@ -179,42 +224,57 @@ ggsave(filename = "EM-ClimatePriorityArea-velocity-585.png",
        plot = ggSol37, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 rm(list = ls(pattern = "^velocity_"))
-# ----- Sum of the cumulative MHW intensity -----
-LoadClimateMetrics(metric = "MHW_SumCumInt", model = NA, scenario = "SSP 5-8.5")
+
+# ----- E. Sum of the cumulative MHW intensity -----
 # 1. Prepare the climate layers and features
-ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "MHW_SumCumInt", colname = "transformed", metric_df = MHW_SumCumInt_SSP585)
-RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
-Features <- cbind(ImptFeat, RepFeat) %>% 
-  dplyr::select(-geometry.1)
-# 2. Get list of features
-features <- Features %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+aqua_CPA <- fClimatePriorityArea_CSapproach(featuresDF = aqua_sf,
+                                            percentile = 5, # Lowest 5th percentile of climate velocity
+                                            metricDF = rename_metric(MHW_SSP585),
+                                            direction = -1 # lower values are more climate-smart
+)
+
+# 2. Set up features and targets
+features <- aqua_sf %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
-# 3. Differentiate targets for important features and representative features
-targets <- features %>% as_tibble() %>% 
-  setNames(., "Species") %>% 
-  add_column(target = 1) %>% 
-  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
-# 4. Set up the spatial planning problem
-out_sf <- cbind(Features, MHW_SumCumInt_SSP585, UniformCost)
-p293 <- prioritizr::problem(out_sf, features, "cost") %>%
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 0.3) # this approach needs proportions as targets
+targets <- fAssignTargets_CPA(climateSmartDF = aqua_CPA,
+                              targetsDF = target_df,
+                              refugiaTarget = 1 # 100% protection to the most climate-smart areas
+)
+
+# 3. Set up the spatial planning problem
+out_sf <- cbind(UniformCost,
+                aqua_CPA %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                velocity_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+p293 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>%
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
-# 5. Solve the planning problem 
-s293 <- prioritizr::solve(p293)
-saveRDS(s293, paste0(output_solutions, "s293-EM-ClimatePriorityArea-MHW_SumCumInt-585.rds")) # save solution
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
+
+# 4. Solve the planning problem 
+s293 <- prioritizr::solve(p293) %>% 
+  dplyr::select(cellID, cost, transformed, everything())
+saveRDS(s293, paste0(solutions_dir, "s293-EM-ClimatePriorityArea-MHW-585.rds")) # save solution
+
 # 6. Plot the spatial design
 s293_plot <- s293 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
 ggSol293 <- fSpatPlan_PlotSolution(s293_plot, PUs, land) + 
   ggtitle("Climate-smart design: Sum of Cumulative MHW Intensity", subtitle = "Climate Priority Area, SSP 5-8.5")
-ggsave(filename = "EM-ClimatePriorityArea-MHW_SumCumInt-585.png",
+ggsave(filename = "EM-ClimatePriorityArea-MHW-585.png",
        plot = ggSol293, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
-
 
 #### Summary ####
 solution_list <- list(s34, s35, s36, s37, s293)
