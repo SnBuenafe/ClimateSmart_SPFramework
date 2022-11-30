@@ -18,14 +18,14 @@ fClimatePriorityArea_CSapproach <- function(featuresDF,
 ) {
   
   spp <- featuresDF %>%
-    as_tibble() %>%
+    tibble::as_tibble() %>%
     dplyr::select(-geometry,-cellID) %>%
     names()
   
   metric <- metricDF %>%
     dplyr::mutate(cellID = row_number()) %>%
-    st_drop_geometry() %>%
-    as_tibble()
+    sf::st_drop_geometry() %>%
+    tibble::as_tibble()
   
   imptList <- list() # empty list to fill in with the important features
   for(i in 1:length(spp)) {
@@ -78,9 +78,9 @@ fClimatePriorityArea_CSapproach <- function(featuresDF,
   for(i in 1:length(spp)) {
     
     df1 <- featuresDF %>%
-      as_tibble() %>%
+      tibble::as_tibble() %>%
       dplyr::select(!!sym(spp[i]), cellID) %>% # Select 1 species at a time
-      left_join(., metricDF, by = "cellID")
+      dplyr::left_join(., metricDF, by = "cellID")
     
     df2 <- imptList %>%
       dplyr::select(!!sym(paste0(spp[i], "_CS")), cellID)
@@ -93,9 +93,9 @@ fClimatePriorityArea_CSapproach <- function(featuresDF,
   }
   
   repList %<>% do.call(bind_cols, .) %>%
-    bind_cols(., featuresDF %>% dplyr::select(cellID, geometry)) %>%
+    dplyr::bind_cols(., featuresDF %>% dplyr::select(cellID, geometry)) %>%
     dplyr::select(cellID, everything()) %>%
-    st_as_sf(sf_column_name = "geometry")
+    sf::st_as_sf(sf_column_name = "geometry")
   
   return(repList) # Return df with the climate-smart areas and non-climate-smart areas
   

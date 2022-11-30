@@ -550,13 +550,20 @@ fPlot_StatisticsApproach <- function(summary, col_name, y_axis) {
 }
 # Plot ridge plot for Approach Theme's features
 fPlot_RidgeTargetApproach <- function(df) {
+  names <-  c("Penalty", "Climate Priority Area", "Feature", "Percentile")
+  df %<>%
+    dplyr::mutate(approach = case_when(str_detect(approach, "Feature") ~ "Feature",
+                                       str_detect(approach, "Percentile") ~ "Percentile",
+                                       str_detect(approach, "Penalty") ~ "Penalty",
+                                       str_detect(approach, "ClimatePriorityArea") ~ "Climate Priority Area")) %>%
+    dplyr::mutate(approach = fct_relevel(approach, names))
   gg <- ggplot(data = df) +
     geom_density_ridges(aes(x = percent, y = approach, group = approach, fill = approach),
                         scale = 2) +
-    scale_fill_manual(values = c(`EM_ClimatePriorityArea_tos_585` = "#E6BA7E",
-                                 `EM_Feature_tos_585` = "#4D3B2A",
-                                 `EM_Penalty_tos_585` = "#6984BF",
-                                 `EM_Percentile_tos_585` = "#2B8142")) +
+    scale_fill_manual(values = c(`Climate Priority Area` = "#E6BA7E",
+                                 `Feature` = "#4D3B2A",
+                                 `Penalty` = "#6984BF",
+                                 `Percentile` = "#2B8142")) +
     geom_vline(xintercept=c(30), linetype="dashed", color = "red", linewidth = 1) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
@@ -613,6 +620,188 @@ fPlot_RidgeClimateApproach <- function(df, climate) {
     scale_x_continuous(expand = c(0,0)) +
     scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
     labs(x = expression('Climate warming (Δ'^"o"*'C yr'^"-1"*')')) +
+    theme_classic() +
+    theme(axis.ticks = element_line(color = "black", linewidth = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
+          axis.text = element_text(color = "black", size = 20),
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.key.height = unit(1, "inch"),
+          legend.text = element_text(size = 15, color = "black"),
+          legend.title = element_text(size = 15, color = "black"))
+}
+# Plot ridge plot for Approach Theme (i.e., comparing ocean acidification across the four CS approaches)
+fPlot_RidgeAcidificationApproach <- function(df, climate) {
+  gg <- ggplot() +
+    geom_density_ridges_gradient(data = df %>% 
+                                   dplyr::filter(solution_1 == 1), 
+                                 aes(x = transformed, 
+                                     y = approach, 
+                                     group = approach, 
+                                     fill = ..x..), 
+                                 scale = 1) +
+    scale_fill_viridis_c(name = expression('Δ pH yr'^"-1"*''), 
+                         option = "A") +
+    geom_density_ridges(data = df %>% 
+                          dplyr::filter(solution_1 == 0),
+                        aes(x = transformed, y = approach), 
+                        alpha = 0.25, 
+                        linetype = "dotted", 
+                        scale = 1) +
+    geom_vline(xintercept = climate$mean_phos,
+               linetype = "dashed", 
+               color = "tan1", 
+               linewidth = 0.5) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+    labs(x = expression('Ocean acidification (Δ pH yr'^"-1"*')')) +
+    theme_classic() +
+    theme(axis.ticks = element_line(color = "black", size = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
+          axis.text = element_text(color = "black", size = 20),
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.key.height = unit(1, "inch"),
+          legend.text = element_text(size = 15, color = "black"),
+          legend.title = element_text(size = 15, color = "black"))
+}
+
+# Plot ridge plot for Approach Theme (i.e., comparing ocean deoxygenation across the four CS approaches)
+fPlot_RidgeDeoxygenationApproach <- function(df, climate) {
+  gg <- ggplot() +
+    geom_density_ridges_gradient(data = df %>% 
+                                   dplyr::filter(solution_1 == 1), 
+                                 aes(x = transformed, 
+                                     y = approach, 
+                                     fill = ..x..), 
+                                 scale = 1) +
+    scale_fill_viridis_c(name = expression('Δ mol m'^"-3"*' yr'^"-1"*''), 
+                         option = "D") +
+    geom_density_ridges(data = df %>% 
+                          dplyr::filter(solution_1 == 0), 
+                        aes(x = transformed, 
+                            y = approach), 
+                        alpha = 0.25, 
+                        linetype = "dotted", 
+                        scale = 1) +
+    geom_vline(xintercept = climate$mean_o2os,
+               linetype = "dashed", 
+               color = "black", 
+               linewidth = 0.5) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+    labs(x = expression('Ocean deoxygenation (Δ mol m'^"-3"*' yr'^"-1"*')')) +
+    theme_classic() +
+    theme(axis.ticks = element_line(color = "black", size = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
+          axis.text = element_text(color = "black", size = 20),
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.key.height = unit(1, "inch"),
+          legend.text = element_text(size = 15, color = "black"),
+          legend.title = element_text(size = 15, color = "black"))
+}
+# Plot ridge plot for Approach Theme (i.e., comparing climate velocity across the four CS approaches)
+fPlot_RidgeVelocityApproach <- function(df, climate) {
+  gg <- ggplot() +
+    geom_density_ridges_gradient(data = df %>% 
+                                   dplyr::filter(solution_1 == 1), 
+                                 aes(x = transformed, 
+                                     y = approach, 
+                                     fill = ..x..), 
+                                 scale = 1) +
+    scale_fill_distiller(name = expression('km yr'^"-1"*''), 
+                         palette = "RdYlBu") +
+    geom_density_ridges(data = df %>% 
+                          dplyr::filter(solution_1 == 0), 
+                        aes(x = transformed, 
+                            y = approach), 
+                        alpha = 0.25, 
+                        linetype = "dotted", 
+                        scale = 1) +
+    geom_vline(xintercept = climate$median_velocity,
+               linetype = "dashed", 
+               color = "khaki3", 
+               linewidth = 0.5) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+    labs(x = expression('Climate velocity (km yr'^"-1"*')')) +
+    theme_classic() +
+    theme(axis.ticks = element_line(color = "black", size = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
+          axis.text = element_text(color = "black", size = 20),
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.key.height = unit(1, "inch"),
+          legend.text = element_text(size = 15, color = "black"),
+          legend.title = element_text(size = 15, color = "black"))
+}
+# Plot ridge plot for Approach Theme (i.e., comparing MHW intensity across the four CS approaches)
+fPlot_RidgeMHWApproach <- function(df, climate) {
+  gg <- ggplot() +
+    geom_density_ridges_gradient(data = df %>% 
+                                   dplyr::filter(solution_1 == 1), 
+                                 aes(x = transformed, 
+                                     y = approach, 
+                                     fill = ..x..), 
+                                 scale = 1) +
+    
+    scale_fill_viridis_c(name = expression('total degree days'), 
+                         option = "G") +
+    geom_density_ridges(data = df %>% 
+                          dplyr::filter(solution_1 == 0), 
+                        aes(x = transformed, 
+                            y = approach), 
+                        alpha = 0.25, 
+                        linetype = "dotted", 
+                        scale = 1) +
+    geom_vline(xintercept = climate$mean_MHW,
+               linetype = "dashed", 
+               color = "khaki3", 
+               linewidth = 0.5) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+    labs(x = expression('MHW Intensity (total degree days)')) +
+    theme_classic() +
+    theme(axis.ticks = element_line(color = "black", linewidth = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
+          axis.text = element_text(color = "black", size = 20),
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.key.height = unit(1, "inch"),
+          legend.text = element_text(size = 15, color = "black"),
+          legend.title = element_text(size = 15, color = "black"))
+}
+# Plot ridge plot for Approach Theme (i.e., comparing combined metric across the four CS approaches)
+fPlot_RidgeCombinedMetricApproach <- function(df, climate) {
+  gg <- ggplot() +
+    geom_density_ridges_gradient(data = df %>% 
+                                   dplyr::filter(solution_1 == 1), 
+                                 aes(x = transformed, 
+                                     y = approach, 
+                                     fill = ..x..), 
+                                 scale = 1) +
+    scale_fill_gradientn(name = "Metric Score",
+                         colors = brewer.pal(9, "YlGnBu")) +
+    geom_density_ridges(data = df %>% 
+                          dplyr::filter(solution_1 == 0), 
+                        aes(x = transformed, 
+                            y = approach), 
+                        alpha = 0.25, 
+                        linetype = "dotted", 
+                        scale = 1) +
+    geom_vline(xintercept = climate$mean_CombinedMetric,
+               linetype = "dashed", 
+               color = "khaki3", 
+               linewidth = 0.5) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+    labs(x = expression('Combined metric score')) +
     theme_classic() +
     theme(axis.ticks = element_line(color = "black", linewidth = 1),
           axis.line = element_line(colour = "black", linewidth = 1),

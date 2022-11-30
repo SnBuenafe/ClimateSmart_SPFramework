@@ -146,3 +146,45 @@ solve_SPproblem <- function(p) {
   s <- prioritizr::solve(p) %>% 
     dplyr::select(cellID, cost, slpTrends, seTrends, sigTrends, transformed, everything()) # arrange column names
 }
+
+# Loading summaries and merging it into one object
+load_summary <- function(metric, column) {
+  feature <- read_csv(paste0(summary_dir, "Supplement_Feature_Summary.csv")) %>% 
+    dplyr::filter(grepl(metric, run)) %>% 
+    dplyr::select(!!sym(column), run)
+  
+  percentile <- read_csv(paste0(summary_dir, "MetricTheme_Summary.csv")) %>% 
+    dplyr::filter(grepl(metric, run)) %>% 
+    dplyr::select(!!sym(column), run)
+  
+  penalty <- read_csv(paste0(summary_dir, "Supplement_Penalty_Summary.csv")) %>% 
+    dplyr::filter(grepl(metric, run)) %>% 
+    dplyr::select(!!sym(column), run)
+  
+  climatePriorityArea <- read_csv(paste0(summary_dir, "Supplement_ClimatePriorityArea_Summary.csv")) %>% 
+    dplyr::filter(grepl(metric, run)) %>% 
+    dplyr::select(!!sym(column), run)
+  
+  climate <- bind_rows(feature, percentile, penalty, climatePriorityArea)
+  
+  return(climate)
+}
+
+# Loading feature representation targets
+load_featrep <- function(metric) {
+  feature <- read_csv(paste0(summary_dir, "Supplement_Feature_FeatureRepresentation.csv")) %>% 
+    dplyr::select(feature, contains(metric))
+  
+  percentile <- read_csv(paste0(summary_dir, "MetricTheme_FeatureRepresentation.csv")) %>% 
+    dplyr::select(feature, contains(metric))
+  
+  penalty <- read_csv(paste0(summary_dir, "Supplement_Penalty_FeatureRepresentation.csv")) %>% 
+    dplyr::select(feature, contains(metric))
+  
+  climatePriorityArea <- read_csv(paste0(summary_dir, "Supplement_ClimatePriorityArea_FeatureRepresentation.csv")) %>% 
+    dplyr::select(feature, contains(metric))
+  
+  feat_rep <- dplyr::left_join(feature, percentile) %>% 
+    dplyr::left_join(., penalty) %>% 
+    dplyr::left_join(., climatePriorityArea)
+}
