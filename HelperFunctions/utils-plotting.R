@@ -50,17 +50,28 @@ fSpatPlan_PlotCost <- function(Cost, world){
 fPlot_ClimateWarming <- function(df, world) {
   
   gg <- ggplot() +
-    geom_sf(data = df, aes(fill = transformed), color = NA, size = 0.1, show.legend = TRUE) +
-    geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) + 
-    coord_sf(xlim = st_bbox(df)$xlim, ylim = st_bbox(df)$ylim) +
+    geom_sf(data = df, 
+            aes(fill = transformed), 
+            color = NA, 
+            size = 0.1, 
+            show.legend = TRUE) +
+    geom_sf(data = world, 
+            colour = "grey20", 
+            fill = "grey20", 
+            alpha = 0.9, 
+            size = 0.1, 
+            show.legend = FALSE) + 
+    coord_sf(xlim = st_bbox(df)$xlim, 
+             ylim = st_bbox(df)$ylim) +
     scale_fill_gradientn(name = expression('Δ'^"o"*'C yr'^"-1"*''),
                          colors = brewer.pal(9, "YlGn"),
-                         limits = c(as.numeric(quantile(df$transformed, 0.05)), as.numeric(quantile(df$transformed, 0.95))),
+                         limits = c(as.numeric(quantile(df$transformed, 0.05)), 
+                                    as.numeric(quantile(df$transformed, 0.95))),
                          oob = scales::squish) +
     labs(fill = expression('Δ'^"o"*'C yr'^"-1"*''),
          subtitle = "Rate of Change in Temperature") +
     theme_bw() +
-    theme(axis.ticks = element_line(color = "black", size = 2),
+    theme(axis.ticks = element_line(color = "black", linewidth = 2),
           panel.border = element_rect(colour = "black", fill=NA, size=5),
           axis.text = element_text(size = 50)) 
     
@@ -80,7 +91,7 @@ fPlot_OceanAcidification <- function(df, world) {
     labs(fill = expression('Δ pH yr'^"-1"*''),
          subtitle = "Rate of Change in pH") +
     theme_bw() +
-    theme(axis.ticks = element_line(color = "black", size = 2),
+    theme(axis.ticks = element_line(color = "black", linewidth = 2),
           panel.border = element_rect(colour = "black", fill=NA, size=5),
           axis.text = element_text(size = 50)) 
   
@@ -100,7 +111,7 @@ fPlot_OceanDeoxygenation <- function(df, world) {
     labs(fill = expression('Δ mol m'^"-3"*' yr'^"-1"*''),
          subtitle = "Rate of Change in Oxygen") +
     theme_bw() +
-    theme(axis.ticks = element_line(color = "black", size = 2),
+    theme(axis.ticks = element_line(color = "black", linewidth = 2),
           panel.border = element_rect(colour = "black", fill=NA, size=5),
           axis.text = element_text(size = 50)) 
   
@@ -120,7 +131,7 @@ fPlot_ClimateVelocity <- function(df, world) {
     labs(fill = expression('km yr'^"-1"*''),
          subtitle = "Climate Velocity") +
     theme_bw() +
-    theme(axis.ticks = element_line(color = "black", size = 2),
+    theme(axis.ticks = element_line(color = "black", linewidth = 2),
           panel.border = element_rect(colour = "black", fill=NA, size=5),
           axis.text = element_text(size = 50)) 
   

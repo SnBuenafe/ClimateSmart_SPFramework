@@ -11,18 +11,15 @@
 # However, it's not recommended. The output files (in Output/) are restricted to just the Western Pacific.
 # So, the user is advised to start all rerunning scripts starting from 04.
 
-#### Preliminaries ####
-# Load the extras, including functions and libraries
-source("HelperFunctions/SpatPlan_Extras.R")
-# Load helper functions written specifically for this spatial planning project
-source("HelperFunctions/SpatPlan_HelperFxns_WestPac.R")
+# Load helper functions
+helpfxns <- list.files(path = "HelperFunctions/", pattern = "*.R")
+sapply(paste0("HelperFunctions/", helpfxns), source, .GlobalEnv)
 
 if (!file.exists("Data")) {
   stop("The Data folder does not exist at SpatialPlanning/Data. Please download from the RDM and then try again.")
 }
 
 reprocess <- FALSE # Do we want to reprocess the PUs/AquaMaps data or use saved versions
-
 
 #### Setting user parameters ####
 # Calling the region
@@ -36,13 +33,14 @@ MaxDepth <- 200
 CO <- 0.5
 
 # Choose CRS for analysis (Robinson: Pacific-centered)
-cCRS <- "+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+# cCRS <- "+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+cCRS <- "+proj=moll +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m no_defs"
 
 #### Creating planning region ####
 # If Region = WestPacific, demarcating boundary and removing land areas would be different
 # The object "world" here represents the planning region (inverse = FALSE)
 world <- fSpatPlan_Get_Boundary(Region, cCRS) %>% 
-  fSpatPlan_Convert2PacificRobinson() # project to Pacific Robinson
+  fSpatPlan_Convert2PacificCentered(cCRS = cCRS) # project to Pacific Robinson
 inverse = FALSE
 
 # Set limits of the boundary
@@ -58,8 +56,8 @@ if(reprocess){
   PUs <- read_rds(file.path("Output", paste(save_name, paste0("PlanningRegion.rds"), sep = "_")))
 }
 
-land <- ne_countries(scale = 'large', returnclass = 'sf') %>% 
-  fSpatPlan_Convert2PacificRobinson() 
+land <- rnaturalearth::ne_countries(scale = 'large', returnclass = 'sf') %>% 
+  fSpatPlan_Convert2PacificCentered(cCRS = cCRS) 
 # Plotting the planning region
 (ggPU <- fSpatPlan_PlotPUs(PUs, land))
 ggsave("Layer_PlanningRegion.png",
@@ -73,7 +71,13 @@ ggsave("Layer_PlanningRegion.png",
 west_limit = -120 # use negative numbers for western limit
 east_limit = 130 # use positive numbers for eastern limit
 if(reprocess){
-  aqua_sf <- fSpatPlan_Get_AquaMaps(PUs, cCRS, MinDepth, MaxDepth, CutOff = CO, limits = c(west_limit, east_limit))
+  aqua_sf <- fSpatPlan_Get_AquaMaps(PUs, 
+                                    cCRS, 
+                                    MinDepth, 
+                                    MaxDepth, 
+                                    CutOff = CO, 
+                                    limits = c(west_limit, east_limit),
+                                    PacificCentered = TRUE)
   
   saveRDS(aqua_sf, file.path("Output", paste(save_name, paste0("AquaMaps.rds"), sep = "_"))) # Save rds so you don't have to reprocess everytime.
 } else {
@@ -122,16 +126,31 @@ for(i in 1:length(scenario_input)) {
     file <- apply(outer(list, param, stringr::str_detect), 1, all) %>% as.numeric()
     file <- which(file == 1)
     
-    df <- readRDS(paste0(path, list[file]))
-    layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "roc_tos", colname = "slpTrends")
+    df <- readRDS(paste0(path, list[file])) # load the raster files
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, 
+                                        df, 
+                                        cCRS, 
+                                        metric = "roc_tos", 
+                                        colname = "slpTrends")
     
     saveRDS(layer, file.path("Output", 
-                             paste(save_name, "ClimateLayer", "roc_tos", scenario_path[i], "ensemble.rds", sep = "_")))
+                             paste(save_name, 
+                                   "ClimateLayer", 
+                                   "roc_tos", 
+                                   scenario_path[i], 
+                                   "ensemble.rds", 
+                                   sep = "_")))
     
     print(paste0("Saved EM", ": ", scenario_path[i]))
     
   } else {
-      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "roc_tos", scenario_path[i], "ensemble.rds", sep = "_")))
+      df <- readRDS(file.path("Output", 
+                              paste(save_name, 
+                                    "ClimateLayer", 
+                                    "roc_tos", 
+                                    scenario_path[i], 
+                                    "ensemble.rds",
+                                    sep = "_")))
       
       assign(x = paste0("roc_tos_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
   }
@@ -165,16 +184,31 @@ for(m in 1:length(model_list)) {
       file <- apply(outer(list, param, stringr::str_detect), 1, all) %>% as.numeric()
       file <- which(file == 1)
       
-      df <- readRDS(paste0(path, list[file]))
-      layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "roc_tos", colname = "slpTrends")
+      df <- readRDS(paste0(path, list[file])) # load raster
+      layer <- fSpatPlan_Get_ClimateLayer(PUs, 
+                                          df, 
+                                          cCRS, 
+                                          metric = "roc_tos", 
+                                          colname = "slpTrends")
       
       saveRDS(layer, file.path("Output", 
-                               paste(save_name, "ClimateLayer", "roc_tos", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+                               paste(save_name, 
+                                     "ClimateLayer", 
+                                     "roc_tos", 
+                                     scenario_path[i], 
+                                     paste0(model_list[m], ".rds"), 
+                                     sep = "_")))
       
       print(paste0("Saved EM", ": ", model_list[m], ";", scenario_path[i]))
       
     } else {
-      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "roc_tos", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      df <- readRDS(file.path("Output", 
+                              paste(save_name, 
+                                    "ClimateLayer", 
+                                    "roc_tos", 
+                                    scenario_path[i], 
+                                    paste0(model_list[m], ".rds"),
+                                    sep = "_")))
       
       assign(x = paste0("roc_tos_", model_list[m], "_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
     }
@@ -220,15 +254,29 @@ for(i in 1:length(scenario_input)) {
     file <- which(file == 1)
     
     df <- readRDS(paste0(path, list[file]))
-    layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "roc_phos", colname = "slpTrends")
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, 
+                                        df, 
+                                        cCRS, 
+                                        metric = "roc_phos", 
+                                        colname = "slpTrends")
     
     saveRDS(layer, file.path("Output", 
-                             paste(save_name, "ClimateLayer", "roc_phos", scenario_path[i], "ensemble.rds", sep = "_")))
+                             paste(save_name, 
+                                   "ClimateLayer", 
+                                   "roc_phos", 
+                                   scenario_path[i], 
+                                   "ensemble.rds", 
+                                   sep = "_")))
     
     print(paste0("Saved EM", ": ", scenario_path[i]))
     
   } else {
-    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "roc_phos", scenario_path[i], "ensemble.rds", sep = "_")))
+    df <- readRDS(file.path("Output", paste(save_name, 
+                                            "ClimateLayer", 
+                                            "roc_phos", 
+                                            scenario_path[i], 
+                                            "ensemble.rds", 
+                                            sep = "_")))
     
     assign(x = paste0("roc_phos_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
   }
@@ -263,15 +311,30 @@ for(m in 1:length(model_list)) {
       file <- which(file == 1)
       
       df <- readRDS(paste0(path, list[file]))
-      layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "roc_phos", colname = "slpTrends")
+      layer <- fSpatPlan_Get_ClimateLayer(PUs, 
+                                          df, 
+                                          cCRS, 
+                                          metric = "roc_phos", 
+                                          colname = "slpTrends")
       
       saveRDS(layer, file.path("Output", 
-                               paste(save_name, "ClimateLayer", "roc_phos", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+                               paste(save_name, 
+                                     "ClimateLayer", 
+                                     "roc_phos", 
+                                     scenario_path[i], 
+                                     paste0(model_list[m], ".rds"), 
+                                     sep = "_")))
       
       print(paste0("Saved EM", ": ", model_list[m], ";", scenario_path[i]))
       
     } else {
-      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "roc_phos", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      df <- readRDS(file.path("Output", 
+                              paste(save_name, 
+                                    "ClimateLayer", 
+                                    "roc_phos", 
+                                    scenario_path[i], 
+                                    paste0(model_list[m], ".rds"), 
+                                    sep = "_")))
       
       assign(x = paste0("roc_phos_", model_list[m], "_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
     }
@@ -317,15 +380,29 @@ for(i in 1:length(scenario_input)) {
     file <- which(file == 1)
     
     df <- readRDS(paste0(path, list[file]))
-    layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "roc_o2os", colname = "slpTrends")
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, 
+                                        df, 
+                                        cCRS, 
+                                        metric = "roc_o2os", 
+                                        colname = "slpTrends")
     
     saveRDS(layer, file.path("Output", 
-                             paste(save_name, "ClimateLayer", "roc_o2os", scenario_path[i], "ensemble.rds", sep = "_")))
+                             paste(save_name, 
+                                   "ClimateLayer", 
+                                   "roc_o2os", 
+                                   scenario_path[i], 
+                                   "ensemble.rds", 
+                                   sep = "_")))
     
     print(paste0("Saved EM", ": ", scenario_path[i]))
     
   } else {
-    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "roc_o2os", scenario_path[i], "ensemble.rds", sep = "_")))
+    df <- readRDS(file.path("Output", paste(save_name, 
+                                            "ClimateLayer", 
+                                            "roc_o2os", 
+                                            scenario_path[i], 
+                                            "ensemble.rds", 
+                                            sep = "_")))
     
     assign(x = paste0("roc_o2os_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
   }
@@ -360,15 +437,29 @@ for(m in 1:length(model_list)) {
       file <- which(file == 1)
       
       df <- readRDS(paste0(path, list[file]))
-      layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "roc_o2os", colname = "slpTrends")
+      layer <- fSpatPlan_Get_ClimateLayer(PUs, 
+                                          df,
+                                          cCRS, 
+                                          metric = "roc_o2os", 
+                                          colname = "slpTrends")
       
       saveRDS(layer, file.path("Output", 
-                               paste(save_name, "ClimateLayer", "roc_o2os", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+                               paste(save_name, 
+                                     "ClimateLayer", 
+                                     "roc_o2os", 
+                                     scenario_path[i], 
+                                     paste0(model_list[m], ".rds"), 
+                                     sep = "_")))
       
       print(paste0("Saved EM", ": ", model_list[m], ";", scenario_path[i]))
       
     } else {
-      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "roc_o2os", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      df <- readRDS(file.path("Output", paste(save_name, 
+                                              "ClimateLayer", 
+                                              "roc_o2os", 
+                                              scenario_path[i], 
+                                              paste0(model_list[m], ".rds"), 
+                                              sep = "_")))
       
       assign(x = paste0("roc_o2os_", model_list[m], "_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
     }
@@ -414,7 +505,11 @@ for(i in 1:length(scenario_input)) {
     file <- which(file == 1)
     
     df <- readRDS(paste0(path, list[file]))
-    layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "velocity", colname = "voccMag")
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, 
+                                        df, 
+                                        cCRS, 
+                                        metric = "velocity", 
+                                        colname = "voccMag")
     
     saveRDS(layer, file.path("Output", 
                              paste(save_name, "ClimateLayer", "velocity", scenario_path[i], "ensemble.rds", sep = "_")))
@@ -422,7 +517,12 @@ for(i in 1:length(scenario_input)) {
     print(paste0("Saved EM", ": ", scenario_path[i]))
     
   } else {
-    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "velocity", scenario_path[i], "ensemble.rds", sep = "_")))
+    df <- readRDS(file.path("Output", paste(save_name, 
+                                            "ClimateLayer", 
+                                            "velocity", 
+                                            scenario_path[i], 
+                                            "ensemble.rds", 
+                                            sep = "_")))
     
     assign(x = paste0("velocity_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
   }
@@ -457,15 +557,29 @@ for(m in 1:length(model_list)) {
       file <- which(file == 1)
       
       df <- readRDS(paste0(path, list[file]))
-      layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "velocity", colname = "voccMag")
+      layer <- fSpatPlan_Get_ClimateLayer(PUs, 
+                                          df, 
+                                          cCRS, 
+                                          metric = "velocity", 
+                                          colname = "voccMag")
       
       saveRDS(layer, file.path("Output", 
-                               paste(save_name, "ClimateLayer", "velocity", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+                               paste(save_name, 
+                                     "ClimateLayer", 
+                                     "velocity", 
+                                     scenario_path[i], 
+                                     paste0(model_list[m], ".rds"), 
+                                     sep = "_")))
       
       print(paste0("Saved EM", ": ", model_list[m], ";", scenario_path[i]))
       
     } else {
-      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "velocity", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      df <- readRDS(file.path("Output", paste(save_name, 
+                                              "ClimateLayer", 
+                                              "velocity",
+                                              scenario_path[i],
+                                              paste0(model_list[m], ".rds"), 
+                                              sep = "_")))
       
       assign(x = paste0("velocity_", model_list[m], "_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
     }
@@ -512,15 +626,29 @@ for(i in 1:length(scenario_input)) {
     file <- which(file == 1)
     
     df <- readRDS(paste0(path, list[file]))
-    layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "MHW", colname = "sum_cum_int")
+    layer <- fSpatPlan_Get_ClimateLayer(PUs, 
+                                        df, 
+                                        cCRS, 
+                                        metric = "MHW", 
+                                        colname = "sum_cum_int")
     
     saveRDS(layer, file.path("Output", 
-                             paste(save_name, "ClimateLayer", "MHW", scenario_path[i], "ensemble.rds", sep = "_")))
+                             paste(save_name, 
+                                   "ClimateLayer", 
+                                   "MHW", 
+                                   scenario_path[i], 
+                                   "ensemble.rds", 
+                                   sep = "_")))
     
     print(paste0("Saved EM", ": ", scenario_path[i]))
     
   } else {
-    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "MHW", scenario_path[i], "ensemble.rds", sep = "_")))
+    df <- readRDS(file.path("Output", paste(save_name, 
+                                            "ClimateLayer", 
+                                            "MHW", 
+                                            scenario_path[i], 
+                                            "ensemble.rds", 
+                                            sep = "_")))
     
     assign(x = paste0("MHW_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
   }
@@ -555,15 +683,29 @@ for(m in 1:length(model_list)) {
       file <- which(file == 1)
       
       df <- readRDS(paste0(path, list[file]))
-      layer <- fSpatPlan_Get_ClimateLayer(PUs, df, cCRS, metric = "MHW", colname = "sum_cum_int")
+      layer <- fSpatPlan_Get_ClimateLayer(PUs, 
+                                          df, 
+                                          cCRS, 
+                                          metric = "MHW", 
+                                          colname = "sum_cum_int")
       
       saveRDS(layer, file.path("Output", 
-                               paste(save_name, "ClimateLayer", "MHW", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+                               paste(save_name, 
+                                     "ClimateLayer", 
+                                     "MHW", 
+                                     scenario_path[i], 
+                                     paste0(model_list[m], ".rds"), 
+                                     sep = "_")))
       
       print(paste0("Saved EM", ": ", model_list[m], ";", scenario_path[i]))
       
     } else {
-      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "MHW", scenario_path[i], paste0(model_list[m], ".rds"), sep = "_")))
+      df <- readRDS(file.path("Output", paste(save_name, 
+                                              "ClimateLayer", 
+                                              "MHW", 
+                                              scenario_path[i], 
+                                              paste0(model_list[m], ".rds"), 
+                                              sep = "_")))
       
       assign(x = paste0("MHW_", model_list[m], "_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
     }
@@ -596,15 +738,25 @@ ggsave("Layer_MHW_NorESM2-MM_SSP585.png",
        plot = `gg_MHW_NorESM2-MM`, width = 21, height = 29.7, dpi = 300,
        path = "Figures/")
 
-
 #### Ensemble Mean: Combined metric ####
 for(i in 1:length(scenario_path)) {
   if(reprocess) {
-    combined_df <- combineMetric(scenario = scenario_path[i], model = "ensemble")
+    combined_df <- fCombineMetrics(scenario = scenario_path[i], model = "ensemble", cCRS)
     saveRDS(combined_df, file.path("Output", 
-                                   paste(save_name, "ClimateLayer", "CombinedMetric", scenario_path[i], "ensemble.rds", sep = "_")))
+                                   paste(save_name, 
+                                         "ClimateLayer", 
+                                         "CombinedMetric", 
+                                         scenario_path[i], 
+                                         "ensemble.rds", 
+                                         sep = "_")))
   } else {
-    df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "CombinedMetric", scenario_path[i], "ensemble.rds", sep = "_")))
+    df <- readRDS(file.path("Output", 
+                            paste(save_name,
+                                  "ClimateLayer", 
+                                  "CombinedMetric", 
+                                  scenario_path[i], 
+                                  "ensemble.rds", 
+                                  sep = "_")))
     
     assign(x = paste0("CombinedMetric_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
   }
@@ -630,11 +782,24 @@ ggsave("Layer_Combined_SSP585.png",
 for(i in 1:length(scenario_path)) {
   for(j in 1:length(model_list)) {
     if(reprocess) {
-      combined_df <- combineMetric(scenario = scenario_path[i], model = model_list[j])
+      combined_df <- fCombineMetrics(scenario = scenario_path[i], 
+                                     model = model_list[j],
+                                     cCRS = cCRS)
       saveRDS(combined_df, file.path("Output", 
-                                     paste(save_name, "ClimateLayer", "CombinedMetric", scenario_path[i], paste0(model_list[j], ".rds"), sep = "_")))
+                                     paste(save_name, 
+                                           "ClimateLayer", 
+                                           "CombinedMetric", 
+                                           scenario_path[i], 
+                                           paste0(model_list[j], ".rds"), 
+                                           sep = "_")))
     } else {
-      df <- readRDS(file.path("Output", paste(save_name, "ClimateLayer", "CombinedMetric", scenario_path[i], paste0(model_list[j], ".rds"), sep = "_")))
+      df <- readRDS(file.path("Output", 
+                              paste(save_name, 
+                                    "ClimateLayer", 
+                                    "CombinedMetric", 
+                                    scenario_path[i], 
+                                    paste0(model_list[j], ".rds"), 
+                                    sep = "_")))
       
       assign(x = paste0("CombinedMetric_", model_list[j], "_", toupper(scenario_input[i])), value = df, envir = .GlobalEnv)
     }

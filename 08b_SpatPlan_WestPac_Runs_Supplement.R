@@ -7,7 +7,7 @@
 # 8b: Penalty approach
 
 # Load preliminaries
-source("03_SpatPlan_Master_Preliminaries.R") # climate layers are loaded in the script
+source("03_SpatPlan_Master_Preliminaries.R")
 # Load climate metrics for different metrics (all SSP5-8.5)
 metric_list <- c("tos", "phos", "o2os", "velocity", "MHW", "CombinedMetric")
 for(metric_num in 1:length(metric_list)) {
@@ -27,6 +27,8 @@ scaling <- fPenalty_CSapproach(UniformCost$cost,
                                tos_SSP585$transformed, 
                                direction = -1 # low values are more climate-smart
 )
+#scaling <- 1/median(tos_SSP585$transformed)
+#scaling <- 1/max(tos_SSP585$transformed)v
 
 # 2. Get list of features
 features <- aqua_sf %>% 
