@@ -17,7 +17,7 @@ source("03_SpatPlan_Master_Preliminaries.R")
 scenario_list = c("SSP 1-2.6", "SSP 2-4.5", "SSP 5-8.5")
 for(scenario_num in 1:length(scenario_list)) {
   x <- load_metrics(metric = "tos", model = "ensemble", scenario = scenario_list[scenario_num])
-  assign(paste0("roc_tos_", toupper(str_replace_all(scenario_list[scenario_num], "[^[:alnum:]]", ""))), x)
+  assign(paste0("tos_", toupper(str_replace_all(scenario_list[scenario_num], "[^[:alnum:]]", ""))), x)
 }
 total_area = nrow(PUs)
 
@@ -29,7 +29,7 @@ total_area = nrow(PUs)
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
                                           percentile = 35,
-                                          metricDF = rename_metric(roc_tos_SSP126),
+                                          metricDF = rename_metric(tos_SSP126),
                                           direction = -1 # lower values are more climate-smart
                                           )
 
@@ -51,7 +51,7 @@ out_sf <- cbind(UniformCost,
                 aqua_percentile %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry), 
-                roc_tos_SSP126 %>% 
+                tos_SSP126 %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
                 )
@@ -78,13 +78,13 @@ ggsave(filename = "EM-Percentile-tos-126.png",
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
                                           percentile = 35,
-                                          metricDF = rename_metric(roc_tos_SSP245),
+                                          metricDF = rename_metric(tos_SSP245),
                                           direction = -1 # lower values are more climate-smart
 )
 
 # 2. Set up features and targets
 features <- aqua_sf %>% 
-  as_tibble() %>% 
+  tibble::as_tibble() %>% 
   dplyr::select(-geometry, -cellID) %>% 
   names()
 # Using fixed targets of 30
@@ -100,7 +100,7 @@ out_sf <- cbind(UniformCost,
                 aqua_percentile %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry), 
-                roc_tos_SSP245 %>% 
+                tos_SSP245 %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
@@ -112,7 +112,7 @@ p39 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
 
 # 4. Solve the planning problem 
 s39 <- solve_SPproblem(p39)
-saveRDS(s39, paste0(output_solutions, "s39-EM-Percentile-tos-245.rds")) # save solution
+saveRDS(s39, paste0(solutions_dir, "s39-EM-Percentile-tos-245.rds")) # save solution
 
 # 5. Plot the spatial design
 s39_plot <- s39 %>% 
@@ -127,13 +127,13 @@ ggsave(filename = "EM-Percentile-tos-245.png",
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
                                           percentile = 35,
-                                          metricDF = rename_metric(roc_tos_SSP585),
+                                          metricDF = rename_metric(tos_SSP585),
                                           direction = -1 # lower values are more climate-smart
 )
 
 # 2. Set up features and targets
 features <- aqua_sf %>% 
-  as_tibble() %>% 
+  tibble::as_tibble() %>% 
   dplyr::select(-geometry, -cellID) %>% 
   names()
 # Using fixed targets of 30
@@ -149,7 +149,7 @@ out_sf <- cbind(UniformCost,
                 aqua_percentile %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry), 
-                roc_tos_SSP585 %>% 
+                tos_SSP585 %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
@@ -179,7 +179,7 @@ ggsave(filename = "EM-Percentile-tos-585.png",
 dummy <- call_dummy() # Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
 problem_list <- list(dummy, dummy, dummy)
 solution_list <- list(s38, s39, s2)
-climate_list <- list(roc_tos_SSP126, roc_tos_SSP245, roc_tos_SSP585)
+climate_list <- list(tos_SSP126, tos_SSP245, tos_SSP585)
 
 # ----- FEATURE REPRESENTATION -----
 names <- c("EM-Percentile-tos-126", "EM-Percentile-tos-245", "EM-Percentile-tos-585")
