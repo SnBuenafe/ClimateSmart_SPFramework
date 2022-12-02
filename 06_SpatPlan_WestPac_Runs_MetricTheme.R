@@ -21,7 +21,7 @@ for(metric_num in 1:length(metric_list)) {
   assign(paste0(metric_list[metric_num], "_SSP585"), x)
 }
 CombinedMetric_SSP585 %<>% dplyr::rename(transformed = combined) # rename column name
-total_area = nrow(PUs)
+total_area = nrow(PUs)*PU_size
 
 ##############################
 ###### CLIMATE WARMING #######
@@ -327,7 +327,7 @@ saveRDS(s362, paste0(solutions_dir, "s362-EM-Percentile-CombinedMetric-585.rds")
 s362_plot <- s362 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
 ggSol362 <- fSpatPlan_PlotSolution(s362_plot, PUs, land) + 
-  ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Percentile, SSP 5-8.5")
+  ggtitle("Climate-smart design: Combined Metric", subtitle = "Percentile, SSP 5-8.5")
 ggsave(filename = "EM-Percentile-CombinedMetric-585.png",
        plot = ggSol362, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -349,7 +349,7 @@ for(i in 1:length(names)) {
   df <- fFeatureRepresent(problem_list[[i]], solution_list[[i]], names[i])
   feat_rep <- dplyr::left_join(df, feat_rep, by = "feature")
 }
-write.csv(feat_rep, paste0(summary_dir, "MetricTheme_FeatureRepresentation.csv")) # save
+utils::write.csv(feat_rep, paste0(summary_dir, "MetricTheme_FeatureRepresentation.csv")) # save
 
 # ----- KERNEL DENSITY PLOTS OF TARGETS -----
 x <- feat_rep %>% 
@@ -385,7 +385,7 @@ for (i in 1:length(names)) {
 climate <- plyr::join_all(climate, by=c("run", "scenario", "approach"), type='left')
 
 summary <- dplyr::left_join(climate, df, by = "run")
-write.csv(summary, paste0(summary_dir, "MetricTheme_Summary.csv")) # save
+utils::write.csv(summary, paste0(summary_dir, "MetricTheme_Summary.csv")) # save
 
 ggArea <- fPlot_StatisticsMetric(summary, col_name = "percent_area", y_axis = "% area")
 ggsave(filename = "Area-MetricTheme.png",
