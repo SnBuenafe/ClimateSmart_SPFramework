@@ -21,7 +21,6 @@ for(model_num in 1:length(model_list)) {
   x <- load_metrics(metric = "tos", model = model_list[model_num], scenario = "SSP 5-8.5")
   assign(paste0("tos_", model_list[model_num], "_SSP585"), x)
 }
-total_area = nrow(PUs)*PU_size
 
 #################################
 ###### CLIMATE-UNINFORMED #######

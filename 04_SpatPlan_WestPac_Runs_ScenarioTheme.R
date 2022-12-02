@@ -19,7 +19,6 @@ for(scenario_num in 1:length(scenario_list)) {
   x <- load_metrics(metric = "tos", model = "ensemble", scenario = scenario_list[scenario_num])
   assign(paste0("tos_", toupper(str_replace_all(scenario_list[scenario_num], "[^[:alnum:]]", ""))), x)
 }
-total_area = nrow(PUs)
 
 ################################
 ###### SOLVE SP PROBLEMS #######

@@ -15,7 +15,6 @@ for(metric_num in 1:length(metric_list)) {
   assign(paste0(metric_list[metric_num], "_SSP585"), x)
 }
 CombinedMetric_SSP585 %<>% dplyr::rename(transformed = combined) # rename column name
-total_area = nrow(PUs)*PU_size
 
 #########################
 ###### FEATURE #########

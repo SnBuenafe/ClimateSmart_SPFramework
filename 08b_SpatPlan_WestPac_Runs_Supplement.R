@@ -15,20 +15,19 @@ for(metric_num in 1:length(metric_list)) {
   assign(paste0(metric_list[metric_num], "_SSP585"), x)
 }
 CombinedMetric_SSP585 %<>% dplyr::rename(transformed = combined) # rename column name
-total_area = nrow(PUs)*PU_size
 
 #########################
 ###### PENALTY #########
 #########################
 # ----- A. Climate Warming -----
 # 1. Determine scaling
-# Get scaling
-scaling <- fPenalty_CSapproach(UniformCost$cost, 
-                               tos_SSP585$transformed, 
-                               direction = -1 # low values are more climate-smart
-)
-#scaling <- 1/median(tos_SSP585$transformed)
-#scaling <- 1/max(tos_SSP585$transformed)v
+# Scaling here wouldn't matter because we don't have a cost layer;
+# This essentially makes metric a cost layer?
+scaling <- 1/median(tos_SSP585$transformed) # using the median to scale it
+# scaling <- fPenalty_CSapproach(UniformCost$cost, 
+#                                tos_SSP585$transformed, 
+#                                direction = -1 # low values are more climate-smart
+# )
 
 # 2. Get list of features
 features <- aqua_sf %>% 
@@ -45,13 +44,12 @@ out_sf <- cbind(UniformCost,
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
-penalty <- scaling %>% dplyr::filter(scaling == 30) %>% pull() # get scaling for 30%
 p10 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% # using 30% targets
   add_binary_decisions() %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE) %>% 
-  add_linear_penalties(penalty, data = "transformed")
+  add_linear_penalties(scaling, data = "transformed")
 
 # 4. Solve the planning problem 
 s10 <- solve_SPproblem(p10)
@@ -68,11 +66,14 @@ ggsave(filename = "EM-Penalty-tos-585.png",
 
 # ----- B. Ocean acidification -----
 # 1. Determine scaling
-# Get scaling
-scaling <- fPenalty_CSapproach(UniformCost$cost, 
-                               phos_SSP585$transformed, 
-                               direction = 1 # high values are more climate-smart
-)
+# Scaling here wouldn't matter because we don't have a cost layer;
+# This essentially makes metric a cost layer?
+scaling <- 1/median(phos_SSP585$transformed) # using the median to scale it
+# we want it to be negative to penalize lower values (i.e., more acidic locations)
+# scaling <- fPenalty_CSapproach(UniformCost$cost, 
+#                                phos_SSP585$transformed, 
+#                                direction = -1 # low values are more climate-smart
+# )
 
 # 2. Get list of features
 features <- aqua_sf %>% 
@@ -89,13 +90,12 @@ out_sf <- cbind(UniformCost,
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
-penalty <- scaling %>% dplyr::filter(scaling == 30) %>% pull() # get scaling for 30%
 p11 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% # using 30% targets
   add_binary_decisions() %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE) %>% 
-  add_linear_penalties(penalty, data = "transformed")
+  add_linear_penalties(scaling, data = "transformed")
 
 # 4. Solve the planning problem 
 s11 <- solve_SPproblem(p11)
@@ -112,11 +112,14 @@ ggsave(filename = "EM-Penalty-phos-585.png",
 
 # ----- C. Declining Oxygen Concentration -----
 # 1. Determine scaling
-# Get scaling
-scaling <- fPenalty_CSapproach(UniformCost$cost, 
-                               o2os_SSP585$transformed, 
-                               direction = 1 # high values are more climate-smart
-)
+# Scaling here wouldn't matter because we don't have a cost layer;
+# This essentially makes metric a cost layer?
+scaling <- 1/median(o2os_SSP585$transformed) # using the median to scale it
+# we want it to be negative to penalize lower values (i.e., areas with more deoxygenation)
+# scaling <- fPenalty_CSapproach(UniformCost$cost, 
+#                                o2os_SSP585$transformed, 
+#                                direction = -1 # low values are more climate-smart
+# )
 
 # 2. Get list of features
 features <- aqua_sf %>% 
@@ -133,13 +136,12 @@ out_sf <- cbind(UniformCost,
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
-penalty <- scaling %>% dplyr::filter(scaling == 30) %>% pull() # get scaling for 30%
 p12 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% # using 30% targets
   add_binary_decisions() %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE) %>% 
-  add_linear_penalties(penalty, data = "transformed")
+  add_linear_penalties(scaling, data = "transformed")
 
 # 4. Solve the planning problem
 s12 <- solve_SPproblem(p12)
@@ -156,11 +158,13 @@ ggsave(filename = "EM-Penalty-o2os-585.png",
 
 # ----- D. Climate velocity -----
 # 1. Determine scaling
-# Get scaling
-scaling <- fPenalty_CSapproach(UniformCost$cost, 
-                               velocity_SSP585$transformed, 
-                               direction = -1 # low values are more climate-smart
-)
+# Scaling here wouldn't matter because we don't have a cost layer;
+# This essentially makes metric a cost layer?
+scaling <- 1/median(velocity_SSP585$transformed) # using the median to scale it
+# scaling <- fPenalty_CSapproach(UniformCost$cost, 
+#                                velocity_SSP585$transformed, 
+#                                direction = -1 # low values are more climate-smart
+# )
 
 # 2. Get list of features
 features <- aqua_sf %>% 
@@ -177,13 +181,12 @@ out_sf <- cbind(UniformCost,
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
-penalty <- scaling %>% dplyr::filter(scaling == 30) %>% pull() # get scaling for 30%
 p13 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% # using 30% targets
   add_binary_decisions() %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE) %>% 
-  add_linear_penalties(penalty, data = "transformed")
+  add_linear_penalties(scaling, data = "transformed")
 
 # 4. Solve the planning problem
 s13 <- prioritizr::solve(p13) %>% 
@@ -201,11 +204,13 @@ ggsave(filename = "EM-Penalty-velocity-585.png",
 
 # ----- E. Sum of the cumulative MHW intensity -----
 # 1. Determine scaling
-# Get scaling
-scaling <- fPenalty_CSapproach(UniformCost$cost, 
-                               MHW_SSP585$transformed, 
-                               direction = -1 # low values are more climate-smart
-)
+# Scaling here wouldn't matter because we don't have a cost layer;
+# This essentially makes metric a cost layer?
+scaling <- 1/median(MHW_SSP585$transformed) # using the median to scale it
+# scaling <- fPenalty_CSapproach(UniformCost$cost, 
+#                                velocity_SSP585$transformed, 
+#                                direction = -1 # low values are more climate-smart
+# )
 
 # 2. Get list of features
 features <- aqua_sf %>% 
@@ -222,13 +227,12 @@ out_sf <- cbind(UniformCost,
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
-penalty <- scaling %>% dplyr::filter(scaling == 30) %>% pull() # get scaling for 30%
 p292 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% # using 30% targets
   add_binary_decisions() %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE) %>% 
-  add_linear_penalties(penalty, data = "transformed")
+  add_linear_penalties(scaling, data = "transformed")
 
 # 4. Solve the planning problem
 s292 <- prioritizr::solve(p292) %>% 
@@ -247,10 +251,14 @@ ggsave(filename = "EM-Penalty-MHW-585.png",
 # ----- F. Combined metric -----
 # 1. Determine scaling
 # Get scaling
-scaling <- fPenalty_CSapproach(UniformCost$cost, 
-                               CombinedMetric_SSP585$transformed, 
-                               direction = 1 # high values are more climate-smart
-)
+# Scaling here wouldn't matter because we don't have a cost layer;
+# This essentially makes metric a cost layer?
+scaling <- 1/median(CombinedMetric_SSP585$transformed) # using the median to scale it
+# we want it to be negative to penalize lower values (i.e., areas lower climate-smart scores)
+# scaling <- fPenalty_CSapproach(UniformCost$cost, 
+#                                CombinedMetric_SSP585$transformed, 
+#                                direction = -1 # low values are more climate-smart
+# )
 
 # 2. Get list of features
 features <- aqua_sf %>% 
@@ -267,13 +275,12 @@ out_sf <- cbind(UniformCost,
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
-penalty <- scaling %>% dplyr::filter(scaling == 30) %>% pull() # get scaling for 30%
 p364 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% # using 30% targets
   add_binary_decisions() %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE) %>% 
-  add_linear_penalties(penalty, data = "transformed")
+  add_linear_penalties(scaling, data = "transformed")
 
 # 4. Solve the planning problem
 s364 <- prioritizr::solve(p364) %>% 
@@ -281,13 +288,6 @@ s364 <- prioritizr::solve(p364) %>%
 saveRDS(s364, paste0(solutions_dir , "s364-EM-Penalty-CombinedMetric-585.rds")) # save solution
 
 # 5. Plot the spatial design
-s364_plot <- s364 %>% 
-  mutate(solution_1 = as.logical(solution_1)) 
-ggSol364 <- fSpatPlan_PlotSolution(s364_plot, PUs, land) + 
-  ggtitle("Climate-smart design: Combined metric", subtitle = "Penalty, SSP 5-8.5")
-ggsave(filename = "EM-Penalty-CombinedMetric-585.png",
-       plot = ggSol364, width = 21, height = 29.7, dpi = 300,
-       path = "Figures/") # save plot
 
 #####################################
 ###### CALCULATE SUMMARIES #########

@@ -17,7 +17,6 @@
 # Load preliminaries
 source("03_SpatPlan_Master_Preliminaries.R") # climate layers are loaded in the script
 tos_SSP585 <- load_metrics(metric = "tos", model = "ensemble", scenario = "SSP 5-8.5") # Load climate metric for ens mean
-total_area = nrow(PUs)*PU_size
 
 #########################
 ###### PERCENTILE #######
