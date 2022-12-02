@@ -16,8 +16,8 @@
 
 # Load preliminaries
 source("03_SpatPlan_Master_Preliminaries.R") # climate layers are loaded in the script
-roc_tos_SSP585 <- load_metrics(metric = "tos", model = "ensemble", scenario = "SSP 5-8.5") # Load climate metric for ens mean
-total_area = nrow(PUs)
+tos_SSP585 <- load_metrics(metric = "tos", model = "ensemble", scenario = "SSP 5-8.5") # Load climate metric for ens mean
+total_area = nrow(PUs)*PU_size
 
 #########################
 ###### PERCENTILE #######
@@ -25,7 +25,7 @@ total_area = nrow(PUs)
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
                                           percentile = 35,
-                                          metricDF = rename_metric(roc_tos_SSP585),
+                                          metricDF = rename_metric(tos_SSP585),
                                           direction = -1 # lower values are more climate-smart
 )
 
@@ -47,7 +47,7 @@ out_sf <- cbind(UniformCost,
                 aqua_percentile %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry), 
-                roc_tos_SSP585 %>% 
+                tos_SSP585 %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
@@ -76,7 +76,7 @@ ggsave(filename = "EM-Percentile-tos-585.png",
 # 1. Prepare climate layer
 aqua_feature <- fFeature_CSapproach(featuresDF = aqua_sf, 
                                     percentile = 35, 
-                                    metricDF = rename_metric(roc_tos_SSP585),
+                                    metricDF = rename_metric(tos_SSP585),
                                     direction = -1 # lower values are more climate-smart
                                     )
 # 2. Set up features and targets
@@ -97,7 +97,7 @@ out_sf <- cbind(UniformCost,
                 aqua_feature %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry), 
-                roc_tos_SSP585 %>% 
+                tos_SSP585 %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
@@ -110,6 +110,7 @@ p6 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
 # 4. Solve the planning problem 
 s6 <- solve_SPproblem(p6)
 saveRDS(s6, paste0(solutions_dir, "s6-EM-Feature-tos-585.rds")) # save solution
+
 # 5. Plot the spatial design
 s6_plot <- s6 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
@@ -123,11 +124,13 @@ ggsave(filename = "EM-Feature-tos-585.png",
 ###### PENALTY ##########
 #########################
 # 1. Determine scaling
-# Get scaling
-scaling <- fPenalty_CSapproach(UniformCost$cost, 
-                               roc_tos_SSP585$transformed, 
-                               direction = -1 # low values are more climate-smart
-)
+# Scaling here wouldn't matter because we don't have a cost layer;
+# This essentially makes metric a cost layer?
+scaling <- 1/median(tos_SSP585$transformed) # using the median to scale it
+# scaling <- fPenalty_CSapproach(UniformCost$cost, 
+#                                tos_SSP585$transformed, 
+#                                direction = -1 # low values are more climate-smart
+# )
 
 # 2. Get list of features
 features <- aqua_sf %>% 
@@ -140,17 +143,16 @@ out_sf <- cbind(UniformCost,
                 aqua_sf %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry), 
-                roc_tos_SSP585 %>% 
+                tos_SSP585 %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
-penalty <- scaling %>% dplyr::filter(scaling == 30) %>% pull() # get scaling for 30%
 p10 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(0.3) %>% # using 30% targets
   add_binary_decisions() %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE) %>% 
-  add_linear_penalties(penalty, data = "transformed")
+  add_linear_penalties(scaling, data = "transformed")
 
 # 4. Solve the planning problem 
 s10 <- solve_SPproblem(p10)
@@ -171,7 +173,7 @@ ggsave(filename = "EM-Penalty-tos-585.png",
 # 1. Prepare the climate layers and features
 aqua_CPA <- fClimatePriorityArea_CSapproach(featuresDF = aqua_sf,
                                             percentile = 5, # Considering the top 5 percentile of each feature as climate-smart areas
-                                            metricDF = rename_metric(roc_tos_SSP585),
+                                            metricDF = rename_metric(tos_SSP585),
                                             direction = -1 # lower values are more climate-smart
                                             )
 
@@ -194,7 +196,7 @@ out_sf <- cbind(UniformCost,
                 aqua_CPA %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry), 
-                roc_tos_SSP585 %>% 
+                tos_SSP585 %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
@@ -234,7 +236,7 @@ for(i in 1:length(names)) {
   df <- fFeatureRepresent(problem_list[[i]], solution_list[[i]], names[i])
   feat_rep <- dplyr::left_join(df, feat_rep, by = "feature")
 }
-write.csv(feat_rep, paste0(summary_dir, "ApproachTheme_FeatureRepresentation.csv")) # save
+utils::write.csv(feat_rep, paste0(summary_dir, "ApproachTheme_FeatureRepresentation.csv")) # save
 
 # ----- KERNEL DENSITY PLOTS OF TARGETS -----
 rev <- c("EM_Penalty_tos_585", "EM_ClimatePriorityArea_tos_585", "EM_Percentile_tos_585", "EM_Feature_tos_585")
@@ -243,7 +245,7 @@ x <- feat_rep %>%
   dplyr::mutate(row_number = row_number(feature)) %>% 
   dplyr::mutate(approach = fct_relevel(approach, rev))
 
-ggRidge <- fPlot_RidgeTargetAapproach(x)
+ggRidge <- fPlot_RidgeTargetApproach(x)
 ggsave(filename = "TargetRidge-ApproachTheme.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
@@ -259,7 +261,7 @@ for(i in 1:length(names)) {
 }
 
 climate <- fGetClimateSummary(solution_list, 
-                              roc_tos_SSP585, 
+                              tos_SSP585, 
                               "tos", 
                               col_scenario = "585", 
                               col_approach = approach_list, 
@@ -267,7 +269,7 @@ climate <- fGetClimateSummary(solution_list,
                               climateLayer = "single")
 
 summary <- dplyr::left_join(climate, df, by = "run")
-write.csv(summary, paste0(output_summary, "ApproachTheme_Summary.csv")) # save
+utils::write.csv(summary, paste0(summary_dir, "ApproachTheme_Summary.csv")) # save
 
 ggArea <- fPlot_StatisticsApproach(summary, col_name = "percent_area", y_axis = "% area")
 ggsave(filename = "Area-ApproachTheme.png",
