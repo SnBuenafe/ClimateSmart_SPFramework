@@ -369,7 +369,8 @@ fPlot_StatisticsEnsemble <- function(summary, col_name, y_axis) {
     ylab(y_axis) +
     theme(legend.position = "bottom") +
     theme_classic() +
-    theme(axis.text = element_text(size = 25))
+    theme(axis.text = element_text(size = 25),
+          axis.text.x = element_blank())
 }
 # Plot ridge plot for Ensemble Theme's features
 fPlot_RidgeTargetEnsemble <- function(df) {
@@ -383,8 +384,16 @@ fPlot_RidgeTargetEnsemble <- function(df) {
                                  `MM-IPSL-CM6A-LR_Percentile_tos_585` = "#81B0CC",
                                  `MM-NorESM2-MM_Percentile_tos_585` = "#5A9E67")) +
     geom_vline(xintercept=c(30), linetype="dashed", color = "red", linewidth = 1) +
-    xlim(c(min(df$percent), NA)) +
-    theme_classic()
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
+    labs(x = "Protection (%)", y = "selection") +
+    theme_classic() +
+    theme(axis.ticks = element_line(color = "black", size = 1),
+          axis.line = element_line(colour = "black", linewidth = 1),
+          axis.text.x = element_text(color = "black", size = 20),
+          axis.text.y = element_blank(),
+          axis.title.x = element_text(color = "black", size = 20),
+          axis.title.y = element_blank())
 }
 # Plot ridge plot for Ensemble Theme (i.e., comparing climate warming across the five models + EM approach)
 fPlot_RidgeClimateEnsemble <- function(df, climate) {

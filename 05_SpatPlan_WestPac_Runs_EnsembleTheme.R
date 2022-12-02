@@ -14,12 +14,12 @@
 
 # Load preliminaries
 source("03_SpatPlan_Master_Preliminaries.R") # climate layers are loaded in the script
-roc_tos_SSP585 <- load_metrics(metric = "tos", model = "ensemble", scenario = "SSP 5-8.5") # Load climate metric for ens mean
+tos_SSP585 <- load_metrics(metric = "tos", model = "ensemble", scenario = "SSP 5-8.5") # Load climate metric for ens mean
 # Load climate metrics for multi-model ens approach
 model_list <- c("CanESM5", "CMCC-ESM2", "GFDL-ESM4", "IPSL-CM6A-LR", "NorESM2-MM")
 for(model_num in 1:length(model_list)) {
   x <- load_metrics(metric = "tos", model = model_list[model_num], scenario = "SSP 5-8.5")
-  assign(paste0("roc_tos_", model_list[model_num], "_SSP585"), x)
+  assign(paste0("tos_", model_list[model_num], "_SSP585"), x)
 }
 total_area = nrow(PUs)
 
@@ -44,13 +44,15 @@ p1 <- prioritizr::problem(out_sf, feature_names, "cost") %>%
   add_cbc_solver(gap = 0.1, verbose = FALSE)
 
 # 3. Solve the planning problem 
-s1 <- prioritizr::solve(p1)
+s1 <- prioritizr::solve(p1) %>% 
+  dplyr::select(cellID, solution_1, cost)
 saveRDS(s1, paste0(solutions_dir, "s1-uninformed.rds")) # save solution
 
 # 4. Plot the spatial design
 s1_plot <- s1 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
-ggSol1 <- fSpatPlan_PlotSolution(s1_plot, PUs, land) + ggtitle("Climate-uninformed")
+ggSol1 <- fSpatPlan_PlotSolution(s1_plot, PUs, land) + 
+  ggtitle("Climate-uninformed")
 ggsave(filename = "Climate_Uninformed.png",
        plot = ggSol1, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
@@ -59,12 +61,12 @@ ggsave(filename = "Climate_Uninformed.png",
 # Feature Representation
 feat_rep <- fFeatureRepresent(p1, s1, "uninformed")
 head(feat_rep)
-write.csv(feat_rep, paste0(summary_dir, "Uninformed_FeatureRepresentation.csv")) # save
+utils::write.csv(feat_rep, paste0(summary_dir, "Uninformed_FeatureRepresentation.csv")) # save
 
 # Summary
 summary <- fComputeSummary(s1, total_area, PU_size, "uninformed")
 print(summary)
-write.csv(summary, paste0(summary_dir, "Uninformed_Summary.csv")) # save
+utils::write.csv(summary, paste0(summary_dir, "Uninformed_Summary.csv")) # save
 
 #####################################
 ###### ENSEMBLE-MEAN APPROACH #######
@@ -73,7 +75,7 @@ write.csv(summary, paste0(summary_dir, "Uninformed_Summary.csv")) # save
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
                                           percentile = 35,
-                                          metricDF = rename_metric(roc_tos_SSP585),
+                                          metricDF = rename_metric(tos_SSP585),
                                           direction = -1 # lower values are more climate-smart
 )
 
@@ -95,7 +97,7 @@ out_sf <- cbind(UniformCost,
                 aqua_percentile %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry), 
-                roc_tos_SSP585 %>% 
+                tos_SSP585 %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
@@ -130,7 +132,7 @@ print(summary)
 
 # Looking for mean rate of climate warming
 climate <- fGetClimateSummary(list(s2), # list of solutions
-                              list(roc_tos_SSP585), # list of climate dfs
+                              list(tos_SSP585), # list of climate dfs
                               "tos", # metric
                               "585", # scenario
                               "percentile", # CS approach used
@@ -147,7 +149,7 @@ summary %<>%
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
                                           percentile = 35,
-                                          metricDF = rename_metric(`roc_tos_CanESM5_SSP585`),
+                                          metricDF = rename_metric(`tos_CanESM5_SSP585`),
                                           direction = -1 # lower values are more climate-smart
 )
 
@@ -169,7 +171,7 @@ out_sf <- cbind(UniformCost,
                 aqua_percentile %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry), 
-                `roc_tos_CanESM5_SSP585` %>% 
+                `tos_CanESM5_SSP585` %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
@@ -196,7 +198,7 @@ ggsave(filename = "MM-CanESM5-Percentile-tos-585.png",
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
                                           percentile = 35,
-                                          metricDF = rename_metric(`roc_tos_CMCC-ESM2_SSP585`),
+                                          metricDF = rename_metric(`tos_CMCC-ESM2_SSP585`),
                                           direction = -1 # lower values are more climate-smart
 )
 
@@ -218,7 +220,7 @@ out_sf <- cbind(UniformCost,
                 aqua_percentile %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry), 
-                `roc_tos_CMCC-ESM2_SSP585` %>% 
+                `tos_CMCC-ESM2_SSP585` %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
@@ -245,7 +247,7 @@ ggsave(filename = "MM-CMCC_ESM2-Percentile-tos-585.png",
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
                                           percentile = 35,
-                                          metricDF = rename_metric(`roc_tos_GFDL-ESM4_SSP585`),
+                                          metricDF = rename_metric(`tos_GFDL-ESM4_SSP585`),
                                           direction = -1 # lower values are more climate-smart
 )
 
@@ -267,7 +269,7 @@ out_sf <- cbind(UniformCost,
                 aqua_percentile %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry), 
-                `roc_tos_GFDL-ESM4_SSP585` %>% 
+                `tos_GFDL-ESM4_SSP585` %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
@@ -294,7 +296,7 @@ ggsave(filename = "MM-GFDL_ESM4-Percentile-tos-585.png",
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
                                           percentile = 35,
-                                          metricDF = rename_metric(`roc_tos_IPSL-CM6A-LR_SSP585`),
+                                          metricDF = rename_metric(`tos_IPSL-CM6A-LR_SSP585`),
                                           direction = -1 # lower values are more climate-smart
 )
 
@@ -316,7 +318,7 @@ out_sf <- cbind(UniformCost,
                 aqua_percentile %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry), 
-                `roc_tos_IPSL-CM6A-LR_SSP585` %>% 
+                `tos_IPSL-CM6A-LR_SSP585` %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
@@ -343,7 +345,7 @@ ggsave(filename = "MM-IPSL_CM6A_LR-Percentile-tos-585.png",
 # 1. Prepare climate layer
 aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
                                           percentile = 35,
-                                          metricDF = rename_metric(`roc_tos_NorESM2-MM_SSP585`),
+                                          metricDF = rename_metric(`tos_NorESM2-MM_SSP585`),
                                           direction = -1 # lower values are more climate-smart
 )
 
@@ -365,7 +367,7 @@ out_sf <- cbind(UniformCost,
                 aqua_percentile %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry), 
-                `roc_tos_NorESM2-MM_SSP585` %>% 
+                `tos_NorESM2-MM_SSP585` %>% 
                   tibble::as_tibble() %>% 
                   dplyr::select(-cellID, -geometry)
 )
@@ -395,12 +397,12 @@ ggsave(filename = "MM-NorESM2_MM-Percentile-tos-585.png",
 dummy <- call_dummy() # Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
 problem_list <- list(dummy, dummy, dummy, dummy, dummy, dummy)
 solution_list <- list(s2, s14, s15, s16, s17, s18)
-climate_list <- list(roc_tos_SSP585, 
-                     `roc_tos_CanESM5_SSP585`, 
-                     `roc_tos_CMCC-ESM2_SSP585`, 
-                     `roc_tos_GFDL-ESM4_SSP585`, 
-                     `roc_tos_IPSL-CM6A-LR_SSP585`, 
-                     `roc_tos_NorESM2-MM_SSP585`)
+climate_list <- list(tos_SSP585, 
+                     `tos_CanESM5_SSP585`, 
+                     `tos_CMCC-ESM2_SSP585`, 
+                     `tos_GFDL-ESM4_SSP585`, 
+                     `tos_IPSL-CM6A-LR_SSP585`, 
+                     `tos_NorESM2-MM_SSP585`)
 
 # ----- FEATURE REPRESENTATION ----- 
 names <- c("MM-CanESM5_Percentile_tos_585", "MM-CMCC-ESM2_Percentile_tos_585", "MM-GFDL-ESM4_Percentile_tos_585", "MM-IPSL-CM6A-LR_Percentile_tos_585", "MM-NorESM2-MM_Percentile_tos_585")
@@ -411,7 +413,7 @@ for(i in 1:length(names)) {
   empty_list <- dplyr::left_join(df, empty_list, by = "feature")
 }
 feat_rep %<>% dplyr::left_join(., empty_list)
-write.csv(feat_rep, paste0(summary_dir, "EnsembleTheme_FeatureRepresentation.csv")) # save
+utils::write.csv(feat_rep, paste0(summary_dir, "EnsembleTheme_FeatureRepresentation.csv")) # save
 
 # ----- KERNEL DENSITY PLOTS OF TARGETS ----- 
 x <- feat_rep %>% 
@@ -434,11 +436,11 @@ for(i in 1:length(names)) {
 }
 # calculate mean/median metric values for all solutions (multi-model ensemble; so, remove the ENSEMBLE-MEAN in the lists)
 trunc_solution_list <- list(s14, s15, s16, s17, s18)
-trunc_climate_list <- list(`roc_tos_CanESM5_SSP585`, 
-                           `roc_tos_CMCC-ESM2_SSP585`, 
-                           `roc_tos_GFDL-ESM4_SSP585`, 
-                           `roc_tos_IPSL-CM6A-LR_SSP585`, 
-                           `roc_tos_NorESM2-MM_SSP585`)
+trunc_climate_list <- list(`tos_CanESM5_SSP585`, 
+                           `tos_CMCC-ESM2_SSP585`, 
+                           `tos_GFDL-ESM4_SSP585`, 
+                           `tos_IPSL-CM6A-LR_SSP585`, 
+                           `tos_NorESM2-MM_SSP585`)
 
 climate <- fGetClimateSummary(trunc_solution_list, # list of solutions
                               trunc_climate_list, # list of climate dfs
@@ -450,7 +452,7 @@ climate <- fGetClimateSummary(trunc_solution_list, # list of solutions
 
 summary <- dplyr::left_join(climate, df, by = "run") %>% 
   rbind(., summary)
-write.csv(summary, paste0(summary_dir, "EnsembleTheme_Summary.csv")) # save
+utils::write.csv(summary, paste0(summary_dir, "EnsembleTheme_Summary.csv")) # save
 
 ggArea <- fPlot_StatisticsEnsemble(summary, 
                                    col_name = "percent_area", 

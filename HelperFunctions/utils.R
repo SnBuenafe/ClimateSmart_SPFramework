@@ -144,7 +144,7 @@ frequency_targets <- function(sFreq, name) {
 # Solve spatial planning problems
 solve_SPproblem <- function(p) {
   s <- prioritizr::solve(p) %>% 
-    dplyr::select(cellID, cost, slpTrends, seTrends, sigTrends, transformed, everything()) # arrange column names
+    dplyr::select(cellID, solution_1, cost, slpTrends, seTrends, sigTrends, transformed, everything()) # arrange column names
 }
 
 # Loading summaries and merging it into one object

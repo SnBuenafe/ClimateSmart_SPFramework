@@ -2,10 +2,8 @@
 # DESCRIPTION: This code loads all layers limited to the planning region created in `02_SpatPlan_Master_WestPac.R` and all code needed to run scripts
 
 # Load all helper functions
-suppressMessages({
-  helpfxns <- list.files(path = "HelperFunctions/", pattern = "*.R")
-  sapply(paste0("HelperFunctions/", helpfxns), source, .GlobalEnv)
-  })
+helpfxns <- list.files(path = "HelperFunctions/", pattern = "*.R")
+sapply(paste0("HelperFunctions/", helpfxns), source, .GlobalEnv)
 
 # Declare directories
 solutions_dir <- "Output/solutions/"
@@ -26,6 +24,9 @@ land <- rnaturalearth::ne_countries(scale = 'large', returnclass = 'sf') %>%
 boundary <- PUs %>% 
   sf::st_make_valid() %>% 
   sf::st_union()
+
+# Total area
+total_area = nrow(PUs)*PU_size
 
 #### Conservation Features ####
 aqua_sf <- read_rds(file.path("Output", paste(save_name, paste0("AquaMaps.rds"), sep = "_")))
