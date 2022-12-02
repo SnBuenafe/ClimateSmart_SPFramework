@@ -3,6 +3,7 @@
 
 # Load all helper functions
 helpfxns <- list.files(path = "HelperFunctions/", pattern = "*.R")
+helpfxns <- helpfxns[-c(17:19)]
 sapply(paste0("HelperFunctions/", helpfxns), source, .GlobalEnv)
 
 # Declare directories
