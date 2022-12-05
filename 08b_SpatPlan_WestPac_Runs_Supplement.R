@@ -253,11 +253,11 @@ ggsave(filename = "EM-Penalty-MHW-585.png",
 # Get scaling
 # Scaling here wouldn't matter because we don't have a cost layer;
 # This essentially makes metric a cost layer?
-scaling <- 1/median(CombinedMetric_SSP585$transformed) # using the median to scale it
+scaling <- -1/median(CombinedMetric_SSP585$transformed) # using the median to scale it; negative so it would penalize values of low score
 # we want it to be negative to penalize lower values (i.e., areas lower climate-smart scores)
 # scaling <- fPenalty_CSapproach(UniformCost$cost, 
 #                                CombinedMetric_SSP585$transformed, 
-#                                direction = -1 # low values are more climate-smart
+#                                direction = 1 # high values are more climate-smart
 # )
 
 # 2. Get list of features
