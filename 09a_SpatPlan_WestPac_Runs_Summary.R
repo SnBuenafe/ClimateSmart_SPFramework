@@ -101,6 +101,16 @@ ggsave(filename = "ClimateSmartRidge-Velocity.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
+# Calculate the median of the non-selected-planning units
+notSelectedClimate <- calculate_medianClimateNotSelected(solution_list, names) %>% 
+  dplyr::rename(median_velocity = median)
+
+ggRidge <- fPlot_RidgeVelocityApproach(df, notSelectedClimate)
+
+ggsave(filename = "ClimateSmartRidge-Velocity-NotSelected.png",
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
+       path = "Figures/") # save plot
+
 # ----- D. MHW intensity -----
 # Load solutions
 s290 <- readRDS(paste0(solutions_dir, "s290-EM-Percentile-MHW-585.rds"))
