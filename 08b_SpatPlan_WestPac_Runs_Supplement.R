@@ -288,6 +288,13 @@ s364 <- prioritizr::solve(p364) %>%
 saveRDS(s364, paste0(solutions_dir , "s364-EM-Penalty-CombinedMetric-585.rds")) # save solution
 
 # 5. Plot the spatial design
+s364_plot <- s364 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+ggSol364 <- fSpatPlan_PlotSolution(s364_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Combined Metric", subtitle = "Penalty, SSP 5-8.5")
+ggsave(filename = "EM-Penalty-CombinedMetric-585.png",
+       plot = ggSol364, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
 
 #####################################
 ###### CALCULATE SUMMARIES #########
