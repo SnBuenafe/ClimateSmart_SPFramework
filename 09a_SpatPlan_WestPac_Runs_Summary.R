@@ -133,6 +133,16 @@ ggsave(filename = "ClimateSmartRidge-MHW.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
+# Calculate the mean of the non-selected-planning units
+notSelectedClimate <- calculate_meanClimateNotSelected(solution_list, names) %>% 
+  dplyr::rename(mean_MHW = mean)
+
+ggRidge <- fPlot_RidgeMHWApproach(df, notSelectedClimate)
+
+ggsave(filename = "ClimateSmartRidge-MHW-NotSelected.png",
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
+       path = "Figures/") # save plot
+
 # ----- E. Combined Metric -----
 # Load solutions
 s362 <- readRDS(paste0(solutions_dir, "s362-EM-Percentile-CombinedMetric-585.rds"))
