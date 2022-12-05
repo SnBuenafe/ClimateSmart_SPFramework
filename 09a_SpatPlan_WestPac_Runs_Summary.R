@@ -68,6 +68,16 @@ ggsave(filename = "ClimateSmartRidge-OceanDeoxygenation.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
+# Calculate the mean of the non-selected-planning units
+notSelectedClimate <- calculate_meanClimateNotSelected(solution_list, names) %>% 
+  dplyr::rename(mean_o2os = mean)
+
+ggRidge <- fPlot_RidgeDeoxygenationApproach(df, notSelectedClimate)
+
+ggsave(filename = "ClimateSmartRidge-OceanDeoxygenation-NotSelected.png",
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
+       path = "Figures/") # save plot
+
 # ----- C. Climate velocity -----
 # Load solutions
 s5 <- readRDS(paste0(solutions_dir, "s5-EM-Percentile-velocity-585.rds"))
