@@ -307,6 +307,16 @@ ggsave(filename = "ClimateSmartRidge-ApproachTheme.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
+# Calculate the mean of the non-selected-planning units
+notSelectedClimate <- calculate_meanClimateNotSelected(solution_list, names) %>% 
+  dplyr::rename(mean_tos = mean)
+
+ggRidge <- fPlot_RidgeClimateApproach(df, notSelectedClimate)
+
+ggsave(filename = "ClimateSmartRidge-ApproachTheme-NotSelected.png",
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
+       path = "Figures/") # save plot
+
 # ----- SELECTION FREQUENCY PLOT -----
 sFreq <- fGetSelFrequency(solution_list, names, PUs)
 saveRDS(sFreq, paste0(lowregret_dir, "sFreq4-EM-tos-585.rds")) # save low-regret solution
