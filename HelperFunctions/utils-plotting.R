@@ -619,6 +619,14 @@ fPlot_RidgeSelectionApproach <- function(df) {
 }
 # Plot ridge plot for Approach Theme (i.e., comparing climate warming across the four CS approaches)
 fPlot_RidgeClimateApproach <- function(df, climate) {
+  names <-  c("Penalty", "Climate Priority Area", "Feature", "Percentile")
+  df %<>%
+    dplyr::mutate(approach = case_when(str_detect(approach, "Feature") ~ "Feature",
+                                       str_detect(approach, "Percentile") ~ "Percentile",
+                                       str_detect(approach, "Penalty") ~ "Penalty",
+                                       str_detect(approach, "ClimatePriorityArea") ~ "Climate Priority Area")) %>%
+    dplyr::mutate(approach = fct_relevel(approach, names))
+  
   gg <- ggplot() +
     geom_density_ridges_gradient(data = df %>% 
                                    dplyr::filter(solution_1 == 1), 
