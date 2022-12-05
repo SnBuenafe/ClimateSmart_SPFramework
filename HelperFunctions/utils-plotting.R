@@ -661,6 +661,14 @@ fPlot_RidgeClimateApproach <- function(df, climate) {
 }
 # Plot ridge plot for Approach Theme (i.e., comparing ocean acidification across the four CS approaches)
 fPlot_RidgeAcidificationApproach <- function(df, climate) {
+  names <-  c("Penalty", "Climate Priority Area", "Feature", "Percentile")
+  df %<>%
+    dplyr::mutate(approach = case_when(str_detect(approach, "Feature") ~ "Feature",
+                                       str_detect(approach, "Percentile") ~ "Percentile",
+                                       str_detect(approach, "Penalty") ~ "Penalty",
+                                       str_detect(approach, "Climate Priority Area") ~ "Climate Priority Area")) %>%
+    dplyr::mutate(approach = fct_relevel(approach, names))
+  
   gg <- ggplot() +
     geom_density_ridges_gradient(data = df %>% 
                                    dplyr::filter(solution_1 == 1), 
@@ -698,6 +706,14 @@ fPlot_RidgeAcidificationApproach <- function(df, climate) {
 
 # Plot ridge plot for Approach Theme (i.e., comparing ocean deoxygenation across the four CS approaches)
 fPlot_RidgeDeoxygenationApproach <- function(df, climate) {
+  names <-  c("Penalty", "Climate Priority Area", "Feature", "Percentile")
+  df %<>%
+    dplyr::mutate(approach = case_when(str_detect(approach, "Feature") ~ "Feature",
+                                       str_detect(approach, "Percentile") ~ "Percentile",
+                                       str_detect(approach, "Penalty") ~ "Penalty",
+                                       str_detect(approach, "Climate Priority Area") ~ "Climate Priority Area")) %>%
+    dplyr::mutate(approach = fct_relevel(approach, names))
+  
   gg <- ggplot() +
     geom_density_ridges_gradient(data = df %>% 
                                    dplyr::filter(solution_1 == 1), 
@@ -734,6 +750,14 @@ fPlot_RidgeDeoxygenationApproach <- function(df, climate) {
 }
 # Plot ridge plot for Approach Theme (i.e., comparing climate velocity across the four CS approaches)
 fPlot_RidgeVelocityApproach <- function(df, climate) {
+  names <-  c("Penalty", "Climate Priority Area", "Feature", "Percentile")
+  df %<>%
+    dplyr::mutate(approach = case_when(str_detect(approach, "Feature") ~ "Feature",
+                                       str_detect(approach, "Percentile") ~ "Percentile",
+                                       str_detect(approach, "Penalty") ~ "Penalty",
+                                       str_detect(approach, "Climate Priority Area") ~ "Climate Priority Area")) %>%
+    dplyr::mutate(approach = fct_relevel(approach, names))
+  
   gg <- ggplot() +
     geom_density_ridges_gradient(data = df %>% 
                                    dplyr::filter(solution_1 == 1), 
@@ -758,7 +782,7 @@ fPlot_RidgeVelocityApproach <- function(df, climate) {
     scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
     labs(x = expression('Climate velocity (km yr'^"-1"*')')) +
     theme_classic() +
-    theme(axis.ticks = element_line(color = "black", size = 1),
+    theme(axis.ticks = element_line(color = "black", linewidth = 1),
           axis.line = element_line(colour = "black", linewidth = 1),
           axis.text = element_text(color = "black", size = 20),
           axis.title.x = element_text(size = 20),
@@ -770,6 +794,14 @@ fPlot_RidgeVelocityApproach <- function(df, climate) {
 }
 # Plot ridge plot for Approach Theme (i.e., comparing MHW intensity across the four CS approaches)
 fPlot_RidgeMHWApproach <- function(df, climate) {
+  names <-  c("Penalty", "Climate Priority Area", "Feature", "Percentile")
+  df %<>%
+    dplyr::mutate(approach = case_when(str_detect(approach, "Feature") ~ "Feature",
+                                       str_detect(approach, "Percentile") ~ "Percentile",
+                                       str_detect(approach, "Penalty") ~ "Penalty",
+                                       str_detect(approach, "Climate Priority Area") ~ "Climate Priority Area")) %>%
+    dplyr::mutate(approach = fct_relevel(approach, names))
+  
   gg <- ggplot() +
     geom_density_ridges_gradient(data = df %>% 
                                    dplyr::filter(solution_1 == 1), 
@@ -807,6 +839,14 @@ fPlot_RidgeMHWApproach <- function(df, climate) {
 }
 # Plot ridge plot for Approach Theme (i.e., comparing combined metric across the four CS approaches)
 fPlot_RidgeCombinedMetricApproach <- function(df, climate) {
+  names <-  c("Penalty", "Climate Priority Area", "Feature", "Percentile")
+  df %<>%
+    dplyr::mutate(approach = case_when(str_detect(approach, "Feature") ~ "Feature",
+                                       str_detect(approach, "Percentile") ~ "Percentile",
+                                       str_detect(approach, "Penalty") ~ "Penalty",
+                                       str_detect(approach, "Climate Priority Area") ~ "Climate Priority Area")) %>%
+    dplyr::mutate(approach = fct_relevel(approach, names))
+  
   gg <- ggplot() +
     geom_density_ridges_gradient(data = df %>% 
                                    dplyr::filter(solution_1 == 1), 
