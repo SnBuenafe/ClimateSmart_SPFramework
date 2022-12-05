@@ -188,3 +188,27 @@ load_featrep <- function(metric) {
     dplyr::left_join(., penalty) %>% 
     dplyr::left_join(., climatePriorityArea)
 }
+
+# Calculate mean of PUs that were not selected
+calculate_meanClimateNotSelected <- function(solution_list, names) {
+  tib <- list()
+  for(i in 1:length(names)) {
+    x <- mean((solution_list[[i]] %>% 
+                 dplyr::filter(solution_1 == 0))$transformed)
+    tib[[i]] <- c("approach" = names[i], "mean" = x)
+  }
+  tibble <- dplyr::bind_rows(tib) %>% 
+    dplyr::mutate(mean = as.numeric(mean))
+}
+
+# Calculate median of PUs that were not selected
+calculate_medianClimateNotSelected <- function(solution_list, names) {
+  tib <- list()
+  for(i in 1:length(names)) {
+    x <- median((solution_list[[i]] %>% 
+                 dplyr::filter(solution_1 == 0))$transformed)
+    tib[[i]] <- c("approach" = names[i], "median" = x)
+  }
+  tibble <- dplyr::bind_rows(tib) %>% 
+    dplyr::mutate(median = as.numeric(median))
+}

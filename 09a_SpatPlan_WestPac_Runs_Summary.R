@@ -35,6 +35,16 @@ ggsave(filename = "ClimateSmartRidge-OceanAcidification.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
+# Calculate the mean of the non-selected-planning units
+notSelectedClimate <- calculate_meanClimateNotSelected(solution_list, names) %>% 
+  dplyr::rename(mean_phos = mean)
+
+ggRidge <- fPlot_RidgeAcidificationApproach(df, notSelectedClimate)
+
+ggsave(filename = "ClimateSmartRidge-OceanAcidification-NotSelected.png",
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
+       path = "Figures/") # save plot
+
 # ----- B. Ocean Deoxygenation -----
 # Load solutions
 s4 <- readRDS(paste0(solutions_dir, "s4-EM-Percentile-o2os-585.rds"))
