@@ -327,13 +327,13 @@ ggsave(filename = "EM-ClimatePriorityArea-CombinedMetric-585.png",
 #####################################
 
 dummy <- call_dummy() # Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
-problem_list <- list(dummy, dummy, dummy)#, dummy, dummy, dummy)
-solution_list <- list(s37, s293, s365) # s34, s35, s36,#
-climate_list <- list(velocity_SSP585, MHW_SSP585, CombinedMetric_SSP585)#, tos_SSP585, phos_SSP585, o2os_SSP585
-metric_list <- c("velocity", "MHW", "CombinedMetric")#"tos", "phos", "o2os"
+problem_list <- list(dummy, dummy, dummy, dummy, dummy, dummy)
+solution_list <- list(s34, s35, s36, s37, s293, s365) 
+climate_list <- list(tos_SSP585, phos_SSP585, o2os_SSP585, velocity_SSP585, MHW_SSP585, CombinedMetric_SSP585) 
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW", "CombinedMetric")
 
 # ----- FEATURE REPRESENTATION -----
-names <- c("EM_ClimatePriorityArea_velocity_585", "EM_ClimatePriorityArea_MHW_585", "EM_ClimatePriorityArea_CombinedMetric_585")#"EM_ClimatePriorityArea_tos_585", "EM_ClimatePriorityArea_phos_585", "EM_ClimatePriorityArea_o2os_585" 
+names <- c("EM_ClimatePriorityArea_tos_585", "EM_ClimatePriorityArea_phos_585", "EM_ClimatePriorityArea_o2os_585", "EM_ClimatePriorityArea_velocity_585", "EM_ClimatePriorityArea_MHW_585", "EM_ClimatePriorityArea_CombinedMetric_585")
 
 feat_rep <- tibble(feature = character()) # empty tibble
 for(i in 1:length(names)) {
