@@ -165,6 +165,16 @@ ggsave(filename = "ClimateSmartRidge-CombinedMetric.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
+# Calculate the mean of the non-selected-planning units
+notSelectedClimate <- calculate_meanClimateNotSelected(solution_list, names) %>% 
+  dplyr::rename(mean_CombinedMetric = mean)
+
+ggRidge <- fPlot_RidgeCombinedMetricApproach(df, notSelectedClimate)
+
+ggsave(filename = "ClimateSmartRidge-CombinedMetric-NotSelected.png",
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
+       path = "Figures/") # save plot
+
 ##########################################
 ###### EFFICIENCY IN MEETING TARGETS #####
 ##########################################
