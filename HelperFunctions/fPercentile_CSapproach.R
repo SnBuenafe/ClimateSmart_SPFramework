@@ -105,7 +105,8 @@ fAssignTargets_Percentile <- function(featuresDF,
       dplyr::mutate(proportion = filtered/original) %>% # Calculating proportion of climate-smart areas over areas where feat is present
       dplyr::mutate(target = target/proportion) %>% # Calculate target based on the set target per feature and the proportion
       dplyr::select(feature, target) %>% 
-      dplyr::mutate(target = target/100) # Convert target to proportions
+      dplyr::mutate(target = target/100) %>%  # Convert target to proportions
+      dplyr::mutate(target = ifelse(target > 1, 1, target)) # Make sure that 100% is the largest target possible
   })
   
   return(df)

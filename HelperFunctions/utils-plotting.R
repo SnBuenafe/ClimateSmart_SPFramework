@@ -883,7 +883,7 @@ fPlot_RidgeCombinedMetricApproach <- function(df, climate) {
 }
 
 # Plot ridge plot for Sensitivity analyses
-fPlot_RidgeClimateScenario <- function(df, climate) {
+fPlot_RidgeClimateSensitivity <- function(df, climate) {
   gg <- ggplot() +
     geom_density_ridges_gradient(data = df %>% 
                                    dplyr::filter(solution_1 == 1), 
@@ -925,4 +925,37 @@ fPlot_RidgeClimateScenario <- function(df, climate) {
           legend.text = element_text(size = 15, color = "black"),
           legend.title = element_text(size = 15, color = "black"))
   return(gg)
+}
+
+# Plot threshold vs warming & area
+fPlot_SensitivityThreshold <- function(df) {
+  gg <- ggplot(df, aes(x = vec)) +
+    geom_line(aes(y = area), 
+              linewidth = 1, 
+              color = "#081d58") + 
+    geom_line(aes(y = warm * coeff),
+              linewidth = 1, 
+              color = "#ec7014") +
+    scale_y_continuous(name = "% of planning region selected",
+                       sec.axis = sec_axis(~./coeff, 
+                                           name = expression('Warming (Δ'^"o"*'C yr'^"-1"*')'))) +
+    scale_x_continuous(name = "Percentile threshold") +
+    geom_point(aes(y = area), 
+               size = 3, 
+               color = "#081d58", 
+               shape = 18) +
+    geom_point(aes(y = warm * coeff), 
+               size = 3,
+               color = "#ec7014", 
+               shape = 18) +
+    theme_bw() +
+    theme(panel.grid.major = element_line(color = "grey70"),
+          panel.grid.minor = element_line(color = "grey80"),
+          panel.border = element_rect(colour = "black", fill=NA, size=5),
+          axis.ticks = element_line(color = "black", linewidth = 2),
+          axis.text = element_text(color = "black", size = 25),
+          axis.title.x = element_text(color = "black", size = 30),
+          axis.title.y = element_text(color = "#081d58", size = 30),
+          axis.title.y.right = element_text(color = "#ec7014", size = 30)
+    )
 }

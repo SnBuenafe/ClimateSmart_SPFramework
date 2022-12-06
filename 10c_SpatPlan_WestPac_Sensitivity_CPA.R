@@ -5,22 +5,22 @@
 # "Sensitivity analysis"
 # Explores using different thresholds
 # Note: We can't have thresholds <
-# 10a: Feature approach
+# 10c: Climate priority area approach
 
 # Load preliminaries
 source("03_SpatPlan_Master_Preliminaries.R") # climate layers are loaded in the script
 tos_SSP585 <- load_metrics(metric = "tos", model = "ensemble", scenario = "SSP 5-8.5") # Load climate metric for ens mean
 
 # TODO: Move this to a helper function once done. Not yet done because it takes up memory.
-create_sensitivity_featureSols <- function(vec, metric, direction) {
+create_sensitivity_CPASols <- function(vec, metric, direction) {
   
   list <- list() # empty list
   for(i in 1:length(vec)) {
-    # 1. Prepare climate layer
-    aqua_feature <- fFeature_CSapproach(featuresDF = aqua_sf, 
-                                        percentile = vec[i], 
-                                        metricDF = rename_metric(metric),
-                                        direction = direction
+    # 1. Prepare the climate layers and features
+    aqua_CPA <- fClimatePriorityArea_CSapproach(featuresDF = aqua_sf,
+                                                percentile = vec[i], # Considering the top 5 percentile of each feature as climate-smart areas
+                                                metricDF = rename_metric(metric),
+                                                direction = direction # lower values are more climate-smart
     )
     
     # 2. Set up features and targets
@@ -31,14 +31,15 @@ create_sensitivity_featureSols <- function(vec, metric, direction) {
     # Using fixed targets of 30
     target_df <- tibble::as_tibble(features) %>% 
       dplyr::rename(feature = value) %>% 
-      dplyr::mutate(target = 30)
-    targets <- fAssignTargets_Feature(climateSmartDF = aqua_feature,
-                                      refugiaTarget = 30,
-                                      targetsDF = target_df)
+      dplyr::mutate(target = 0.3) # this approach needs proportions as targets
+    targets <- fAssignTargets_CPA(climateSmartDF = aqua_CPA,
+                                  targetsDF = target_df,
+                                  refugiaTarget = 1 # 100% protection to the most climate-smart areas
+    )
     
     # 3. Set up the spatial planning problem
     out_sf <- cbind(UniformCost,
-                    aqua_feature %>% 
+                    aqua_CPA %>% 
                       tibble::as_tibble() %>% 
                       dplyr::select(-cellID, -geometry), 
                     metric %>% 
@@ -47,9 +48,9 @@ create_sensitivity_featureSols <- function(vec, metric, direction) {
     )
     p <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
       add_min_set_objective() %>%
-      add_relative_targets(targets$target) %>% 
+      add_relative_targets(targets$target) %>%
       add_binary_decisions() %>%
-      add_cbc_solver(gap = 0.2, verbose = FALSE) # Using 20% 
+      add_cbc_solver(gap = 0.2, verbose = FALSE) # Use 20% optimality gap
     
     # 4. Solve the planning problem 
     list[[i]] <- prioritizr::solve(p) %>% 
@@ -58,6 +59,7 @@ create_sensitivity_featureSols <- function(vec, metric, direction) {
       dplyr::rename(!!sym(paste0("sol_", vec[i])) := solution_1)
     
     gc() # Free up space
+    saveRDS(list[[i]], file = paste0("Output/temporary/sol_", vec[i], ".rds"))
     print(paste0("Finished: ", vec[i]))
   }
   
@@ -67,10 +69,10 @@ create_sensitivity_featureSols <- function(vec, metric, direction) {
 }
 
 #### Create the spatial plans for sensitivity analysis ####
-vec <- seq(30, 70, 5)
-feat_df <- create_sensitivity_featureSols(vec,
-                                          tos_SSP585,
-                                          -1)
+vec <- seq(2.5, 22.5, 2.5)
+feat_df <- create_sensitivity_CPASols(vec,
+                                      tos_SSP585,
+                                      -1)
 
 #### Prepare the data.frame for plots ####
 # Merge the data.frame with the metric data
@@ -104,24 +106,24 @@ tmp_df <- cbind(vec, area = area*100/nrow(PUs), warm) %>%
 coeff = 10e2 # Figure out the threshold to be multiplied to warming to scale both y axes
 
 ggSens <- fPlot_SensitivityThreshold(tmp_df)
-ggsave(filename = "Sensitivity-Feature.png",
+ggsave(filename = "Sensitivity-CPA.png",
        plot = ggSens, 
        width = 20, height = 12, dpi = 300,
        path = "Figures/") # save plot
 
 #### Plotting Kernel Density Plots of small, medium, and large thresholds ####
 # Plotting the KD plots of percentile thresholds = 30, 50, 70
-sol_30 <- df %>% 
-  dplyr::select(cellID, sol_30, transformed, geometry) %>% 
-  dplyr::rename(solution_1 = sol_30)
-sol_50 <- df %>% 
-  dplyr::select(cellID, sol_50, transformed, geometry) %>% 
-  dplyr::rename(solution_1 = sol_50)
-sol_70 <- df %>% 
-  dplyr::select(cellID, sol_70, transformed, geometry) %>% 
-  dplyr::rename(solution_1 = sol_70)
+sol_25 <- df %>% 
+  dplyr::select(cellID, sol_2.5, transformed, geometry) %>% 
+  dplyr::rename(solution_1 = sol_2.5)
+sol_125 <- df %>% 
+  dplyr::select(cellID, sol_12.5, transformed, geometry) %>% 
+  dplyr::rename(solution_1 = sol_12.5)
+sol_225 <- df %>% 
+  dplyr::select(cellID, sol_22.5, transformed, geometry) %>% 
+  dplyr::rename(solution_1 = sol_22.5)
 
-solution_list <- list(sol_30, sol_50, sol_70)
+solution_list <- list(sol_25, sol_125, sol_225)
 
 list <- list() # empty list
 group_name = "threshold"
@@ -143,7 +145,7 @@ climate <- fGetClimateSummary(solution_list,
   dplyr::mutate(approach = row_number())
 
 ggRidge <- fPlot_RidgeClimateSensitivity(df, climate)
-ggsave(filename = "ClimateSmartRidge-Sensitivity-Feature-NoInt.png",
+ggsave(filename = "ClimateSmartRidge-Sensitivity-CPA.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
@@ -152,6 +154,6 @@ notSelectedClimate <- calculate_meanClimateNotSelected(solution_list, threshold_
   dplyr::rename(mean_tos = mean)
 
 ggRidge <- fPlot_RidgeClimateSensitivity(df, notSelectedClimate)
-ggsave(filename = "ClimateSmartRidge-Sensitivity-Feature-NotSelected.png",
+ggsave(filename = "ClimateSmartRidge-Sensitivity-CPA-NotSelected.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot

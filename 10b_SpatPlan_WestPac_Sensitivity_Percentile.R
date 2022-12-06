@@ -5,22 +5,22 @@
 # "Sensitivity analysis"
 # Explores using different thresholds
 # Note: We can't have thresholds <
-# 10a: Feature approach
+# 10b: Percentile approach
 
 # Load preliminaries
 source("03_SpatPlan_Master_Preliminaries.R") # climate layers are loaded in the script
 tos_SSP585 <- load_metrics(metric = "tos", model = "ensemble", scenario = "SSP 5-8.5") # Load climate metric for ens mean
 
 # TODO: Move this to a helper function once done. Not yet done because it takes up memory.
-create_sensitivity_featureSols <- function(vec, metric, direction) {
+create_sensitivity_percentileSols <- function(vec, metric, direction) {
   
   list <- list() # empty list
   for(i in 1:length(vec)) {
     # 1. Prepare climate layer
-    aqua_feature <- fFeature_CSapproach(featuresDF = aqua_sf, 
-                                        percentile = vec[i], 
-                                        metricDF = rename_metric(metric),
-                                        direction = direction
+    aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
+                                              percentile = vec[i],
+                                              metricDF = rename_metric(metric),
+                                              direction = direction
     )
     
     # 2. Set up features and targets
@@ -32,13 +32,13 @@ create_sensitivity_featureSols <- function(vec, metric, direction) {
     target_df <- tibble::as_tibble(features) %>% 
       dplyr::rename(feature = value) %>% 
       dplyr::mutate(target = 30)
-    targets <- fAssignTargets_Feature(climateSmartDF = aqua_feature,
-                                      refugiaTarget = 30,
-                                      targetsDF = target_df)
+    targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
+                                         climateSmartDF = aqua_percentile,
+                                         targetsDF = target_df)
     
     # 3. Set up the spatial planning problem
     out_sf <- cbind(UniformCost,
-                    aqua_feature %>% 
+                    aqua_percentile %>% 
                       tibble::as_tibble() %>% 
                       dplyr::select(-cellID, -geometry), 
                     metric %>% 
@@ -49,7 +49,7 @@ create_sensitivity_featureSols <- function(vec, metric, direction) {
       add_min_set_objective() %>%
       add_relative_targets(targets$target) %>% 
       add_binary_decisions() %>%
-      add_cbc_solver(gap = 0.2, verbose = FALSE) # Using 20% 
+      add_cbc_solver(gap = 0.2, verbose = FALSE) # Using 20% gap optimality
     
     # 4. Solve the planning problem 
     list[[i]] <- prioritizr::solve(p) %>% 
@@ -59,18 +59,18 @@ create_sensitivity_featureSols <- function(vec, metric, direction) {
     
     gc() # Free up space
     print(paste0("Finished: ", vec[i]))
-  }
+    }
   
   sol_df <- plyr::join_all(list, by = "cellID", type = "left")
-  
+
   return(sol_df)
 }
 
 #### Create the spatial plans for sensitivity analysis ####
 vec <- seq(30, 70, 5)
-feat_df <- create_sensitivity_featureSols(vec,
-                                          tos_SSP585,
-                                          -1)
+feat_df <- create_sensitivity_percentileSols(vec,
+                                             tos_SSP585,
+                                             -1)
 
 #### Prepare the data.frame for plots ####
 # Merge the data.frame with the metric data
@@ -101,10 +101,10 @@ tmp_df <- cbind(vec, area = area*100/nrow(PUs), warm) %>%
   tibble::as_tibble()
 
 #### Plot threshold vs warming and % area ####
-coeff = 10e2 # Figure out the threshold to be multiplied to warming to scale both y axes
+coeff = 11e2 # Figure out the threshold to be multiplied to warming to scale both y axes
 
 ggSens <- fPlot_SensitivityThreshold(tmp_df)
-ggsave(filename = "Sensitivity-Feature.png",
+ggsave(filename = "Sensitivity-Percentile.png",
        plot = ggSens, 
        width = 20, height = 12, dpi = 300,
        path = "Figures/") # save plot
@@ -143,7 +143,7 @@ climate <- fGetClimateSummary(solution_list,
   dplyr::mutate(approach = row_number())
 
 ggRidge <- fPlot_RidgeClimateSensitivity(df, climate)
-ggsave(filename = "ClimateSmartRidge-Sensitivity-Feature-NoInt.png",
+ggsave(filename = "ClimateSmartRidge-Sensitivity-Percentile.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
@@ -152,6 +152,6 @@ notSelectedClimate <- calculate_meanClimateNotSelected(solution_list, threshold_
   dplyr::rename(mean_tos = mean)
 
 ggRidge <- fPlot_RidgeClimateSensitivity(df, notSelectedClimate)
-ggsave(filename = "ClimateSmartRidge-Sensitivity-Feature-NotSelected.png",
+ggsave(filename = "ClimateSmartRidge-Sensitivity-Percentile-NotSelected.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
