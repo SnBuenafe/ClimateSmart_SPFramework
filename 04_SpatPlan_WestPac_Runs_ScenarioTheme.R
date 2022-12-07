@@ -259,6 +259,17 @@ ggsave(filename = "ClimateSmartRidge-ScenarioTheme.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
+# Calculate the mean of the non-selected-planning units
+notSelectedClimate <- calculate_meanClimateNotSelected(solution_list, scenario_list) %>% 
+  dplyr::rename(mean_tos = mean) %>% 
+  dplyr::mutate(scenario = str_replace_all(approach, "[^[:digit:]]", ""))
+
+ggRidge <- fPlot_RidgeClimateScenario(df, notSelectedClimate)
+ggsave(filename = "ClimateSmartRidge-ScenarioTheme-NotSelected.png",
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
+       path = "Figures/") # save plot
+
+
 # ----- SELECTION FREQUENCY PLOT -----
 sFreq <- fGetSelFrequency(solution_list, scenario_list, PUs)
 saveRDS(sFreq, paste0(lowregret_dir, "sFreq1-EM-Percentile-tos.rds"))
