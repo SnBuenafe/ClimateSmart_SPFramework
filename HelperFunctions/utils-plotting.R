@@ -959,3 +959,23 @@ fPlot_SensitivityThreshold <- function(df) {
           axis.title.y.right = element_text(color = "#ec7014", size = 30)
     )
 }
+
+# Plot total cost vs total penalty
+fPlot_SensitivityPenalty <- function(df) {
+  gg <- ggplot(data = df,
+               aes(x = warm, y = cost, label = vec)) +
+    geom_point(size = 2) +
+    geom_line() +
+    geom_text(hjust = -0.2, vjust = -1.1, size = 5) +
+    xlab("Total penalty") +
+    ylab("Total cost") +
+    theme_bw() +
+    theme(panel.grid.major = element_line(color = "grey70"),
+          panel.grid.minor = element_line(color = "grey80"),
+          panel.border = element_rect(colour = "black", fill=NA, size=5),
+          axis.ticks = element_line(color = "black", linewidth = 2),
+          axis.text = element_text(color = "black", size = 25),
+          axis.title.x = element_text(color = "black", size = 30),
+          axis.title.y = element_text(color = "black", size = 30),
+    )
+}

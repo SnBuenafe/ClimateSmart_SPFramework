@@ -46,10 +46,6 @@ aqua_sf <- aqua_sf %>%
   dplyr::mutate(cellID = row_number())
 
 #### Cost layer ####
-# Cost Layer, Squished
-# cost <- read_rds(file.path("Output", paste(save_name, paste0("Cost.rds"), sep = "_"))) %>% 
-#  mutate(Cost_squish = scales::oob_squish(Cost, quantile(Cost, c(0.01, 0.99))))
-
 # Uniform Cost (using area of the planning units)
 UniformCost <- PUs %>% 
   dplyr::mutate(cost = PU_size)

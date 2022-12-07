@@ -1,0 +1,25 @@
+[general]
+creator=R package 'raster'
+created=2021-04-20 18:37:47
+[georeference]
+nrows=360
+ncols=720
+xmin=-180
+ymin=-90
+xmax=180
+ymax=90
+projection=+proj=longlat +datum=WGS84 +no_defs
+[data]
+datatype=FLT4S
+byteorder=little
+nbands=29
+bandorder=BIL
+minvalue=0:0:8.14544739923748e-07:0:4.7682357303093e-06:0:7.64404927307568e-07:0:1.87281395411162e-06:0:0:0:0:0:0:0:2.98823010798531e-06:0:0:1.61519561938628e-06:0:0:0:6.07579839738346e-07:1.67444510363281e-06:0:0:0:8.55610857153778e-07
+maxvalue=351947.536114308:385083.621850779:906771.132287801:314788.761141817:1569427.62359685:160297.548138701:214944.664473968:137945.595397115:33136.5162136125:120059.094359925:45043.9640045846:330581.188151354:28541.0011138166:495382.090032052:855312.133880741:806267.037965163:1004.11025539365:331069.643721685:81406.2803470432:83959.6167732806:10359.8900015644:471877.707859605:35353.7184689739:696.329987461929:5737.15031890029:4837.7918574912:1070.94223065909:1449.25747209688:69158.9212363654
+nodatavalue=-3.4e+38
+[legend]
+legendtype=
+values=
+color=
+[description]
+layername=Cephalopods:LargeBenthopelagics90Cm:MediumReefAssocFish30_89Cm:MediumBenthopelagics30_89Cm:Shrimps:MediumDemersals30_89Cm:SmallToMediumFlatfishes90Cm:MediumBathydemersals30_89Cm:LargeFlatfishes90Cm:LargeReefAssocFish90Cm:LargeSharks90Cm:LobstersCrabs:LargeRays90Cm:MediumPelagics30_89Cm:OtherDemersalInvertebrates:SmallPelagics30Cm:LargeBathypelagics90Cm:LargeDemersals90Cm:LargePelagics90Cm:SmallReefAssocFish30Cm:MediumBathypelagics30_89Cm:SmallDemersals30Cm:LargeBathydemersals90Cm:SmallToMediumSharks90Cm:SmallToMediumRays90Cm:Krill:SmallBathypelagics30Cm:SmallBathydemersals30Cm:SmallBenthopelagics30Cm
