@@ -1,3 +1,12 @@
+# title: "Exploring different aspects of climate-smart reserve design"
+# author: "Tin Buenafe"
+
+#### Preliminaries ####
+# "Sensitivity analysis"
+# Explores using different thresholds
+# Note: We can't have thresholds <
+# 10d: Penalty approach
+
 # Load preliminaries
 source("03_SpatPlan_Master_Preliminaries.R") # climate layers are loaded in the script
 tos_SSP585 <- load_metrics(metric = "tos", model = "ensemble", scenario = "SSP 5-8.5") # Load climate metric for ens mean
@@ -156,7 +165,7 @@ notSelectedClimate <- calculate_meanClimateNotSelected(solution_list, threshold_
   dplyr::rename(mean_tos = mean)
 
 ggRidge <- fPlot_RidgeClimateSensitivity(df, notSelectedClimate)
-ggsave(filename = "ClimateSmartRidge-Sensitivity-Percentile-NotSelected.png",
+ggsave(filename = "ClimateSmartRidge-Sensitivity-Penalty-NotSelected.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 

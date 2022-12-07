@@ -494,6 +494,16 @@ ggsave(filename = "ClimateSmartRidge-EnsembleTheme.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
+# Calculate the mean of the non-selected-planning units
+notSelectedClimate <- calculate_meanClimateNotSelected(solution_list, names) %>% 
+  dplyr::rename(mean_tos = mean) %>% 
+  dplyr::rename(run = approach)
+
+ggRidge <- fPlot_RidgeClimateEnsemble(df, notSelectedClimate)
+ggsave(filename = "ClimateSmartRidge-EnsembleTheme-NotSelected.png",
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
+       path = "Figures/") # save plot
+
 # ----- SELECTION FREQUENCY PLOT -----
 # Just for the 5 models
 sFreq <- fGetSelFrequency(trunc_solution_list, model_list, PUs)
