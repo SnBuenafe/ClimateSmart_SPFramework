@@ -212,3 +212,306 @@ calculate_medianClimateNotSelected <- function(solution_list, names) {
   tibble <- dplyr::bind_rows(tib) %>% 
     dplyr::mutate(median = as.numeric(median))
 }
+
+# Loop through percentile approach
+loopthrough_Percentile <- function(solution_list, 
+                                   metric_list, 
+                                   scenario_list, 
+                                   model_list) {
+  
+  i = 1
+  for(scenario_num in 1:length(scenario_list)) {
+    for(metric_num in 1:length(metric_list)) {
+      for(model_num in 1:length(model_list)) {
+        
+        scenario_name = str_replace_all(scenario_list[scenario_num], "[^[:digit:]]+", "")
+        if(metric_list[metric_num] %in% c("phos", "o2os", "CombinedMetric")) {
+          direction = 1 # Higher values are more climate-smart
+        } else {
+          direction = -1 # Lower values are more climate-smart
+        }
+        
+        # Load metric
+        metric <- load_metrics(metric = metric_list[metric_num], 
+                               model = model_list[model_num], 
+                               scenario = scenario_list[scenario_num])
+        
+        if(metric_list[metric_num] == "CombinedMetric") {
+          metric %<>% dplyr::rename(transformed = combined)
+        }
+        
+        # 1. Prepare climate layer
+        aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
+                                                  percentile = 35,
+                                                  metricDF = rename_metric(metric),
+                                                  direction = direction
+        )
+        
+        # 2. Set up features and targets
+        features <- aqua_sf %>% 
+          tibble::as_tibble() %>% 
+          dplyr::select(-geometry, -cellID) %>% 
+          names()
+        # Using fixed targets of 30
+        target_df <- tibble::as_tibble(features) %>% 
+          dplyr::rename(feature = value) %>% 
+          dplyr::mutate(target = 30)
+        targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
+                                             climateSmartDF = aqua_percentile,
+                                             targetsDF = target_df)
+        
+        # 3. Set up the spatial planning problem
+        out_sf <- cbind(UniformCost,
+                        aqua_percentile %>% 
+                          tibble::as_tibble() %>% 
+                          dplyr::select(-cellID, -geometry), 
+                        metric %>% 
+                          tibble::as_tibble() %>% 
+                          dplyr::select(-cellID, -geometry)
+        )
+        p <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
+          add_min_set_objective() %>%
+          add_relative_targets(targets$target) %>% 
+          add_binary_decisions() %>%
+          add_cbc_solver(gap = 0.1, verbose = FALSE)
+        
+        # 4. Solve the planning problem 
+        s <- prioritizr::solve(p) %>% 
+          dplyr::select(cellID, solution_1, cost, transformed, everything()) # arrange columns
+        
+        # Save file
+        if(model_list[model_num] == "ensemble") {
+          saveRDS(s, paste0(solutions_dir, 
+                            solution_list[i], 
+                            "-EM", 
+                            "-Percentile-", 
+                            metric_list[metric_num],
+                            "-",
+                            scenario_name, 
+                            ".rds")) # save solution
+        } else {
+          saveRDS(s, paste0(solutions_dir, 
+                            solution_list[i], 
+                            "-MM-", 
+                            model_list[model_num], 
+                            "-Percentile-", 
+                            metric_list[metric_num],
+                            "-",
+                            scenario_name, 
+                            ".rds")) # save solution
+        }
+
+        
+        gc()
+        print(paste0("Saved: ", solution_list[i], 
+                     "; model: ", model_list[model_num], 
+                     "; approach: percentile",
+                     "; scenario: ", scenario_list[scenario_num],
+                     "; metric: ", metric_list[metric_num])) # Sanity check
+        
+        i = i + 1
+        
+
+        
+      }
+    }
+  }
+}
+
+# Loop through feature approach
+loopthrough_Feature <- function(solution_list, 
+                                metric_list, 
+                                scenario_list, 
+                                model_list) {
+  
+  i = 1
+  for(scenario_num in 1:length(scenario_list)) {
+    for(metric_num in 1:length(metric_list)) {
+      for(model_num in 1:length(model_list)) {
+        
+        scenario_name = str_replace_all(scenario_list[scenario_num], "[^[:digit:]]+", "")
+        if(metric_list[metric_num] %in% c("phos", "o2os", "CombinedMetric")) {
+          direction = 1 # Higher values are more climate-smart
+        } else {
+          direction = -1 # Lower values are more climate-smart
+        }
+        
+        # Load metric
+        metric <- load_metrics(metric = metric_list[metric_num], 
+                               model = model_list[model_num], 
+                               scenario = scenario_list[scenario_num])
+        
+        if(metric_list[metric_num] == "CombinedMetric") {
+          metric %<>% dplyr::rename(transformed = combined)
+        }
+        
+        # 1. Prepare climate layer
+        aqua_feature <- fFeature_CSapproach(featuresDF = aqua_sf, 
+                                            percentile = 35, 
+                                            metricDF = rename_metric(metric),
+                                            direction = direction # lower values are more climate-smart
+        )
+        
+        # 2. Set up features and targets
+        features <- aqua_sf %>% 
+          tibble::as_tibble() %>% 
+          dplyr::select(-geometry, -cellID) %>% 
+          names()
+        # Using fixed targets of 30
+        target_df <- tibble::as_tibble(features) %>% 
+          dplyr::rename(feature = value) %>% 
+          dplyr::mutate(target = 30)
+        targets <- fAssignTargets_Feature(climateSmartDF = aqua_feature,
+                                          refugiaTarget = 30,
+                                          targetsDF = target_df)
+        
+        # 3. Set up the spatial planning problem
+        out_sf <- cbind(UniformCost,
+                        aqua_feature %>% 
+                          tibble::as_tibble() %>% 
+                          dplyr::select(-cellID, -geometry), 
+                        metric %>% 
+                          tibble::as_tibble() %>% 
+                          dplyr::select(-cellID, -geometry)
+        )
+        p <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
+          add_min_set_objective() %>%
+          add_relative_targets(targets$target) %>% 
+          add_binary_decisions() %>%
+          add_cbc_solver(gap = 0.1, verbose = FALSE)
+        
+        # 4. Solve the planning problem 
+        s <- prioritizr::solve(p) %>% 
+          dplyr::select(cellID, solution_1, cost, transformed, everything()) # arrange columns
+        
+        # Save file
+        if(model_list[model_num] == "ensemble") {
+          saveRDS(s, paste0(solutions_dir, 
+                            solution_list[i], 
+                            "-EM", 
+                            "-Feature-", 
+                            metric_list[metric_num],
+                            "-",
+                            scenario_name, 
+                            ".rds")) # save solution
+        } else {
+          saveRDS(s, paste0(solutions_dir, 
+                            solution_list[i], 
+                            "-MM-", 
+                            model_list[model_num], 
+                            "-Feature-", 
+                            metric_list[metric_num],
+                            "-",
+                            scenario_name, 
+                            ".rds")) # save solution
+        }
+        
+        
+        gc()
+        print(paste0("Saved: ", solution_list[i], 
+                     "; model: ", model_list[model_num], 
+                     "; approach: feature",
+                     "; scenario: ", scenario_list[scenario_num],
+                     "; metric: ", metric_list[metric_num])) # Sanity check
+        
+        i = i + 1
+      }
+    }
+  }  
+}
+
+# Loop through penalty approach
+loopthrough_Penalty <- function(solution_list, 
+                                metric_list, 
+                                scenario_list, 
+                                model_list) {
+  
+  i = 1
+  for(scenario_num in 1:length(scenario_list)) {
+    for(metric_num in 1:length(metric_list)) {
+      for(model_num in 1:length(model_list)) {
+        
+        scenario_name = str_replace_all(scenario_list[scenario_num], "[^[:digit:]]+", "")
+        
+        # Load metric
+        metric <- load_metrics(metric = metric_list[metric_num], 
+                               model = model_list[model_num], 
+                               scenario = scenario_list[scenario_num])
+        
+        if(metric_list[metric_num] == "CombinedMetric") {
+          metric %<>% dplyr::rename(transformed = combined)
+        }
+        
+        # 1. Select scaling
+        # Again, here, scaling doesn't matter because the cost layer is uniform
+        scaling <- 1/median(metric$transformed) # using the median to scale it
+        
+        # What matters is the sign of the scaling. To penalize high values, scaling should be positive; to penalize low values, scaling should be negative
+        
+        if(metric_list[metric_num] %in% c("phos", "o2os", "CombinedMetric")) { # Penalize high values, so scaling should be negative
+          if (scaling > 0) scaling = -scaling
+        } else { # Penalize low values, so scaling should be positive
+          if (scaling < 0) scaling = -scaling
+        }
+        
+        # 2. Get list of features
+        features <- aqua_sf %>% 
+          dplyr::as_tibble() %>% 
+          dplyr::select(-geometry, -cellID) %>% 
+          names()
+        
+        # 3. Set up the spatial planning problem
+        out_sf <- cbind(UniformCost,
+                        aqua_sf %>% 
+                          tibble::as_tibble() %>% 
+                          dplyr::select(-cellID, -geometry), 
+                        metric %>% 
+                          tibble::as_tibble() %>% 
+                          dplyr::select(-cellID, -geometry)
+        )
+        p <- prioritizr::problem(out_sf, features, "cost") %>%
+          add_min_set_objective() %>%
+          add_relative_targets(0.3) %>% # using 30% targets
+          add_binary_decisions() %>%
+          add_cbc_solver(gap = 0.1, verbose = FALSE) %>% 
+          add_linear_penalties(scaling, data = "transformed")
+        
+        # 4. Solve the planning problem 
+        s <- prioritizr::solve(p) %>% 
+          dplyr::select(cellID, solution_1, cost, transformed, everything()) # arrange columns
+        
+        # Save file
+        if(model_list[model_num] == "ensemble") {
+          saveRDS(s, paste0(solutions_dir, 
+                            solution_list[i], 
+                            "-EM", 
+                            "-Penalty-", 
+                            metric_list[metric_num],
+                            "-",
+                            scenario_name, 
+                            ".rds")) # save solution
+        } else {
+          saveRDS(s, paste0(solutions_dir, 
+                            solution_list[i], 
+                            "-MM-", 
+                            model_list[model_num], 
+                            "-Penalty-", 
+                            metric_list[metric_num],
+                            "-",
+                            scenario_name, 
+                            ".rds")) # save solution
+        }
+        
+        
+        gc()
+        print(paste0("Saved: ", solution_list[i], 
+                     "; model: ", model_list[model_num], 
+                     "; approach: penalty",
+                     "; scenario: ", scenario_list[scenario_num],
+                     "; metric: ", metric_list[metric_num])) # Sanity check
+        
+        i = i + 1
+      }
+    }
+  }
+}
