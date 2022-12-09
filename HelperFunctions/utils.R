@@ -227,8 +227,10 @@ loopthrough_Percentile <- function(solution_list,
         scenario_name = str_replace_all(scenario_list[scenario_num], "[^[:digit:]]+", "")
         if(metric_list[metric_num] %in% c("phos", "o2os", "CombinedMetric")) {
           direction = 1 # Higher values are more climate-smart
+          percentile = 65 # Upper 65th percentile
         } else {
           direction = -1 # Lower values are more climate-smart
+          percentile = 35 # Lower 35th percentile
         }
         
         # Load metric
@@ -242,7 +244,7 @@ loopthrough_Percentile <- function(solution_list,
         
         # 1. Prepare climate layer
         aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
-                                                  percentile = 35,
+                                                  percentile = percentile,
                                                   metricDF = rename_metric(metric),
                                                   direction = direction
         )
@@ -332,8 +334,10 @@ loopthrough_Feature <- function(solution_list,
         scenario_name = str_replace_all(scenario_list[scenario_num], "[^[:digit:]]+", "")
         if(metric_list[metric_num] %in% c("phos", "o2os", "CombinedMetric")) {
           direction = 1 # Higher values are more climate-smart
+          percentile = 65 # Upper 65th percentile
         } else {
           direction = -1 # Lower values are more climate-smart
+          percentile = 35 # Lower 35th percentile
         }
         
         # Load metric
@@ -347,7 +351,7 @@ loopthrough_Feature <- function(solution_list,
         
         # 1. Prepare climate layer
         aqua_feature <- fFeature_CSapproach(featuresDF = aqua_sf, 
-                                            percentile = 35, 
+                                            percentile = percentile, 
                                             metricDF = rename_metric(metric),
                                             direction = direction # lower values are more climate-smart
         )
