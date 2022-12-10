@@ -519,3 +519,108 @@ loopthrough_Penalty <- function(solution_list,
     }
   }
 }
+
+# Loop through the climate-priority-area approach
+loopthrough_CPA <- function(solution_list, 
+                            metric_list, 
+                            scenario_list, 
+                            model_list) {
+  
+  i = 1
+  for(scenario_num in 1:length(scenario_list)) {
+    for(metric_num in 1:length(metric_list)) {
+      for(model_num in 1:length(model_list)) {
+        
+        scenario_name = str_replace_all(scenario_list[scenario_num], "[^[:digit:]]+", "")
+        if(metric_list[metric_num] %in% c("phos", "o2os", "CombinedMetric")) {
+          direction = 1 # Higher values are more climate-smart
+          percentile = 95 # Upper 95th percentile
+        } else {
+          direction = -1 # Lower values are more climate-smart
+          percentile = 5 # Lower 5th percentile
+        }
+        
+        # Load metric
+        metric <- load_metrics(metric = metric_list[metric_num], 
+                               model = model_list[model_num], 
+                               scenario = scenario_list[scenario_num])
+        
+        if(metric_list[metric_num] == "CombinedMetric") {
+          metric %<>% dplyr::rename(transformed = combined)
+        }
+        
+        # 1. Prepare the climate layers and features
+        aqua_CPA <- fClimatePriorityArea_CSapproach(featuresDF = aqua_sf,
+                                                    percentile = percentile,
+                                                    metricDF = rename_metric(metric),
+                                                    direction = direction
+        )
+        
+        # 2. Set up features and targets
+        features <- aqua_sf %>% 
+          tibble::as_tibble() %>% 
+          dplyr::select(-geometry, -cellID) %>% 
+          names()
+        # Using fixed targets of 30
+        target_df <- tibble::as_tibble(features) %>% 
+          dplyr::rename(feature = value) %>% 
+          dplyr::mutate(target = 0.3) # this approach needs proportions as targets
+        targets <- fAssignTargets_CPA(climateSmartDF = aqua_CPA,
+                                      targetsDF = target_df,
+                                      refugiaTarget = 1 # 100% protection to the most climate-smart areas
+        )
+        
+        # 3. Set up the spatial planning problem
+        out_sf <- cbind(UniformCost,
+                        aqua_CPA %>% 
+                          tibble::as_tibble() %>% 
+                          dplyr::select(-cellID, -geometry), 
+                        metric %>% 
+                          tibble::as_tibble() %>% 
+                          dplyr::select(-cellID, -geometry)
+        )
+        p <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
+          add_min_set_objective() %>%
+          add_relative_targets(targets$target) %>% # using 30% targets
+          add_binary_decisions() %>%
+          add_cbc_solver(gap = 0.1, verbose = FALSE)
+        
+        # 4. Solve the planning problem 
+        s <- prioritizr::solve(p) %>% 
+          dplyr::select(cellID, solution_1, cost, transformed, everything()) # arrange columns
+        
+        # Save file
+        if(model_list[model_num] == "ensemble") {
+          saveRDS(s, paste0(solutions_dir, 
+                            solution_list[i], 
+                            "-EM", 
+                            "-CPA-", 
+                            metric_list[metric_num],
+                            "-",
+                            scenario_name, 
+                            ".rds")) # save solution
+        } else {
+          saveRDS(s, paste0(solutions_dir, 
+                            solution_list[i], 
+                            "-MM-", 
+                            model_list[model_num], 
+                            "-CPA-", 
+                            metric_list[metric_num],
+                            "-",
+                            scenario_name, 
+                            ".rds")) # save solution
+        }
+        
+        rm(aqua_CPA, targets, metric) # Free up space
+        gc()
+        print(paste0("Saved: ", solution_list[i], 
+                     "; model: ", model_list[model_num], 
+                     "; approach: climate-priority-area",
+                     "; scenario: ", scenario_list[scenario_num],
+                     "; metric: ", metric_list[metric_num])) # Sanity check
+        
+        i = i + 1
+      }
+    }
+  }
+}
