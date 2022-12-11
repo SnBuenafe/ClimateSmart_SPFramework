@@ -8,6 +8,8 @@
 # Load preliminaries
 source("03_SpatPlan_Master_Preliminaries.R") # climate layers are loaded in the script
 
+# TODO: Put examples of iterations for each approach to aid users.
+
 # Loop through climate priority area
 solution_list <- paste0("s", seq(287, 289, 1))
 metric_list <- c("velocity")
