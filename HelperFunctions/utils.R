@@ -12,7 +12,7 @@
 # install lpsymphony
 # BiocManager::install("lpsymphony")
 
-pacman::p_load(sf, terra, tidyverse, rnaturalearth, prioritizr, stars, patchwork, proj4, magrittr, doParallel, ggridges, viridis, vegan, irr, corrplot, VoCC, RColorBrewer, rfishbase)
+pacman::p_load(sf, terra, tidyverse, rnaturalearth, prioritizr, stars, patchwork, proj4, magrittr, doParallel, ggridges, viridis, vegan, irr, corrplot, VoCC, RColorBrewer, rfishbase, ggordiplots)
 
 longlat <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
 

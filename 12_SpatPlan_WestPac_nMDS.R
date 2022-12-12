@@ -5,21 +5,15 @@
 # Description
 # This script creates nMDS ordination plots for all 360 spatial plans, for each of the 4 climate-smart aspects explored in the paper:
 # 1. Emission scenarios (SSP1-2.6, SSP2-4.5, and SSP5-8.5)
-# 2. Models (Ensemble mean, and all 5 models in the ensemble)
-# 3. Metrics (Warming, ocean acidification, ocean deoxygenation, climate velocity, MHW intensity)
-# 4. Approaches (feature, percentile, climate-priority-area, penalty)
+# 2. Models (Ensemble mean and all 5 models in the ensemble)
+# 3. Metrics (Warming, ocean acidification, ocean deoxygenation, climate velocity, MHW intensity, and the combined climate-smart metric)
+# 4. Approaches (feature, percentile, climate-priority-area, and penalty)
 
-# Load functions
-source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functions and libraries
-source("HelperFunctions/SpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
-source("HelperFunctions/SpatPlan_IterationFxns_WestPac.R") # Load loop functions written specifically for producing iterations
-output_solutions <- "Output/solutions/"
-output_summary <- "Output/summary/"
-output_lowregret <- "Output/lowregret/"
+# Load preliminaries
+source("03_SpatPlan_Master_Preliminaries.R")
 
-# ----- Preprocessing -----
-
-solution <- seq(from = 2, to = 361, by = 1) # solution names, check metadata
+#### PREPROCESSING ####
+solution <- seq(from = 2, to = 433, by = 1) # solution names; make sure that this checks out with metadata
 solution <-lapply(solution, function(x) {
   y <- paste0("s", x)
 }) %>% unlist()
