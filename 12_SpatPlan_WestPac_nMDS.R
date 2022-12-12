@@ -43,11 +43,11 @@ rownames(matrix) <- solution
 
 #### PERMUTATION-BASED ORDINATION ####
 reps <- 10
-stressTest <- vegan::oecosimu(comm = round(matrix), method = "quasiswap_count",
+stressTest <- vegan::oecosimu(comm = matrix, method = "quasiswap_count",
                               nestfun = metaMDS, autotransform = FALSE, k = 2,
                               distance = "jaccard", nsimul = reps, parallel = 2, statistic = "stress",
                               alternative = "less", trace = TRUE, maxit = 1000,
-                              trymax = 200, sratmax = 0.9999999)
+                              trymax = 1000)
 
 # TODO: Save output from this function?
 
