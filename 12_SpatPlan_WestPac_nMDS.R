@@ -16,42 +16,49 @@ source("03_SpatPlan_Master_Preliminaries.R")
 solution <- paste0("s", seq(from = 2, to = 433, by = 1)) # solution names; make sure that this checks out with metadata
 
 # Extracting selected/not-selected data for all solutions
-pivot <- list() # empty list
-for(i in (1:length(solution))) {
-  path <- "Output/solutions/"
-  pattern <- paste0(solution[i], "-")
-  file <- list.files(path = path, pattern = paste0("^", pattern))
-  
-  s <- readRDS(paste0(path, file)) %>% as_tibble() %>% 
-    dplyr::select(solution_1) %>% 
-    dplyr::mutate(cellID = paste0("PU_", row_number())) %>% 
-    dplyr::mutate(solution = solution[i])
-  
-  pivot[[i]] <- s %>% 
-    pivot_wider(names_from = cellID, values_from = solution_1)
-  
-  print(solution[i])
-}
-pivot_combined <- do.call(bind_rows, pivot)
-write.csv(pivot_combined, "Output/nmds/nmds_df.csv") # save pivot table
+# pivot <- list() # empty list
+# for(i in (1:length(solution))) {
+#   path <- "Output/solutions/"
+#   pattern <- paste0(solution[i], "-")
+#   file <- list.files(path = path, pattern = paste0("^", pattern))
+#   
+#   s <- readRDS(paste0(path, file)) %>% as_tibble() %>% 
+#     dplyr::select(solution_1) %>% 
+#     dplyr::mutate(cellID = paste0("PU_", row_number())) %>% 
+#     dplyr::mutate(solution = solution[i])
+#   
+#   pivot[[i]] <- s %>% 
+#     pivot_wider(names_from = cellID, values_from = solution_1)
+#   
+#   print(solution[i])
+# }
+# pivot_combined <- do.call(bind_rows, pivot)
+# write.csv(pivot_combined, "Output/nmds/nmds_df.csv") # save pivot table
+
+pivot_combined <- read_csv("Output/nmds/nmds_df.csv") %>% # read file
+  dplyr::select(-1) # remove first column if needed
 
 matrix <- data.matrix(pivot_combined[,-1], rownames.force = TRUE) # make df into a matrix
 rownames(matrix) <- solution
 
-# ----- nMDS ORDINATION -----
-reps <- 1000 
+#### PERMUTATION-BASED ORDINATION ####
+reps <- 10
 stressTest <- vegan::oecosimu(comm = round(matrix), method = "quasiswap_count",
                               nestfun = metaMDS, autotransform = FALSE, k = 2,
                               distance = "jaccard", nsimul = reps, parallel = 2, statistic = "stress",
                               alternative = "less", trace = TRUE, maxit = 1000,
                               trymax = 200, sratmax = 0.9999999)
 
+# TODO: Save output from this function?
+
+
 # Create nMDS 
 solution.mds <- metaMDS(matrix, distance = "jaccard", autotransform = FALSE, try = 1000)
 # using Jaccard dissimilarity matrix because data is "presence/absence"
 
 # Load groupings data
-df_groups <- read.csv("Output/nmds/df_groups1.csv") %>% as_tibble()
+df_groups <- read.csv("Output/nmds/df_groups1.csv") %>% 
+  as_tibble()
 
 # ----- Plot ordinations -----
 plotOrdination <- function(x, palette) {
