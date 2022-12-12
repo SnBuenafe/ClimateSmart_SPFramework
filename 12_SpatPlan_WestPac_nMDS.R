@@ -42,15 +42,24 @@ matrix <- data.matrix(pivot_combined[,-1], rownames.force = TRUE) # make df into
 rownames(matrix) <- solution
 
 #### PERMUTATION-BASED ORDINATION ####
-reps <- 10
-stressTest <- vegan::oecosimu(comm = matrix, method = "quasiswap_count",
+reps <- 200
+stressTest <- vegan::oecosimu(comm = matrix, method = "c0",
                               nestfun = metaMDS, autotransform = FALSE, k = 2,
-                              distance = "jaccard", nsimul = reps, parallel = 2, statistic = "stress",
-                              alternative = "less", trace = TRUE, maxit = 1000,
-                              trymax = 1000)
+                              distance = "jaccard", nsimul = reps, statistic = "stress",
+                              alternative = "less", trace = TRUE,
+                              trymax = 50)
+saveRDS(stressTest, "Output/temp/stresstest200.rds")
 
 # TODO: Save output from this function?
-
+simVector <- as.vector(stressTest$oecosimu$simulated) %>% 
+  tibble::as_tibble() %>% 
+  bind_cols(., row_n = seq(1:reps))
+hist(stressTest$oecosimu$simulated, xlim = c(0.39, max(stressTest$oecosimu$simulated)+0.001))
+ggplot(data = simVector) +
+  geom_histogram(aes(x = value), color = "black", binwidth =  0.0005) +
+  scale_x_continuous(c(0.27, 0.405)) +
+  geom_vline(xintercept = stressTest$oecosimu$statistic %>% 
+               as.numeric(), linetype = "dashed", color = "red")
 
 # Create nMDS 
 solution.mds <- metaMDS(matrix, distance = "jaccard", autotransform = FALSE, try = 1000)
