@@ -13,10 +13,7 @@
 source("03_SpatPlan_Master_Preliminaries.R")
 
 #### PREPROCESSING ####
-solution <- seq(from = 2, to = 433, by = 1) # solution names; make sure that this checks out with metadata
-solution <-lapply(solution, function(x) {
-  y <- paste0("s", x)
-}) %>% unlist()
+solution <- paste0("s", seq(from = 2, to = 433, by = 1)) # solution names; make sure that this checks out with metadata
 
 # Extracting selected/not-selected data for all solutions
 pivot <- list() # empty list
@@ -41,17 +38,24 @@ write.csv(pivot_combined, "Output/nmds/nmds_df.csv") # save pivot table
 matrix <- data.matrix(pivot_combined[,-1], rownames.force = TRUE) # make df into a matrix
 rownames(matrix) <- solution
 
-# ----- Create nMDS ordination -----
+# ----- nMDS ORDINATION -----
+reps <- 1000 
+stressTest <- vegan::oecosimu(comm = round(matrix), method = "quasiswap_count",
+                              nestfun = metaMDS, autotransform = FALSE, k = 2,
+                              distance = "jaccard", nsimul = reps, parallel = 2, statistic = "stress",
+                              alternative = "less", trace = TRUE, maxit = 1000,
+                              trymax = 200, sratmax = 0.9999999)
+
 # Create nMDS 
 solution.mds <- metaMDS(matrix, distance = "jaccard", autotransform = FALSE, try = 1000)
 # using Jaccard dissimilarity matrix because data is "presence/absence"
 
 # Load groupings data
-df_groups <- read.csv("Output/nmds/df_groups.csv") %>% as_tibble()
+df_groups <- read.csv("Output/nmds/df_groups1.csv") %>% as_tibble()
 
 # ----- Plot ordinations -----
 plotOrdination <- function(x, palette) {
-  Ordi_Obj <- gg_ordiplot(solution.mds, groups = df_groups[[ x ]], ellipse = TRUE, kind = "sd")
+  Ordi_Obj <- ggordiplots::gg_ordiplot(solution.mds, groups = df_groups[[ x ]], ellipse = TRUE, kind = "sd")
   p <- Ordi_Obj$plot +
     scale_color_manual(values = palette) +
     theme_bw()
@@ -61,22 +65,22 @@ plotOrdination <- function(x, palette) {
 # Scenario Theme
 palette <- c("SSP1-2.6" = "#289E3D", "SSP2-4.5" = "#E6C173", "SSP5-8.5" = "#855600")
 plot <- plotOrdination("scenario", palette)
-ggsave("Figures/nMDS_scenario.png", plot = plot, height = 10, width = 10, dpi = 600)
+ggsave("Figures/nMDS-ScenarioTheme.png", plot = plot, height = 10, width = 10, dpi = 600)
 
 # Ensemble Theme
-palette <- c("EM" = "#FAF7B7", "CanESM5" = "#E6C173", "CMCC-ESM2" = "#855600", "GFDL-ESM4" = "#5075BA", "IPSL-CM6A-LR" = "#81B0CC", "NorESM2-MM" = "#5A9E67")
+palette <- c("ensemble mean" = "#F59145", "CanESM5" = "#E6C173", "CMCC-ESM2" = "#855600", "GFDL-ESM4" = "#5075BA", "IPSL-CM6A-LR" = "#81B0CC", "NorESM2-MM" = "#5A9E67")
 plot <- plotOrdination("model", palette)
-ggsave("Figures/nMDS_ensemble.png", plot = plot, height = 10, width = 10, dpi = 600)
+ggsave("Figures/nMDS-EnsembleTheme.png", plot = plot, height = 10, width = 10, dpi = 600)
 
 # Metrics theme
-palette <- c("MHW_SumCumInt" = "#3C6342", "o2os" = "#289E3D", "phos" = "#E6C173", "tos" = "#81B0CC", "velocity" = "#855600")
+palette <- c("MHW" = "#3C6342", "o2os" = "#289E3D", "phos" = "#E6C173", "tos" = "#81B0CC", "velocity" = "#855600", "combined" = "#BFA1BD")
 plot <- plotOrdination("metric", palette)
-ggsave("Figures/nmds_metric.png", plot = plot, height = 10, width = 10, dpi = 600)
+ggsave("Figures/nMDS-MetricTheme.png", plot = plot, height = 10, width = 10, dpi = 600)
 
 # Approach Theme
 palette <- c("climate priority area" = "#E6BA7E", "feature" = "#4D3B2A", "penalty" = "#6984BF", "percentile" = "#2B8142")
 plot <- plotOrdination("approach", palette)
-ggsave("Figures/nmds_approach.png", plot = plot, height = 10, width = 10, dpi = 600)
+ggsave("Figures/nMDS-ApproachTheme.png", plot = plot, height = 10, width = 10, dpi = 600)
 
 
 # ----- Plot ordination with different colors (metrics) and shapes (approach) -----
