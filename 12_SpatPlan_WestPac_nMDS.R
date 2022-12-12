@@ -91,4 +91,4 @@ long_plot <- ggplot(data = long, aes(x = NMDS1, y = NMDS2)) +
   geom_point(aes(color = approach, shape = metric), size = 3) +
   scale_color_manual(values = palette) +
   theme_bw()
-ggsave("Figures/nmds_longPlot.png", plot = long_plot, height = 10, width = 10, dpi = 600)
+ggsave("Figures/nMDS-Supplementary.png", plot = long_plot, height = 10, width = 10, dpi = 600)
