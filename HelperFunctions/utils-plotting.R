@@ -1000,6 +1000,8 @@ fPlot_SuppOrdination <- function(long, palette) {
     theme_bw() +
     theme(axis.ticks = element_line(color = "black", linewidth = 2),
           panel.border = element_rect(colour = "black", fill=NA, linewidth = 5),
-          axis.text = element_text(size = 50))
+          axis.text = element_text(size = 25, color = "black"),
+          axis.title = element_text(size = 30, color = "black")
+          )
   return(long_plot)
 }

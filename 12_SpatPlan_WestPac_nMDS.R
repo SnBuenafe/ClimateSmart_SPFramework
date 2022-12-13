@@ -42,13 +42,14 @@ matrix <- data.matrix(pivot_combined[,-1], rownames.force = TRUE) # make df into
 rownames(matrix) <- solution
 
 #### PERMUTATION-BASED ORDINATION ####
-reps <- 200
+reps <- 500
 stressTest <- vegan::oecosimu(comm = matrix, method = "c0",
                               nestfun = metaMDS, autotransform = FALSE, k = 2,
                               distance = "jaccard", nsimul = reps, statistic = "stress",
                               alternative = "less", trace = TRUE,
                               trymax = 50)
-saveRDS(stressTest, "Output/temp/stresstest200.rds")
+saveRDS(stressTest, "Output/nmds/stresstest500.rds")
+stressTest <- readRDS("Output/nmds/stresstest500.rds")
 
 # TODO: Save output from this function?
 simVector <- as.vector(stressTest$oecosimu$simulated) %>% 
@@ -65,6 +66,7 @@ ggplot(data = simVector) +
 solution.mds <- vegan::metaMDS(matrix, distance = "jaccard", autotransform = FALSE, try = 500, trymax = 1000)
 # using Jaccard dissimilarity matrix because data is "presence/absence"
 saveRDS(solution.mds, "Output/nmds/nmds.rds") # save the nMDS
+solution.mds <- readRDS("Output/nmds/nmds.rds")
 
 # Load groupings data
 df_groups <- read.csv("Output/nmds/df_groups1.csv") %>% 
