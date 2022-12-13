@@ -61,50 +61,50 @@ ggplot(data = simVector) +
   geom_vline(xintercept = stressTest$oecosimu$statistic %>% 
                as.numeric(), linetype = "dashed", color = "red")
 
-# Create nMDS 
-solution.mds <- metaMDS(matrix, distance = "jaccard", autotransform = FALSE, try = 1000)
+### PLOT THE NMDS #### 
+solution.mds <- vegan::metaMDS(matrix, distance = "jaccard", autotransform = FALSE, try = 500, trymax = 1000)
 # using Jaccard dissimilarity matrix because data is "presence/absence"
+saveRDS(solution.mds, "Output/nmds/nmds.rds") # save the nMDS
 
 # Load groupings data
 df_groups <- read.csv("Output/nmds/df_groups1.csv") %>% 
-  as_tibble()
+  tibble::as_tibble()
 
-# ----- Plot ordinations -----
-plotOrdination <- function(x, palette) {
-  Ordi_Obj <- ggordiplots::gg_ordiplot(solution.mds, groups = df_groups[[ x ]], ellipse = TRUE, kind = "sd")
-  p <- Ordi_Obj$plot +
-    scale_color_manual(values = palette) +
-    theme_bw()
-  return(p)
-}
-
-# Scenario Theme
-palette <- c("SSP1-2.6" = "#289E3D", "SSP2-4.5" = "#E6C173", "SSP5-8.5" = "#855600")
-plot <- plotOrdination("scenario", palette)
+# Plot scenario theme
+plot <- fPlot_Ordination("scenario", c("SSP1-2.6" = "#289E3D", 
+                                       "SSP2-4.5" = "#E6C173", 
+                                       "SSP5-8.5" = "#855600"))
 ggsave("Figures/nMDS-ScenarioTheme.png", plot = plot, height = 10, width = 10, dpi = 600)
 
-# Ensemble Theme
-palette <- c("ensemble mean" = "#F59145", "CanESM5" = "#E6C173", "CMCC-ESM2" = "#855600", "GFDL-ESM4" = "#5075BA", "IPSL-CM6A-LR" = "#81B0CC", "NorESM2-MM" = "#5A9E67")
-plot <- plotOrdination("model", palette)
+# Plot ensemble theme
+plot <- fPlot_Ordination("model", c("ensemble mean" = "#F59145", 
+                                  "CanESM5" = "#E6C173", 
+                                  "CMCC-ESM2" = "#855600", 
+                                  "GFDL-ESM4" = "#5075BA", 
+                                  "IPSL-CM6A-LR" = "#81B0CC", 
+                                  "NorESM2-MM" = "#5A9E67"))
 ggsave("Figures/nMDS-EnsembleTheme.png", plot = plot, height = 10, width = 10, dpi = 600)
 
-# Metrics theme
-palette <- c("MHW" = "#3C6342", "o2os" = "#289E3D", "phos" = "#E6C173", "tos" = "#81B0CC", "velocity" = "#855600", "combined" = "#BFA1BD")
-plot <- plotOrdination("metric", palette)
+# Plot metric theme
+plot <- fPlot_Ordination("metric", c("MHW" = "#3C6342", 
+                                     "o2os" = "#289E3D", 
+                                     "phos" = "#E6C173", 
+                                     "tos" = "#81B0CC", 
+                                     "velocity" = "#855600", 
+                                     "combined" = "#BFA1BD"))
 ggsave("Figures/nMDS-MetricTheme.png", plot = plot, height = 10, width = 10, dpi = 600)
 
-# Approach Theme
-palette <- c("climate priority area" = "#E6BA7E", "feature" = "#4D3B2A", "penalty" = "#6984BF", "percentile" = "#2B8142")
-plot <- plotOrdination("approach", palette)
+# Plot approach Theme
+plot <- fPlot_Ordination("approach", c("climate priority area" = "#F59145",
+                                     "feature" = "#4D3B2A", 
+                                     "penalty" = "#6984BF", 
+                                     "percentile" = "#2B8142"))
 ggsave("Figures/nMDS-ApproachTheme.png", plot = plot, height = 10, width = 10, dpi = 600)
 
-
-# ----- Plot ordination with different colors (metrics) and shapes (approach) -----
+# Plot metric x approaches (SUpplementary)
 long <- scores(solution.mds, display = "sites") %>% bind_cols(., df_groups)
-palette <- c("climate priority area" = "#E6BA7E", "feature" = "#4D3B2A", "penalty" = "#6984BF", "percentile" = "#2B8142")
-
-long_plot <- ggplot(data = long, aes(x = NMDS1, y = NMDS2)) +
-  geom_point(aes(color = approach, shape = metric), size = 3) +
-  scale_color_manual(values = palette) +
-  theme_bw()
-ggsave("Figures/nMDS-Supplementary.png", plot = long_plot, height = 10, width = 10, dpi = 600)
+plot <- fPlot_SuppOrdination(long, c("climate priority area" = "#F59145", 
+                             "feature" = "#4D3B2A", 
+                             "penalty" = "#6984BF", 
+                             "percentile" = "#2B8142"))
+ggsave("Figures/nMDS-Supplementary.png", plot = plot, height = 10, width = 10, dpi = 600)

@@ -979,3 +979,27 @@ fPlot_SensitivityPenalty <- function(df) {
           axis.title.y = element_text(color = "black", size = 30),
     )
 }
+
+# Plot the ordination
+fPlot_Ordination <- function(x, palette) {
+  Ordi_Obj <- ggordiplots::gg_ordiplot(solution.mds, groups = df_groups[[ x ]], ellipse = TRUE, kind = "sd")
+  p <- Ordi_Obj$plot +
+    scale_color_manual(values = palette) +
+    theme_bw() +
+    theme(axis.ticks = element_line(color = "black", linewidth = 2),
+          panel.border = element_rect(colour = "black", fill=NA, linewidth = 5),
+          axis.text = element_text(size = 50))
+  return(p)
+}
+
+# Plot the supplementary ordination (shapes - metrics; colors - approaches)
+fPlot_SuppOrdination <- function(long, palette) {
+  long_plot <- ggplot(data = long, aes(x = NMDS1, y = NMDS2)) +
+    geom_point(aes(color = approach, shape = metric), size = 3) +
+    scale_color_manual(values = palette) +
+    theme_bw() +
+    theme(axis.ticks = element_line(color = "black", linewidth = 2),
+          panel.border = element_rect(colour = "black", fill=NA, linewidth = 5),
+          axis.text = element_text(size = 50))
+  return(long_plot)
+}
