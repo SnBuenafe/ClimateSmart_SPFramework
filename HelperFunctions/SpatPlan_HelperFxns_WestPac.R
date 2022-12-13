@@ -37,16 +37,4 @@ plot_statistics <- function(summary, col_name, y_axis, theme) {
   
 }
 
-# Plot features for the workflow figure
-plot_AQMFeatures <- function(s1, PlanUnits, world, column){
-  gg <- ggplot() + 
-    geom_sf(data = s1, aes_string(fill = column), colour = NA, size = 0.1, show.legend = TRUE) +
-    #    geom_sf(data = PlanUnits, colour = "lightblue", fill = NA, size = 0.1, show.legend = FALSE) +
-    geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
-    coord_sf(xlim = st_bbox(PlanUnits)$xlim, ylim = st_bbox(PlanUnits)$ylim) +
-    scale_colour_manual(values = c("TRUE" = "#8856a7",
-                                   "FALSE" = "#e0ecf4"),
-                        aesthetics = "fill") + 
-    theme_bw()
-  
-}
+
