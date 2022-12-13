@@ -10,7 +10,9 @@
 # 4. Approaches (feature, percentile, climate-priority-area, and penalty)
 
 # Load preliminaries
-source("03_SpatPlan_Master_Preliminaries.R")
+# source("03_SpatPlan_Master_Preliminaries.R")
+library(tidyverse)
+library(vegan)
 
 #### PREPROCESSING ####
 solution <- paste0("s", seq(from = 2, to = 433, by = 1)) # solution names; make sure that this checks out with metadata
@@ -42,14 +44,14 @@ matrix <- data.matrix(pivot_combined[,-1], rownames.force = TRUE) # make df into
 rownames(matrix) <- solution
 
 #### PERMUTATION-BASED ORDINATION ####
-reps <- 500
-stressTest <- vegan::oecosimu(comm = matrix, method = "c0",
+reps <- 1000
+stressTest <- vegan::oecosimu(comm = matrix, method = "c0", # this method preserves species frequencies
                               nestfun = metaMDS, autotransform = FALSE, k = 2,
                               distance = "jaccard", nsimul = reps, statistic = "stress",
                               alternative = "less", trace = TRUE,
-                              trymax = 50)
-saveRDS(stressTest, "Output/nmds/stresstest500.rds")
-stressTest <- readRDS("Output/nmds/stresstest500.rds")
+                              trymax = 100)
+saveRDS(stressTest, "Output/nmds/stresstest1000.rds")
+#stressTest <- readRDS("Output/nmds/stresstest1000.rds")
 
 # TODO: Save output from this function?
 simVector <- as.vector(stressTest$oecosimu$simulated) %>% 
