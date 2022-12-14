@@ -42,12 +42,12 @@ matrix <- data.matrix(pivot_combined[,-1], rownames.force = TRUE) # make df into
 rownames(matrix) <- solution
 
 #### PERMUTATION-BASED ORDINATION ####
-reps <- 500
+reps <- 1000
 stressTest <- vegan::oecosimu(comm = matrix, method = "c0",
                               nestfun = metaMDS, autotransform = FALSE, k = 2,
                               distance = "jaccard", nsimul = reps, statistic = "stress",
                               alternative = "less", trace = TRUE,
-                              trymax = 50)
+                              trymax = 100)
 saveRDS(stressTest, "Output/nmds/stresstest500.rds")
 stressTest <- readRDS("Output/nmds/stresstest500.rds")
 
