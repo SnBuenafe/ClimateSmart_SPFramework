@@ -18,9 +18,9 @@ FisheriesCost <- read_rds(file.path("Output", paste(save_name, paste0("Cost.rds"
 # 1. Determine scaling
 # Dealing with an actual cost layer
 median(tos_SSP585$transformed) # 0.03898989
-median(FisheriesCost$Cost_squish) # 10.25018
+median(UniformCost$cost) # 669.9
 
-scaling <- 250
+scaling <- 17200
 
 create_sensitivity_penaltySols <- function(vec, metric, direction) {
   
@@ -36,7 +36,7 @@ create_sensitivity_penaltySols <- function(vec, metric, direction) {
       names()
     
     # 3. Set up the spatial planning problem
-    out_sf <- cbind(FisheriesCost,
+    out_sf <- cbind(UniformCost,
                     aqua_sf %>% 
                       tibble::as_tibble() %>% 
                       dplyr::select(-geometry), 
@@ -44,7 +44,7 @@ create_sensitivity_penaltySols <- function(vec, metric, direction) {
                       tibble::as_tibble() %>% 
                       dplyr::select(-cellID, -geometry)
     )
-    p <- prioritizr::problem(out_sf, features, "Cost_squish") %>% # Using an actual cost layer
+    p <- prioritizr::problem(out_sf, features, "cost") %>% # Using an actual cost layer
       add_min_set_objective() %>%
       add_relative_targets(0.3) %>% # using 30% targets
       add_binary_decisions() %>%
@@ -66,7 +66,7 @@ create_sensitivity_penaltySols <- function(vec, metric, direction) {
   return(sol_df)
 }
 
-vec <- 10 * 5^(seq(0, 7, 1)) # using 5 as multiplier
+vec <- 10 * 10^(seq(0, 5, 1)) # using 5 as multiplier
 feat_df <- create_sensitivity_penaltySols(vec,
                                           tos_SSP585,
                                           1 # Penalize higher values
@@ -78,9 +78,9 @@ df <- feat_df %>%
   dplyr::left_join(., tos_SSP585 %>% 
                      dplyr::select(transformed, cellID)) %>% 
   sf::st_as_sf(sf_column_name = "geometry") %>% 
-  dplyr::bind_cols(., FisheriesCost %>% 
+  dplyr::bind_cols(., UniformCost %>% 
                      sf::st_drop_geometry() %>% 
-                     dplyr::select(Cost_squish))
+                     dplyr::select(cost))
 
 area <- df %>% 
   sf::st_drop_geometry() %>% 
@@ -105,10 +105,10 @@ for(i in 1:length(vec)) {
   tmp <- df %>% 
     sf::st_drop_geometry() %>% 
     dplyr::filter(!!sym(paste0("sol_", vec[i])) == 1) %>% 
-    dplyr::select(Cost_squish) %>% 
+    dplyr::select(cost) %>% 
     colSums()
   
-  cost[i] <- tmp[["Cost_squish"]]
+  cost[i] <- tmp[["cost"]]
 }
 cost %<>% unlist()
 
@@ -124,17 +124,17 @@ ggsave(filename = "Sensitivity-Penalty.png",
 
 #### Plotting Kernel Density Plots of small, medium, and large thresholds ####
 # Plotting the KD plots of percentile thresholds = 30, 50, 70
-sol_6250 <- df %>% 
-  dplyr::select(cellID, sol_6250, transformed, geometry) %>% 
-  dplyr::rename(solution_1 = sol_6250)
-sol_31250 <- df %>% 
-  dplyr::select(cellID, sol_31250, transformed, geometry) %>% 
-  dplyr::rename(solution_1 = sol_31250)
-sol_156250 <- df %>% 
-  dplyr::select(cellID, sol_156250, transformed, geometry) %>% 
-  dplyr::rename(solution_1 = sol_156250)
+sol_10 <- df %>% 
+  dplyr::select(cellID, sol_10, transformed, geometry) %>% 
+  dplyr::rename(solution_1 = sol_10)
+sol_1000 <- df %>% 
+  dplyr::select(cellID, sol_1000, transformed, geometry) %>% 
+  dplyr::rename(solution_1 = sol_1000)
+sol_1000000 <- df %>% 
+  dplyr::select(cellID, `sol_1e+06`, transformed, geometry) %>% 
+  dplyr::rename(solution_1 = `sol_1e+06`)
 
-solution_list <- list(sol_6250, sol_31250, sol_156250)
+solution_list <- list(sol_10, sol_1000, sol_1000000)
 
 list <- list() # empty list
 group_name = "threshold"
@@ -156,7 +156,7 @@ climate <- fGetClimateSummary(solution_list,
   dplyr::mutate(approach = row_number())
 
 ggRidge <- fPlot_RidgeClimateSensitivity(df, climate)
-ggsave(filename = "ClimateSmartRidge-Sensitivity-Penalty-NoInt.png",
+ggsave(filename = "ClimateSmartRidge-Sensitivity-Penalty.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 

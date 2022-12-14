@@ -963,7 +963,7 @@ fPlot_SensitivityThreshold <- function(df) {
 # Plot total cost vs total penalty
 fPlot_SensitivityPenalty <- function(df) {
   gg <- ggplot(data = df,
-               aes(x = warm, y = cost, label = vec)) +
+               aes(x = round(warm), y = round(cost), label = vec)) +
     geom_point(size = 2) +
     geom_line() +
     geom_text(hjust = -0.2, vjust = -1.1, size = 5) +
