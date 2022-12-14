@@ -49,7 +49,8 @@ stressTest <- vegan::oecosimu(comm = matrix, method = "c0", # this method preser
                               nestfun = metaMDS, autotransform = FALSE, k = 2,
                               distance = "jaccard", nsimul = reps, statistic = "stress",
                               alternative = "less", trace = TRUE,
-                              trymax = 100)
+                              trymax = 100 # Ran this with trymax = 50 before and worked with reps = 500.
+                              )
 saveRDS(stressTest, "Output/nmds/stresstest1000.rds")
 #stressTest <- readRDS("Output/nmds/stresstest1000.rds")
 
