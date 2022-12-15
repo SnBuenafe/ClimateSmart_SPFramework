@@ -928,26 +928,19 @@ fPlot_RidgeClimateSensitivity <- function(df, climate) {
 }
 
 # Plot threshold vs warming & area
-fPlot_SensitivityThreshold <- function(df) {
-  gg <- ggplot(df, aes(x = vec)) +
-    geom_line(aes(y = area), 
-              linewidth = 1, 
-              color = "#081d58") + 
-    geom_line(aes(y = warm * coeff),
-              linewidth = 1, 
-              color = "#ec7014") +
-    scale_y_continuous(name = "% of planning region selected",
-                       sec.axis = sec_axis(~./coeff, 
-                                           name = expression('Warming (Δ'^"o"*'C yr'^"-1"*')'))) +
-    scale_x_continuous(name = "Percentile threshold") +
-    geom_point(aes(y = area), 
-               size = 3, 
-               color = "#081d58", 
-               shape = 18) +
-    geom_point(aes(y = warm * coeff), 
-               size = 3,
-               color = "#ec7014", 
-               shape = 18) +
+fPlot_SensitivityThreshold <- function(df, transformer) {
+  gg <- ggplot(data = df, aes(x = vec, y = area)) +
+    geom_line(color = "#081d58", linewidth = 1) +
+    labs(x = "Percentile threshold") +
+    geom_line(aes(y = transformer$scale_func(warm)),
+              colour = "#ec7014",
+              linewidth = 1) +
+    scale_y_continuous(
+      sec.axis = sec_axis(
+        trans = ~ transformer$inv_func(.),
+        name = expression('Warming (Δ'^"o"*'C yr'^"-1"*')')
+      )
+    ) +
     theme_bw() +
     theme(panel.grid.major = element_line(color = "grey70"),
           panel.grid.minor = element_line(color = "grey80"),
@@ -958,6 +951,39 @@ fPlot_SensitivityThreshold <- function(df) {
           axis.title.y = element_text(color = "#081d58", size = 30),
           axis.title.y.right = element_text(color = "#ec7014", size = 30)
     )
+    
+    
+    
+    # ggplot(df, aes(x = vec)) +
+    # 
+    # geom_line(aes(y = area), 
+    #           linewidth = 1, 
+    #           color = "#081d58") + 
+    # geom_line(aes(y = warm * coeff),
+    #           linewidth = 1, 
+    #           color = "#ec7014") +
+    # scale_y_continuous(name = "% of planning region selected",
+    #                    sec.axis = sec_axis(~./coeff, 
+    #                                        name = expression('Warming (Δ'^"o"*'C yr'^"-1"*')'))) +
+    # scale_x_continuous(name = "Percentile threshold") +
+    # geom_point(aes(y = area), 
+    #            size = 3, 
+    #            color = "#081d58", 
+    #            shape = 18) +
+    # geom_point(aes(y = warm * coeff), 
+    #            size = 3,
+    #            color = "#ec7014", 
+    #            shape = 18) +
+    # theme_bw() +
+    # theme(panel.grid.major = element_line(color = "grey70"),
+    #       panel.grid.minor = element_line(color = "grey80"),
+    #       panel.border = element_rect(colour = "black", fill=NA, size=5),
+    #       axis.ticks = element_line(color = "black", linewidth = 2),
+    #       axis.text = element_text(color = "black", size = 25),
+    #       axis.title.x = element_text(color = "black", size = 30),
+    #       axis.title.y = element_text(color = "#081d58", size = 30),
+    #       axis.title.y.right = element_text(color = "#ec7014", size = 30)
+    # )
 }
 
 # Plot total cost vs total penalty

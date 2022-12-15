@@ -102,10 +102,12 @@ warm %<>% unlist()
 tmp_df <- cbind(vec, area = area*100/nrow(PUs), warm) %>% 
   tibble::as_tibble()
 
-#### Plot threshold vs warming and % area ####
-coeff = 10e2 # Figure out the threshold to be multiplied to warming to scale both y axes
+# Transform data
+transformer <- tmp_df %>% 
+  transformer_dual_Y_axis(area, warm, FALSE)
 
-ggSens <- fPlot_SensitivityThreshold(tmp_df)
+#### Plot threshold vs warming and % area ####
+ggSens <- fPlot_SensitivityThreshold(tmp_df, transformer)
 ggsave(filename = "Sensitivity-CPA.png",
        plot = ggSens, 
        width = 20, height = 12, dpi = 300,
