@@ -104,11 +104,19 @@ server <- function(input, output) {
     solution3 <- apply(outer(fileList, pattern3, str_detect), 1, all) %>% 
       as.numeric()
     x <- which(solution3 == 1)
-    plot3 <- readRDS(paste0(solutionPath, fileList[x])) %>% dplyr::select(solution_1) %>%  mutate(solution_1 = as.logical(solution_1))
-  }) %>% 
+    plot3 <- readRDS(paste0(solutionPath, fileList[x])) %>% dplyr::select(solution_1, transformed) %>%  mutate(solution_1 = as.logical(solution_1))
+    }) %>% 
     bindEvent(input$create2)
   
   #plotting
+  output$IndividualClimPlot <- renderPlot({
+    create_climKernelDensityPlot(dataIndividual())
+    #browser()
+    #fSpatPlan_PlotSolution(dataIndividual(), PUs, land)
+    
+  })
+  
+  
   output$IndividualPlot <- renderPlot({
     
     fSpatPlan_PlotSolution(dataIndividual(), PUs, land)

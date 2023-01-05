@@ -85,10 +85,13 @@ body_plot <- fluidPage(
                selectInput(inputId = "approach3", label = "Approach to identifying refugia",
                            choices = c("Percentile" = "Percentile", "Climate priority area" = "ClimatePriorityArea",
                                        "Feature" = "Feature", "Penalty" = "Penalty"))),
-           box(title = "Climate-smart spatial plan", color = "purple",
+           box(actionButton("create2", "Create Plot"),
+              title = "Climate-smart spatial plan", color = "purple",
                width = 9, solidHeader = TRUE, #status = "primary",
-               actionButton("create2", "Create Plot"),
-               shinycssloaders::withSpinner(plotOutput("IndividualPlot"))))
+               shinycssloaders::withSpinner(plotOutput("IndividualPlot")),
+              shiny::h4("Kernel Density Plot"),
+               shinycssloaders::withSpinner(plotOutput("IndividualClimPlot"))
+               ))
   
 )
 
