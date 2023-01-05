@@ -60,7 +60,7 @@ body_background <- fluidPage(
     #)
   ),
   tags$br(),
-  div(img(src = "Workflow-03.png", height = 500, width = 400),style="text-align: center;", tags$figcaption(tags$em("Figure 1. Climate-smart conservation planning framework"))),
+  div(img(src = "Fig2-ClimateSmartFramework.png", height = 500, width = 400),style="text-align: center;", tags$figcaption(tags$em("Figure 1. Climate-smart conservation planning framework"))),
   tags$br(),
   tags$div("All four aspects of climate-smart conservation planning considered led to different spatial plans. The choice of climate metrics and the approach to identifying refugia result in large differences in climate-smart spatial plans, 
            whereas the choice of emission scenarios and climate models have a smaller effect."),
