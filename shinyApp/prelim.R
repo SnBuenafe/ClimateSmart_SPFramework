@@ -76,14 +76,17 @@ fSpatPlan_PlotSolution <- function(s1, PlanUnits, world){
     #    geom_sf(data = PlanUnits, colour = "lightblue", fill = NA, size = 0.1, show.legend = FALSE) +
     geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
     coord_sf(xlim = st_bbox(PlanUnits)$xlim, ylim = st_bbox(PlanUnits)$ylim) +
-    theme(axis.text = element_text(size = 20), 
-          legend.text = element_text(size = 13),
-          legend.title = element_text(size = 16)) +
-    scale_fill_manual(name="Planning Units",
-                      values = c("TRUE" = "steelblue4",
-                                 "FALSE" = "lightsteelblue2"),
-                      labels=c("selected", "not selected")) +
-    theme_bw() #+
+    scale_colour_manual(name="Planning Units",
+                        values = c("TRUE" = "#7A7196",
+                                   "FALSE" = "#EDEBFF"),
+                        labels=c("selected", "not selected"),
+                        aesthetics = "fill") + 
+    theme_bw() +
+    theme(axis.ticks = element_line(color = "black"),#, linewidth = 2),
+          panel.border = element_rect(colour = "black", fill=NA),#, linewidth = 5),
+          axis.text = element_text(color = "black", size = 20),
+          legend.text = element_text(color = "black", size = 13),
+          legend.title = element_text(color = "black", size = 16))
   #labs(subtitle = "Solution")
   
 }

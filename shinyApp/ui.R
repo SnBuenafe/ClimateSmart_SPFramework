@@ -73,7 +73,7 @@ body_background <- fluidPage(
 body_plot <- fluidPage(
   #fluidRow("We show plots individually depending on the inputs"),
   fluidRow(),
-  fluidRow(box(title = "Input", width = 3, background = "light-blue",
+  fluidRow(box(title = "Input", width = 3, background = "purple",
                selectInput(inputId = "scenario3", label = NULL,
                            choices = c("SSP 1-2.6" = "126", "SSP 2-4.5" = "245", "SSP 5-8.5"= "585")),
                selectInput(inputId = "model3", label = "Model",
@@ -85,8 +85,8 @@ body_plot <- fluidPage(
                selectInput(inputId = "approach3", label = "Approach to identifying refugia",
                            choices = c("Percentile" = "Percentile", "Climate priority area" = "ClimatePriorityArea",
                                        "Feature" = "Feature", "Penalty" = "Penalty"))),
-           box(title = "Climate-smart spatial plan",
-               width = 9, solidHeader = TRUE, status = "primary",
+           box(title = "Climate-smart spatial plan", color = "purple",
+               width = 9, solidHeader = TRUE, #status = "primary",
                actionButton("create2", "Create Plot"),
                shinycssloaders::withSpinner(plotOutput("IndividualPlot"))))
   
@@ -95,7 +95,7 @@ body_plot <- fluidPage(
 body_compare <- fluidPage(
   fluidRow(
     box(title = "Input 1", 
-        width = 3, background = "light-blue",
+        width = 3, background = "purple",
         selectInput(inputId = "scenario1", label = "Scenario",
                     choices = c("SSP 1-2.6" = "126", "SSP 2-4.5" = "245", "SSP 5-8.5"= "585")),
         selectInput(inputId = "model1", label = "Model",
@@ -108,7 +108,7 @@ body_compare <- fluidPage(
                     choices = c("Percentile" = "Percentile", "Climate priority area" = "ClimatePriorityArea",
                                 "Feature" = "Feature", "Penalty" = "Penalty"))),
     box(title = "Input 2", 
-        width = 3, background = "light-blue",
+        width = 3, background = "purple",
         selectInput(inputId = "scenario2", label = "Scenario",
                     choices = c("SSP 1-2.6" = "126", "SSP 2-4.5" = "245", "SSP 5-8.5"= "585")),
         selectInput(inputId = "model2", label = "Model",
@@ -120,7 +120,7 @@ body_compare <- fluidPage(
         selectInput(inputId = "approach2", label = "Approach to identifying refugia",
                     choices = c("Percentile" = "Percentile", "Climate priority area" = "ClimatePriorityArea",
                                 "Feature" = "Feature", "Penalty" = "Penalty"))),
-    box(title = "Summary Statistics", width = 4,  status = "primary", solidHeader = TRUE, collapsible = TRUE,
+    box(title = "Summary Statistics", width = 4, solidHeader = TRUE, collapsible = TRUE, #status = "primary",
         "Area for Plot 1 (% planning region):", verbatimTextOutput("areaPlot1"), br(),
         "Area for Plot 2 (% planning region):", verbatimTextOutput("areaPlot2"), br(),
         "Cohen's Kappa: ", verbatimTextOutput("Matrix"), br(),
@@ -129,14 +129,14 @@ body_compare <- fluidPage(
   ),
   fluidRow(
     box(title = "Comparison of Input 1 & 2",
-        width = 12, solidHeader = TRUE, status = "primary",
+        width = 12, solidHeader = TRUE, #status = "primary",
         actionButton("create", "Create Plot"),
         shinycssloaders::withSpinner(plotOutput("ComparisonPlot")))
   ),
   fluidRow(
-    box(title = "Spatial Plan (Input 1)", width = 6, status = "primary", solidHeader = TRUE,
+    box(title = "Spatial Plan (Input 1)", width = 6, solidHeader = TRUE,#status = "primary",
         shinycssloaders::withSpinner(plotOutput("Plot1"))),
-    box(title = "Spatial Plan (Input 2)", width = 6,  status = "primary", solidHeader = TRUE,
+    box(title = "Spatial Plan (Input 2)", width = 6, solidHeader = TRUE, #status = "primary", 
         shinycssloaders::withSpinner(plotOutput("Plot2")))
   )
 )
@@ -152,6 +152,7 @@ body <- dashboardBody(
   ))
 
 
-ui <- dashboardPage(header,
+ui <- dashboardPage(skin = "purple",
+                    header,
                     sidebar,
                     body)
