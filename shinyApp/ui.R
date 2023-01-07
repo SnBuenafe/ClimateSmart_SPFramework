@@ -1,6 +1,6 @@
 
 #### Shiny ####
-header <- dashboardHeader(title = "A climate-smart conservation planning framework", titleWidth = 310)
+header <- dashboardHeader(title = h4(HTML("A climate-smart<br/>conservation planning framework")), titleWidth = 230) #"A climate-smart conservation planning framework"
 
 sidebar <- dashboardSidebar(
   sidebarMenu(
@@ -60,7 +60,7 @@ body_background <- fluidPage(
     #)
   ),
   tags$br(),
-  div(img(src = "Fig2-ClimateSmartFramework.png", height = 500, width = 400),style="text-align: center;", tags$figcaption(tags$em("Figure 1. Climate-smart conservation planning framework"))),
+  div(img(src = "Fig2-ClimateSmartFramework.png", height = 500, width = 345),style="text-align: center;", tags$figcaption(tags$em("Figure 1. Climate-smart conservation planning framework"))),
   tags$br(),
   tags$div("All four aspects of climate-smart conservation planning considered led to different spatial plans. The choice of climate metrics and the approach to identifying refugia result in large differences in climate-smart spatial plans, 
            whereas the choice of emission scenarios and climate models have a smaller effect."),
@@ -74,7 +74,7 @@ body_plot <- fluidPage(
   #fluidRow("We show plots individually depending on the inputs"),
   fluidRow(),
   fluidRow(box(title = "Input", width = 3, background = "purple",
-               selectInput(inputId = "scenario3", label = NULL,
+               selectInput(inputId = "scenario3", label = "Scenario",
                            choices = c("SSP 1-2.6" = "126", "SSP 2-4.5" = "245", "SSP 5-8.5"= "585")),
                selectInput(inputId = "model3", label = "Model",
                            choices = c("Ensemble Mean" = "EM", "CanESM5" = "CanESM5", "CMCC-ESM2" = "CMCC", 
@@ -138,9 +138,13 @@ body_compare <- fluidPage(
   ),
   fluidRow(
     box(title = "Spatial Plan (Input 1)", width = 6, solidHeader = TRUE,#status = "primary",
-        shinycssloaders::withSpinner(plotOutput("Plot1"))),
+        shinycssloaders::withSpinner(plotOutput("Plot1")),
+        shiny::h4("Climate-smart performance"),
+        shinycssloaders::withSpinner(plotOutput("ClimPlotInput1"))),
     box(title = "Spatial Plan (Input 2)", width = 6, solidHeader = TRUE, #status = "primary", 
-        shinycssloaders::withSpinner(plotOutput("Plot2")))
+        shinycssloaders::withSpinner(plotOutput("Plot2")),
+        shiny::h4("Climate-smart performance"),
+        shinycssloaders::withSpinner(plotOutput("ClimPlotInput2")))
   )
 )
 

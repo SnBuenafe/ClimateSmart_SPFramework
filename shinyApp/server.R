@@ -8,12 +8,16 @@ server <- function(input, output) {
       as.numeric()
     x <- which(solution1 == 1)
     plot1 <- readRDS(paste0(solutionPath, fileList[x])) %>% 
-      dplyr::select(solution_1) %>% 
+      dplyr::select(solution_1, transformed) %>% 
       mutate(solution_1 = as.logical(solution_1))
   }) %>% bindEvent(input$create)
   
   output$Plot1 <- renderPlot({
     fSpatPlan_PlotSolution(plot1(), PUs, land) + theme(legend.position = "none")
+  })
+  
+  output$ClimPlotInput1 <- renderPlot({
+    create_climKernelDensityPlot(plot1())
   })
   
   plot2 <- reactive({
@@ -22,12 +26,16 @@ server <- function(input, output) {
       as.numeric()
     x <- which(solution2 == 1)
     plot2 <- readRDS(paste0(solutionPath, fileList[x])) %>% 
-      dplyr::select(solution_1) %>% 
+      dplyr::select(solution_1, transformed) %>% 
       mutate(solution_1 = as.logical(solution_1))
   }) %>% bindEvent(input$create)
   
   output$Plot2 <- renderPlot({
     fSpatPlan_PlotSolution(plot2(), PUs, land) + theme(legend.position = "none")
+  })
+  
+  output$ClimPlotInput2 <- renderPlot({
+    create_climKernelDensityPlot(plot2())
   })
   
   data <- reactive({
@@ -63,13 +71,13 @@ server <- function(input, output) {
   
   # Getting summary statistics
   output$areaPlot1 <- renderPrint({
-    compute_summary(plot1() %>% mutate(as.numeric(solution_1)))$percent_area
+    compute_summary(plot1() %>% dplyr::select(solution_1) %>% mutate(as.numeric(solution_1)))$percent_area
   })
   output$areaPlot2 <- renderPrint({
-    compute_summary(plot2() %>% mutate(as.numeric(solution_1)))$percent_area
+    compute_summary(plot2() %>% dplyr::select(solution_1) %>% mutate(as.numeric(solution_1)))$percent_area
   })
   cohen <- reactive({
-    planList <- list(plot1() %>% st_drop_geometry() %>% dplyr::rename(plot1 = solution_1), plot2() %>% st_drop_geometry() %>% dplyr::rename(plot2 = solution_1)) %>% 
+    planList <- list(plot1()%>% dplyr::select(solution_1) %>% st_drop_geometry() %>% dplyr::rename(plot1 = solution_1), plot2() %>% dplyr::select(solution_1) %>% st_drop_geometry() %>% dplyr::rename(plot2 = solution_1)) %>% 
       create_corrmatrix()
     
     round(as.numeric(planList[2,2]), digits = 2)
@@ -104,33 +112,28 @@ server <- function(input, output) {
     solution3 <- apply(outer(fileList, pattern3, str_detect), 1, all) %>% 
       as.numeric()
     x <- which(solution3 == 1)
-    plot3 <- readRDS(paste0(solutionPath, fileList[x])) 
-   browser()
+    plot3 <- readRDS(paste0(solutionPath, fileList[x])) %>%
+      dplyr::select(solution_1, transformed) %>%  
+      dplyr::mutate(solution_1 = as.logical(solution_1))
      }) %>% 
     bindEvent(input$create2)
   
   #plotting
   output$IndividualClimPlot <- renderPlot({
-    dataInd <- dataIndividual() %>%
-      dplyr::select(solution_1, transformed) %>%  
-      dplyr::mutate(solution_1 = as.logical(solution_1))
-    create_climKernelDensityPlot(dataInd)
+    create_climKernelDensityPlot(dataIndividual())
   })
   
   output$IndividualPlot <- renderPlot({    
-    dataInd <- dataIndividual() %>%
-      dplyr::select(solution_1, transformed) %>%  
-      dplyr::mutate(solution_1 = as.logical(solution_1))
-    fSpatPlan_PlotSolution(dataInd, PUs, land)
+    fSpatPlan_PlotSolution(dataIndividual(), PUs, land)
   })
   
-  output$IndividualTargetPlot <- renderPlot({
-    test1 <- plot3 %>% 
-      dplyr::select(-solution_1, -transformed) %>%
-      sf::st_drop_geometry()
-      #dplyr::mutate(solution_1 = dplyr::if_else(.data$solution_1 == TRUE, 1, 0))
-    summedCols <- colSums(test1[,-1])
-  })
-  
+  # output$IndividualTargetPlot <- renderPlot({
+  #   test1 <- plot3 %>% 
+  #     dplyr::select(-solution_1, -transformed) %>%
+  #     sf::st_drop_geometry()
+  #     #dplyr::mutate(solution_1 = dplyr::if_else(.data$solution_1 == TRUE, 1, 0))
+  #   summedCols <- colSums(test1[,-1])
+  # })
+  # 
 }
 
