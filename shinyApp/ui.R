@@ -1,6 +1,6 @@
 
 #### Shiny ####
-header <- dashboardHeader(title = "A metric-based framework for climate-smart conservation planning", titleWidth = 310)
+header <- dashboardHeader(title = "A climate-smart conservation planning framework", titleWidth = 310)
 
 sidebar <- dashboardSidebar(
   sidebarMenu(
@@ -89,7 +89,7 @@ body_plot <- fluidPage(
               title = "Climate-smart spatial plan", color = "purple",
                width = 9, solidHeader = TRUE, #status = "primary",
                shinycssloaders::withSpinner(plotOutput("IndividualPlot")),
-              shiny::h4("Kernel Density Plot"),
+              shiny::h4("Climate-smart performance"),
                shinycssloaders::withSpinner(plotOutput("IndividualClimPlot"))
                ))
   
