@@ -151,42 +151,21 @@ create_climKernelDensityPlot <- function(soln){
                    # legend.key.height = unit(1, "inch"),
                    legend.text = ggplot2::element_text(size = 15, color = "black"),
                    legend.title = ggplot2::element_text(size = 15, color = "black")) 
-
-    # ggridges::stat_density_ridges(data = soln %>% dplyr::filter(.data$solution_1 == TRUE) %>% dplyr::mutate(solution_1 = "Selected"),
-    #                               ggplot2::aes(x = .data$transformed, y = .data$approach, fill = .data$solution_1),
-    #                               # fill = "#3182bd", 
-    #                               color = "#194361", quantile_lines = TRUE, quantiles = 2,
-    #                               show.legend = TRUE) +
-    # ggridges::stat_density_ridges(data = soln %>% dplyr::filter(.data$solution_1 == FALSE) %>% dplyr::mutate(solution_1 = "Not Selected"),
-    #                               ggplot2::aes(x = .data$transformed, y = .data$approach, fill = .data$solution_1),
-    #                               # fill = "#c6dbef", 
-    #                               color = "#3182bd", quantile_lines = TRUE, quantiles = 2, 
-    #                               alpha = 0.5,
-    #                               show.legend = TRUE) +
-    # ggplot2::scale_x_continuous(name = "Climate resilience metric",
-    #                             breaks = c(min(soln$transformed), max(soln$transformed)),
-    #                             labels = c("less climate-resilient", "more climate-resilient")) +
-    # ggplot2::scale_y_discrete(expand = c(0, 0)) +
-    # ggplot2::labs(x = "Climate resilience metric",
-    #               y = "Proportion of planning units") +
-    # ggplot2::theme_bw()# +
-    # # ggplot2::theme(axis.ticks = ggplot2::element_line(color = "black", size = 1),
-    #                text = ggplot2::element_text(size = 20),
-    #                axis.line = ggplot2::element_line(colour = "black", size = 1),
-    #                axis.text.y = ggplot2::element_blank(),
-    #                axis.text.x = ggplot2::element_text(size = 20),
-    #                axis.title = ggplot2::element_text(size = 20),
-    #                legend.title = ggplot2::element_text(color = "black", angle = 270, hjust = 0.5),
-    #                legend.position = "bottom",
-    #                legend.text = ggplot2::element_text(size = 20)) +
-    # ggplot2::scale_fill_manual(name = "",
-    #                            values = c("Not Selected" = "#c6dbef", "Selected" = "#3182bd"),
-    #                            aesthetics = "fill",
-    #                            guide = ggplot2::guide_legend(
-    #                              override.aes = list(linetype = 0),
-    #                              nrow = 1))
-  
   return(ggRidge)
+}
+
+fPlot_RidgeTargetScenario <- function(df) {
+  gg <- ggplot(data = df) +
+    geom_density_ridges(aes(x = percent, 
+                            y = scenario, 
+                            group = scenario, 
+                            fill = scenario),
+                        scale = 2) +
+    scale_fill_manual(values = c(`EM-Percentile-tos-126` = "#289E3D",
+                                 `EM-Percentile-tos-245` = "#E6C173",
+                                 `EM-Percentile-tos-585` = "#855600")) +
+    geom_vline(xintercept=c(30), linetype="dashed", color = "red", linewidth = 1) +
+    theme_classic()
 }
 
 

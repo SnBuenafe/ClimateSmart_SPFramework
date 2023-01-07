@@ -104,23 +104,33 @@ server <- function(input, output) {
     solution3 <- apply(outer(fileList, pattern3, str_detect), 1, all) %>% 
       as.numeric()
     x <- which(solution3 == 1)
-    plot3 <- readRDS(paste0(solutionPath, fileList[x])) %>% dplyr::select(solution_1, transformed) %>%  mutate(solution_1 = as.logical(solution_1))
-    }) %>% 
+    plot3 <- readRDS(paste0(solutionPath, fileList[x])) 
+   browser()
+     }) %>% 
     bindEvent(input$create2)
   
   #plotting
   output$IndividualClimPlot <- renderPlot({
-    create_climKernelDensityPlot(dataIndividual())
-    #browser()
-    #fSpatPlan_PlotSolution(dataIndividual(), PUs, land)
-    
+    dataInd <- dataIndividual() %>%
+      dplyr::select(solution_1, transformed) %>%  
+      dplyr::mutate(solution_1 = as.logical(solution_1))
+    create_climKernelDensityPlot(dataInd)
   })
   
-  
-  output$IndividualPlot <- renderPlot({
-    
-    fSpatPlan_PlotSolution(dataIndividual(), PUs, land)
-    
+  output$IndividualPlot <- renderPlot({    
+    dataInd <- dataIndividual() %>%
+      dplyr::select(solution_1, transformed) %>%  
+      dplyr::mutate(solution_1 = as.logical(solution_1))
+    fSpatPlan_PlotSolution(dataInd, PUs, land)
   })
+  
+  output$IndividualTargetPlot <- renderPlot({
+    test1 <- plot3 %>% 
+      dplyr::select(-solution_1, -transformed) %>%
+      sf::st_drop_geometry()
+      #dplyr::mutate(solution_1 = dplyr::if_else(.data$solution_1 == TRUE, 1, 0))
+    summedCols <- colSums(test1[,-1])
+  })
+  
 }
 
