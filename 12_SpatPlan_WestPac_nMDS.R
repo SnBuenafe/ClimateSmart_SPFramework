@@ -54,16 +54,16 @@ stressTest <- vegan::oecosimu(comm = matrix, method = "c0", # this method preser
 saveRDS(stressTest, "Output/nmds/stresstest1000.rds")
 #stressTest <- readRDS("Output/nmds/stresstest1000.rds")
 
-# TODO: Save output from this function?
 simVector <- as.vector(stressTest$oecosimu$simulated) %>% 
   tibble::as_tibble() %>% 
   bind_cols(., row_n = seq(1:reps))
-hist(stressTest$oecosimu$simulated, xlim = c(0.39, max(stressTest$oecosimu$simulated)+0.001))
+hist(stressTest$oecosimu$simulated, xlim = c(0.395, max(stressTest$oecosimu$simulated)+0.001))
 ggplot(data = simVector) +
   geom_histogram(aes(x = value), color = "black", binwidth =  0.0005) +
-  scale_x_continuous(c(0.27, 0.405)) +
-  geom_vline(xintercept = stressTest$oecosimu$statistic %>% 
-               as.numeric(), linetype = "dashed", color = "red")
+  xlab("Stress") +
+  ylab("Frequency") +
+  theme_bw()
+ggsave("Figures/nMDS-Stress.png", height = 5, width = 10, dpi = 300)
 
 ### PLOT THE NMDS #### 
 solution.mds <- vegan::metaMDS(matrix, distance = "jaccard", autotransform = FALSE, try = 500, trymax = 1000)
