@@ -9,9 +9,9 @@ We advise against recreating the output layers using code from `01-02` since the
 For a spatial planning project, the following are required:
 1. Planning Region - Western Pacific
 2. Conservation Features - We used AquaMaps [AquaMaps](https://www.aquamaps.org/)
-3. Climate Layers - We created multi-model ensembles across 3 climate scenarios for 3 oceanic variables. From there, we calculated layers of 4 climate metrics (created in `01_SpatPlan_ClimateMetrics.R`)
+3. Climate Layers - We created a multi-model ensemble across 3 climate scenarios for 3 marine variables. From there, we calculated layers of 4 climate metrics (see `01_SpatPlan_ClimateMetrics.R`)
 4. `prioritizr` to create the spatial planning problems [prioritizr](https://prioritizr.net/)
-5. A solver (e.g. Gurobi) to solve the spatial planning problems [Gurobi](https://www.gurobi.com/)
+5. A solver (e.g. CBC - COIN-OR branch and cut) to solve the spatial planning problems [CBC](https://dirkschumacher.github.io/rcbc/articles/rcbc.html)
 
 This code can be adapted for any planning domain and any metric/s that the user needs.
 
@@ -36,6 +36,7 @@ Using different climate metrics to create climate-smart spatial plans:
 3. Rate of declining oxygen concentration
 4. Climate velocity
 5. Annual marine heatwave intensity
+6. Combined climate-smart metric
 
 
 __"Approach" theme__ (`07_SpatPlan_WestPac_Runs_ApproachTheme.R`)
@@ -47,22 +48,27 @@ Exploring different ways to incorporate climate layers into spatial planning:
 3. "Climate priority area" approach: locks in the most "climate-smart" areas of each of the biodiversity features and still protects the rest of the features' distributions
 4. "Penalty" approach: treats climate layers as linear penalties (e.g. penalizing selection of areas of high climate warming)
 
-__"Metric + Approach" theme__ (`07.5_SpatPlan_WestPac_Runs_MetricApproachThemesSupplementary.R`)
+## Other runs
 
-Rerunning the Metric and Approach themes for all metrics and all approaches.
+__Supplementary runs__ (`08a-c_SpatPlan_WestPac_Runs_Supplement.R`)
 
-__Iterative runs__ (`08_SpatPlan_WestPac_SuppRuns_Iterations.R`)
+Explores different approaches of incorporating climate metrics into spatial prioritization.
 
-Run all possible options across all the the 4 themes.
+__Summary runs__ (`09a-b_SpatPlan_WestPac_Runs_Summary.R`)
 
-The solutions ran form `04-07.5` could also be ran using this script, but in `04-07.5` we singled out solutions that were reported in the manuscript to highlight the importance of the indiviudal aspects and allow for reproducibility and greater comparability within the aspects.
+Summarizing all the runs designed using different metrics across the four approaches.
+
+__Sensitivity analysis__ (`10_a-d_SpatPlan_WestPac_Runs_Sensitivity.R`)
+
+Sensitivity analysis done across the four approaches to identifying climate refugia.
+
+__Iterative runs__ (`11_SpatPlan_WestPac_Runs_Iterations.R`)
 
 Code for iterative runs can be set by the user, just make sure that it is consistent with all the other scripts. For our purposes, we used the following code found in `Output/nmds/df_groups.csv`.
 
-__nMDS__ (`09_SpatPlan_WestPac_nMDS.R`)
+__nMDS__ (`12_SpatPlan_WestPac_nMDS.R`)
 
-Create nMDS plots for outputs in `08_SpatPlanWestPac_SuppRuns_Iterations.R`
-
+Create nMDS ordination plots for all 432 solutions. 
 
 ## Shiny Application
 
@@ -70,7 +76,7 @@ We developed a Shiny App to allow the user to explore the framework personally b
 
 To run the shiny app,
 
-1. Make sure that you have all the solutions for all runs by running `08_SpatPlan_WestPac_SuppRuns_Iterations.R` (or use the ones we generated in `Output/solutions`)
+1. Make sure that you have all the solutions for all runs by running `11_SpatPlan_WestPac_Runs_Iterations.R` (or use the ones we generated in `Output/solutions`)
 2. Go to the `shinyApp` folder.
 3. Open `run_app.R`.
 4. Run the script.
