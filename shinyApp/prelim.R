@@ -76,16 +76,96 @@ fSpatPlan_PlotSolution <- function(s1, PlanUnits, world){
     #    geom_sf(data = PlanUnits, colour = "lightblue", fill = NA, size = 0.1, show.legend = FALSE) +
     geom_sf(data = world, colour = "grey20", fill = "grey20", alpha = 0.9, size = 0.1, show.legend = FALSE) +
     coord_sf(xlim = st_bbox(PlanUnits)$xlim, ylim = st_bbox(PlanUnits)$ylim) +
-    theme(axis.text = element_text(size = 20), 
-          legend.text = element_text(size = 13),
-          legend.title = element_text(size = 16)) +
-    scale_fill_manual(name="Planning Units",
-                      values = c("TRUE" = "steelblue4",
-                                 "FALSE" = "lightsteelblue2"),
-                      labels=c("selected", "not selected")) +
-    theme_bw() #+
+    scale_colour_manual(name="Planning Units",
+                        values = c("TRUE" = "#7A7196",
+                                   "FALSE" = "#EDEBFF"),
+                        labels=c("selected", "not selected"),
+                        aesthetics = "fill") + 
+    theme_bw() +
+    theme(axis.ticks = element_line(color = "black"),#, linewidth = 2),
+          panel.border = element_rect(colour = "black", fill=NA),#, linewidth = 5),
+          axis.text = element_text(color = "black", size = 20),
+          legend.text = element_text(color = "black", size = 13),
+          legend.title = element_text(color = "black", size = 16))
   #labs(subtitle = "Solution")
   
+}
+
+
+fPlot_ClimateWarming <- function(df, world) {
+  
+  gg <- ggplot() +
+    geom_sf(data = df, 
+            aes(fill = transformed), 
+            color = NA, 
+            size = 0.1, 
+            show.legend = TRUE) +
+    geom_sf(data = world, 
+            colour = "grey20", 
+            fill = "grey20", 
+            alpha = 0.9, 
+            size = 0.1, 
+            show.legend = FALSE) + 
+    coord_sf(xlim = st_bbox(df)$xlim, 
+             ylim = st_bbox(df)$ylim) +
+    scale_fill_gradientn(name = expression('Δ'^"o"*'C yr'^"-1"*''),
+                         colors = brewer.pal(9, "YlGn"),
+                         limits = c(as.numeric(quantile(df$transformed, 0.05)), 
+                                    as.numeric(quantile(df$transformed, 0.95))),
+                         oob = scales::squish) +
+    labs(fill = expression('Δ'^"o"*'C yr'^"-1"*''),
+         subtitle = "Rate of Change in Temperature") +
+    theme_bw() +
+    theme(axis.ticks = element_line(color = "black", linewidth = 2),
+          panel.border = element_rect(colour = "black", fill=NA, size=5),
+          axis.text = element_text(size = 50)) 
+  
+}
+
+
+create_climKernelDensityPlot <- function(soln){
+  
+  soln$approach <- "Ridge" # Need a dummy variable here.
+  
+  ggRidge <- ggplot2::ggplot() +
+    ggridges::geom_density_ridges_gradient(data = soln %>% dplyr::filter(.data$solution_1 == TRUE)%>% dplyr::mutate(solution_1 = "Selected"), 
+                                           ggplot2::aes(x = .data$transformed, y = .data$approach, 
+                                                        fill = ..x..), scale = 1) +
+    ggplot2::scale_fill_viridis_c(name = expression('\u0394 \u00B0C y'^"-1"*''), option = "C") +
+    ggridges::geom_density_ridges(data = soln %>% dplyr::filter(.data$solution_1 == FALSE)%>% dplyr::mutate(solution_1 = "Not Selected"), 
+                                  ggplot2::aes(x =  .data$transformed, y = .data$approach), 
+                                  alpha = 0.25, linetype = "dotted", scale = 1) +
+    
+    # geom_vline(xintercept = climate$mean_climate_warming,
+    #            linetype = "dashed", color = "tan1", size = 0.5) +
+    ggplot2::scale_x_continuous(expand = c(0,0)) +
+    ggplot2::scale_y_discrete(expand = ggplot2::expansion(mult = c(0.01, 0))) +
+    ggplot2::labs(x = expression('Climate warming (\u0394 \u00B0C y'^"-1"*')')) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.ticks = ggplot2::element_line(color = "black", size = 1),
+                   axis.line = ggplot2::element_line(colour = "black", size = 1),
+                   axis.text = ggplot2::element_text(color = "black", size = 14),
+                   axis.title.x = ggplot2::element_text(size = 14),
+                   axis.title.y = ggplot2::element_blank(),
+                   axis.text.y = ggplot2::element_blank(),
+                   # legend.key.height = unit(1, "inch"),
+                   legend.text = ggplot2::element_text(size = 15, color = "black"),
+                   legend.title = ggplot2::element_text(size = 15, color = "black")) 
+  return(ggRidge)
+}
+
+fPlot_RidgeTargetScenario <- function(df) {
+  gg <- ggplot(data = df) +
+    geom_density_ridges(aes(x = percent, 
+                            y = scenario, 
+                            group = scenario, 
+                            fill = scenario),
+                        scale = 2) +
+    scale_fill_manual(values = c(`EM-Percentile-tos-126` = "#289E3D",
+                                 `EM-Percentile-tos-245` = "#E6C173",
+                                 `EM-Percentile-tos-585` = "#855600")) +
+    geom_vline(xintercept=c(30), linetype="dashed", color = "red", linewidth = 1) +
+    theme_classic()
 }
 
 
