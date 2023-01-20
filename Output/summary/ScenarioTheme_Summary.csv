@@ -1,0 +1,4 @@
+"","run","scenario","approach","mean_tos","num_pu","percent_area"
+"1","EM-Percentile-tos-126","126","percentile",0.00628943641562671,24169,56.8107561761042
+"2","EM-Percentile-tos-245","245","percentile",0.0163671832165605,23637,55.5602566814752
+"3","EM-Percentile-tos-585","585","percentile",0.0366905533385457,25213,59.2647439061655

@@ -14,70 +14,102 @@
 # 3. Penalty: uses the climate layer as a linear penalty
 # 4. Climate priority area: filters the lower 5th percentile, assigns it with a 100% target, and gets the rest of the distirbution and assigns it with a lower target (30% divided by the 95th percentile)
 
-# Load functions
-source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functions and libraries
-source("HelperFunctions/SpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
-output_solutions <- "Output/solutions/"
-output_summary <- "Output/summary/"
-output_lowregret <- "Output/lowregret/"
+# Load preliminaries
+source("03_SpatPlan_Master_Preliminaries.R") # climate layers are loaded in the script
+tos_SSP585 <- load_metrics(metric = "tos", model = "ensemble", scenario = "SSP 5-8.5") # Load climate metric for ens mean
 
-# Load files
-source("03_SpatPlan_Master_Preliminaries.R")
-total_area = nrow(PUs) * PU_size
-LoadClimateMetrics(metric = "tos", model = NA, scenario = "SSP 5-8.5")
-
-#### Percentile ####
+#########################
+###### PERCENTILE #######
+#########################
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585, PUs = PUs)
-# 2. Get list of features
-features <- aqua_percentile %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
+                                          percentile = 35,
+                                          metricDF = rename_metric(tos_SSP585),
+                                          direction = -1 # lower values are more climate-smart
+)
+
+# 2. Set up features and targets
+features <- aqua_sf %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 30)
+targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
+                                     climateSmartDF = aqua_percentile,
+                                     targetsDF = target_df)
+
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, roc_tos_SSP585, UniformCost)
-p2 <- prioritizr::problem(out_sf, features, "cost") %>%
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                tos_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+p2 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(30/35) %>% 
+  add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
+
 # 4. Solve the planning problem 
-s2 <- prioritizr::solve(p2)
-saveRDS(s2, paste0(output_solutions, "s2-EM-Percentile-tos-585.rds")) # save solution
+s2 <- solve_SPproblem(p2)
+saveRDS(s2, paste0(solutions_dir, "s2-EM-Percentile-tos-585.rds")) # save solution
+
 # 5. Plot the spatial design
 s2_plot <- s2 %>% 
   mutate(solution_1 = as.logical(solution_1))
-ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) +
+ggSol2 <- fSpatPlan_PlotSolution(s2_plot, PUs, land) + 
   ggtitle("Climate-smart design: Rate of Climate Warming", subtitle = "Percentile, SSP 5-8.5")
 ggsave(filename = "EM-Percentile-tos-585.png",
        plot = ggSol2, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
-#### Feature ####
+#########################
+###### FEATURE #######
+#########################
 # 1. Prepare climate layer
-ClimateFeature <- create_FeatureLayer(metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585)
-# 2. Get list of features and set targets
+aqua_feature <- fFeature_CSapproach(featuresDF = aqua_sf, 
+                                    percentile = 35, 
+                                    metricDF = rename_metric(tos_SSP585),
+                                    direction = -1 # lower values are more climate-smart
+                                    )
+# 2. Set up features and targets
 features <- aqua_sf %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
-features <- append(features, "climate_layer") # add "climate_layer" to features
-
-targets <- features %>% as_tibble() %>% 
-  setNames(., "Species") %>% 
-  add_column(target = 0.3) %>% 
-  mutate(target = ifelse(str_detect(Species, pattern = "climate_layer"), 30/35, 0.3))
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 30)
+targets <- fAssignTargets_Feature(climateSmartDF = aqua_feature,
+                                  refugiaTarget = 30,
+                                  targetsDF = target_df)
 
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_sf, ClimateFeature, UniformCost)
-p6 <- prioritizr::problem(out_sf, features, "cost") %>%
+out_sf <- cbind(UniformCost,
+                aqua_feature %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                tos_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+p6 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
+
 # 4. Solve the planning problem 
-s6 <- prioritizr::solve(p6)
-saveRDS(s6, paste0(output_solutions, "s6-EM-Feature-tos-585.rds")) # save solution
+s6 <- solve_SPproblem(p6)
+saveRDS(s6, paste0(solutions_dir, "s6-EM-Feature-tos-585.rds")) # save solution
+
 # 5. Plot the spatial design
 s6_plot <- s6 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
@@ -87,27 +119,44 @@ ggsave(filename = "EM-Feature-tos-585.png",
        plot = ggSol6, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
 
-#### Penalty ####
-# 1. Prepare climate layer
-# Get scaling
-scaling_PenaltyWarming <- create_Scaling(UniformCost$cost, roc_tos_SSP585$transformed, "tos")
+#########################
+###### PENALTY ##########
+#########################
+# 1. Determine scaling
+# Scaling here wouldn't matter because we don't have a cost layer;
+# This essentially makes metric a cost layer?
+scaling <- 1/median(tos_SSP585$transformed) # using the median to scale it
+# scaling <- fPenalty_CSapproach(UniformCost$cost, 
+#                                tos_SSP585$transformed, 
+#                                direction = -1 # low values are more climate-smart
+# )
+
 # 2. Get list of features
 features <- aqua_sf %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+  dplyr::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
+
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_sf, roc_tos_SSP585, UniformCost)
-scaling <- scaling_PenaltyWarming %>% filter(scaling == 30) %>% pull() # get scaling for 30%
+out_sf <- cbind(UniformCost,
+                aqua_sf %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                tos_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
 p10 <- prioritizr::problem(out_sf, features, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(0.3) %>%
+  add_relative_targets(0.3) %>% # using 30% targets
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE) %>% 
+  add_cbc_solver(gap = 0.1, verbose = FALSE) %>% 
   add_linear_penalties(scaling, data = "transformed")
+
 # 4. Solve the planning problem 
-s10 <- prioritizr::solve(p10)
-saveRDS(s10, paste0(output_solutions, "s10-EM-Penalty-tos-585.rds")) # save solution
+s10 <- solve_SPproblem(p10)
+saveRDS(s10, paste0(solutions_dir, "s10-EM-Penalty-tos-585.rds")) # save solution
+
 # 5. Plot the spatial design
 s10_plot <- s10 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
@@ -117,32 +166,49 @@ ggsave(filename = "EM-Penalty-tos-585.png",
        plot = ggSol10, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
 
-#### Climate Priority Area ####
+####################################################
+########## CLIMATE-PRIORITY-AREA APPROACH ##########
+####################################################
 # 1. Prepare the climate layers and features
-ImptFeat <- create_ImportantFeatureLayer(aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585)
-RepFeat <- create_RepresentationFeature(ImptFeat, aqua_sf)
-Features <- cbind(ImptFeat, RepFeat) %>% 
-  dplyr::select(-geometry.1)
-# 2. Get list of features
-features <- Features %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+aqua_CPA <- fClimatePriorityArea_CSapproach(featuresDF = aqua_sf,
+                                            percentile = 5, # Considering the top 5 percentile of each feature as climate-smart areas
+                                            metricDF = rename_metric(tos_SSP585),
+                                            direction = -1 # lower values are more climate-smart
+                                            )
+
+# 2. Set up features and targets
+features <- aqua_sf %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
-# 3. Differentiate targets for important features and representative features
-targets <- features %>% as_tibble() %>% 
-  setNames(., "Species") %>% 
-  add_column(target = 1) %>% 
-  mutate(target = ifelse(str_detect(Species, pattern = ".1"), 25/95, 1))
-# 4. Set up the spatial planning problem
-out_sf <- cbind(Features, roc_tos_SSP585, UniformCost)
-p34 <- prioritizr::problem(out_sf, features, "cost") %>%
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 0.3) # this approach needs proportions as targets
+targets <- fAssignTargets_CPA(climateSmartDF = aqua_CPA,
+                              targetsDF = target_df,
+                              refugiaTarget = 1 # 100% protection to the most climate-smart areas
+)
+
+# 3. Set up the spatial planning problem
+out_sf <- cbind(UniformCost,
+                aqua_CPA %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                tos_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+p34 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
   add_relative_targets(targets$target) %>%
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
+
 # 5. Solve the planning problem 
-s34 <- prioritizr::solve(p34)
-saveRDS(s34, paste0(output_solutions, "s34-EM-ClimatePriorityArea-tos-585.rds")) # save solution
+s34 <- solve_SPproblem(p34)
+saveRDS(s34, paste0(solutions_dir, "s34-EM-ClimatePriorityArea-tos-585.rds")) # save solution
+
 # 6. Plot the spatial design
 s34_plot <- s34 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
@@ -152,82 +218,64 @@ ggsave(filename = "EM-ClimatePriorityArea-tos-585.png",
        plot = ggSol34, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save
 
-#### Summary ####
-# Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
-out_sf <- cbind(aqua_sf, UniformCost)
-features <- aqua_sf %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
-  names()
-dummy_problem <- prioritizr::problem(out_sf, features, "cost") %>%
-  add_min_set_objective() %>%
-  add_relative_targets(0.3) %>%
-  add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+#####################################
+###### CALCULATE SUMMARIES #########
+#####################################
 
-problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem)
-
+dummy <- call_dummy() # Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
+problem_list <- list(dummy, dummy, dummy, dummy)
 solution_list <- list(s6, s2, s34, s10)
-climateLayer_list <- roc_tos_SSP585
-metric_list <- "tos"
 approach_list <- c("feature", "percentile", "ClimatePriorityArea", "penalty")
 
-# ----- Feature representation -----
+# ----- FEATURE REPRESENTATION -----
 names <- c("EM_Feature_tos_585", "EM_Percentile_tos_585", "EM_ClimatePriorityArea_tos_585", "EM_Penalty_tos_585")
+
 feat_rep <- tibble(feature = character()) # empty tibble
 for(i in 1:length(names)) {
-  df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
-  feat_rep <- left_join(df, feat_rep, by = "feature")
+  df <- fFeatureRepresent(problem_list[[i]], solution_list[[i]], names[i])
+  feat_rep <- dplyr::left_join(df, feat_rep, by = "feature")
 }
-write.csv(feat_rep, paste0(output_summary, "ApproachTheme_tos_FeatureRepresentation.csv")) # save
+utils::write.csv(feat_rep, paste0(summary_dir, "ApproachTheme_FeatureRepresentation.csv")) # save
 
-# ----- Kernel distribution plots of targets -----
+# ----- KERNEL DENSITY PLOTS OF TARGETS -----
 rev <- c("EM_Penalty_tos_585", "EM_ClimatePriorityArea_tos_585", "EM_Percentile_tos_585", "EM_Feature_tos_585")
 x <- feat_rep %>% 
   pivot_longer(!feature, names_to = "approach", values_to = "percent") %>% 
   dplyr::mutate(row_number = row_number(feature)) %>% 
   dplyr::mutate(approach = fct_relevel(approach, rev))
 
-ggRidge <- ggplot(data = x) +
-  geom_density_ridges(aes(x = percent, y = approach, group = approach, fill = approach),
-                      scale = 2) +
-  scale_fill_manual(values = c(`EM_ClimatePriorityArea_tos_585` = "#E6BA7E",
-                               `EM_Feature_tos_585` = "#4D3B2A",
-                               `EM_Penalty_tos_585` = "#6984BF",
-                               `EM_Percentile_tos_585` = "#2B8142")) +
-  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
-  labs(x = "Protection (%)", y = "selection") +
-  theme_classic() +
-  theme(axis.ticks = element_line(color = "black", size = 1),
-        axis.line = element_line(colour = "black", size = 1),
-        axis.text.x = element_text(color = "black", size = 20),
-        axis.text.y = element_blank(),
-        axis.title.x = element_text(size = 20),
-        axis.title.y = element_blank())
-ggsave(filename = "TargetDist-ApproachTheme-tos.png",
+ggRidge <- fPlot_RidgeTargetApproach(x)
+ggsave(filename = "TargetRidge-ApproachTheme.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Summary statistics -----
+# ----- SUMMARY STATISTICS -----
 df <- tibble(run = character()) # empty tibble
 for(i in 1:length(names)) {
-  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  statistics <- fComputeSummary(solution_list[[i]], 
+                                total_area, 
+                                PU_size, 
+                                names[i])
   df <- rbind(statistics, df)
 }
 
-climate <- get_ClimateSummary(solution_list, climateLayer_list, metric_list, col_scenario = "585", col_approach = approach_list, col_run = names, climateLayer = "single")
+climate <- fGetClimateSummary(solution_list, 
+                              tos_SSP585, 
+                              "tos", 
+                              col_scenario = "585", 
+                              col_approach = approach_list, 
+                              col_run = names, 
+                              climateLayer = "single")
 
-summary <- left_join(climate, df, by = "run")
-write.csv(summary, paste0(output_summary, "ApproachTheme_tos_Summary.csv")) # save
+summary <- dplyr::left_join(climate, df, by = "run")
+utils::write.csv(summary, paste0(summary_dir, "ApproachTheme_Summary.csv")) # save
 
-ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "LR-approach") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Area-ApproachTheme-tos-585.png",
+ggArea <- fPlot_StatisticsApproach(summary, col_name = "percent_area", y_axis = "% area")
+ggsave(filename = "Area-ApproachTheme.png",
        plot = ggArea, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Get Kappa Correlation Matrix -----
+# ----- KAPPA CORRELATION MATRIX -----
 object_list <- list() # empty list
 for (i in 1:length(names)) {
   obj <- select_solution(solution_list[[i]], names[i])
@@ -235,96 +283,70 @@ for (i in 1:length(names)) {
 }
 
 # Save corrplot
-file_path_test = "Figures/ApproachTheme_CorrelationMatrix.png"
+file_path_test = "Figures/CorrMatrix-ApproachTheme.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
-matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list))
+matrix <- fGetCorrMatrix(object_list) %>% 
+  fPlot_CorrPlot(., length(object_list))
 
 # Then
 dev.off()
 
-# ----- Create selection frequency plot -----
-sFreq <- create_LowRegretSf(solution_list, names, PUs)
-saveRDS(sFreq, paste0(output_lowregret, "sFreq4-EM-tos-585.rds")) # save low-regret solution
-
-ggFreq <- plot_SelectionFrequency(sFreq, land) + 
-  ggtitle("Approach Theme", subtitle = "Percentile (SSP 5-8.5)") +
-    inset_element(plot_inset(sFreq), 0.7, 0.7, 0.99, 0.99)
-
-ggsave(filename = "Freq-Approach-tos-585.png",
-       plot = ggFreq, width = 21, height = 29.7, dpi = 300,
-       path = "Figures/") # save plot
-
-# ----- Features according to frequency selection -----
-PlanUnits <- PUs %>% 
-  dplyr::mutate(cellID = row_number())
-name <- c("selection_1", "selection_2", "selection_3", "selection_4")
-
-solution <- frequencyTargets(sFreq, name)
-
-feat_rep <- tibble(feature = character()) # empty tibble
-for(i in 1:length(name)) {
-  df <- represent_feature(dummy_problem, solution[[i]], name[i])
-  feat_rep <- left_join(df, feat_rep, by = "feature")
-}
-
-x <- feat_rep %>% 
-  pivot_longer(!feature, names_to = "selection", values_to = "percent") %>% 
-  dplyr::mutate(row_number = row_number(feature))
-
-ggRidge <- ggplot(data = x) +
-  geom_density_ridges(aes(x = percent, y = selection, group = selection, fill = selection),
-                      scale = 2) +
-  scale_fill_manual(values = c(selection_1 = "#bdc9e1",
-                               selection_2 = "#74a9cf",
-                               selection_3 = "#2b8cbe",
-                               selection_4 = "#045a8d")) +
-  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
-  labs(x = "Protection (%)", y = "selection") +
-  theme_classic() +
-  theme(axis.ticks = element_line(color = "black", size = 1),
-        axis.line = element_line(colour = "black", size = 1),
-        axis.text.x = element_text(color = "black", size = 20),
-        axis.text.y = element_blank(),
-        axis.title.x = element_text(size = 20),
-        axis.title.y = element_blank())
-
-ggsave(filename = "Freq-Targets-ApproachTheme-tos.png",
-       plot = ggRidge, width = 12, height = 8, dpi = 300,
-       path = "Figures/") # save plot
-
-# ----- Measuring how climate-smart solutions are using Kernel Density plots -----
-# Kernel Density Plots
+# ----- KERNEL DENSITY PLOTS OF CLIMATE METRICS -----
 list <- list() # empty list
 group_name = "approach"
+
 for(i in 1:length(names)) {
   list[[i]] <- make_kernel(solution_list[[i]], names[i], group_name)
 }
 df <- do.call(rbind, list) %>% 
   dplyr::mutate(approach = fct_relevel(approach, rev))
 
-ggRidge <- ggplot() +
-  geom_density_ridges_gradient(data = df %>% dplyr::filter(solution_1 == 1), aes(x = transformed, y = approach, fill = ..x..), scale = 1) +
-  scale_fill_viridis_c(name = expression('Δ'^"o"*'C yr'^"-1"*''), option = "C") +
-  geom_density_ridges(data = df %>% dplyr::filter(solution_1 == 0), aes(x = transformed, y = approach), alpha = 0.25, linetype = "dotted", scale = 1) +
-  geom_vline(xintercept = climate$mean_climate_warming,
-             linetype = "dashed", color = "tan1", size = 0.5) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
-  labs(x = expression('Climate warming (Δ'^"o"*'C yr'^"-1"*')')) +
-  theme_classic() +
-  theme(axis.ticks = element_line(color = "black", size = 1),
-        axis.line = element_line(colour = "black", size = 1),
-        axis.text = element_text(color = "black", size = 20),
-        axis.title.x = element_text(size = 20),
-        axis.title.y = element_blank(),
-        axis.text.y = element_blank(),
-        legend.key.height = unit(1, "inch"),
-        legend.text = element_text(size = 15, color = "black"),
-        legend.title = element_text(size = 15, color = "black"))
-ggsave(filename = "ClimateWarmingDist-ApproachTheme-tos.png",
+ggRidge <- fPlot_RidgeClimateApproach(df, climate)
+ggsave(filename = "ClimateSmartRidge-ApproachTheme.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
+
+# Calculate the mean of the non-selected-planning units
+notSelectedClimate <- calculate_meanClimateNotSelected(solution_list, names) %>% 
+  dplyr::rename(mean_tos = mean)
+
+ggRidge <- fPlot_RidgeClimateApproach(df, notSelectedClimate)
+
+ggsave(filename = "ClimateSmartRidge-ApproachTheme-NotSelected.png",
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
+       path = "Figures/") # save plot
+
+# ----- SELECTION FREQUENCY PLOT -----
+sFreq <- fGetSelFrequency(solution_list, names, PUs)
+saveRDS(sFreq, paste0(lowregret_dir, "sFreq4-EM-tos-585.rds")) # save low-regret solution
+
+ggFreq <- fPlot_SelFrequency(sFreq, land) + 
+  ggtitle("Approach Theme", subtitle = "Percentile (SSP 5-8.5)") +
+  inset_element(plot_inset(sFreq), 
+                0.7, 0.7, 0.99, 0.99)
+
+ggsave(filename = "FreqPlot-ApproachTheme.png",
+       plot = ggFreq, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+# ----- KERNEL DENSITY PLOTS OF TARGETS ACCORDING TO SEL FREQUENCY -----
+name <- c("selection_1", "selection_2", "selection_3", "selection_4")
+solution <- frequency_targets(sFreq, name)
+
+feat_rep <- tibble(feature = character()) # empty tibble
+for(i in 1:length(name)) {
+  df <- fFeatureRepresent(dummy, solution[[i]], name[i])
+  feat_rep <- dplyr::left_join(df, feat_rep, by = "feature")
+}
+
+x <- feat_rep %>% 
+  tidyr::pivot_longer(!feature, names_to = "selection", values_to = "percent") %>% 
+  dplyr::mutate(row_number = row_number(feature))
+
+ggRidge <- fPlot_RidgeSelectionApproach(x)
+
+ggsave(filename = "FreqRidge-ApproachTheme.png",
+       plot = ggRidge, width = 12, height = 8, dpi = 300,
+       path = "Figures/") # save plot
+

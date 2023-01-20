@@ -1,0 +1,5 @@
+"","run","scenario","approach","mean_tos","num_pu","percent_area"
+"1","EM_Feature_tos_585","585","feature",0.0368675060687784,19655,46.2003149754366
+"2","EM_Percentile_tos_585","585","percentile",0.0366905533385457,25213,59.2647439061655
+"3","EM_ClimatePriorityArea_tos_585","585","ClimatePriorityArea",0.0383070708778928,13507,31.7490538984087
+"4","EM_Penalty_tos_585","585","penalty",0.0372852438016995,12802,30.0919070117293

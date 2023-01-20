@@ -12,41 +12,58 @@
 # targets: using Effective 30% Protection
 # Since we only retained planning units that intersect with both biodiversity features and areas <= 35th percentile (0.35), by multiplying this by ~0.857 target (30/35), we effectively protect only 30%.
 
-# Load functions
-source("HelperFunctions/SpatPlan_Extras.R") # Load the extras, including functions and libraries
-source("HelperFunctions/SpatPlan_HelperFxns_WestPac.R") # Load helper functions written specifically for this spatial planning project
-output_solutions <- "Output/solutions/"
-output_summary <- "Output/summary/"
-output_lowregret <- "Output/lowregret/"
-
-# Load files
-source("03_SpatPlan_Master_Preliminaries.R")
-total_area = nrow(PUs) * PU_size
-
-#### Main Text: Percentile ####
-# ----- Load climate layers -----
-metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_SumCumInt")
+# Load preliminaries
+source("03_SpatPlan_Master_Preliminaries.R") # climate layers are loaded in the script
+# Load climate metrics for different metrics (all SSP5-8.5)
+metric_list <- c("tos", "phos", "o2os", "velocity", "MHW", "CombinedMetric")
 for(metric_num in 1:length(metric_list)) {
-  LoadClimateMetrics(metric = metric_list[metric_num], model = NA, scenario = "SSP 5-8.5")
+  x <- load_metrics(metric = metric_list[metric_num], model = "ensemble", scenario = "SSP 5-8.5")
+  assign(paste0(metric_list[metric_num], "_SSP585"), x)
 }
-# ----- Climate warming -----
+CombinedMetric_SSP585 %<>% dplyr::rename(transformed = combined) # rename column name
+
+##############################
+###### CLIMATE WARMING #######
+##############################
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "tos", colname = "transformed", metric_df = roc_tos_SSP585, PUs = PUs)
-# 2. Get list of features
-features <- aqua_percentile %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
+                                          percentile = 35,
+                                          metricDF = rename_metric(tos_SSP585),
+                                          direction = -1 # lower values are more climate-smart
+)
+
+# 2. Set up features and targets
+features <- aqua_sf %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 30)
+targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
+                                     climateSmartDF = aqua_percentile,
+                                     targetsDF = target_df)
+
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, roc_tos_SSP585, UniformCost)
-p2 <- prioritizr::problem(out_sf, features, "cost") %>%
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                tos_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+p2 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(30/35) %>% 
+  add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
+
 # 4. Solve the planning problem 
-s2 <- prioritizr::solve(p2)
-saveRDS(s2, paste0(output_solutions, "s2-EM-Percentile-tos-585.rds")) # save solution
+s2 <- solve_SPproblem(p2)
+saveRDS(s2, paste0(solutions_dir, "s2-EM-Percentile-tos-585.rds")) # save solution
+
 # 5. Plot the spatial design
 s2_plot <- s2 %>% 
   mutate(solution_1 = as.logical(solution_1))
@@ -56,24 +73,48 @@ ggsave(filename = "EM-Percentile-tos-585.png",
        plot = ggSol2, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Ocean acidification -----
+##################################
+###### OCEAN ACIDIFICATION #######
+##################################
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "phos", colname = "transformed", metric_df = roc_phos_SSP585, PUs = PUs)
-# 2. Get list of features
-features <- aqua_percentile %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
+                                          percentile = 65,
+                                          metricDF = rename_metric(phos_SSP585),
+                                          direction = 1 # higher values are more climate-smart (less acidification)
+)
+
+# 2. Set up features and targets
+features <- aqua_sf %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 30)
+targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
+                                     climateSmartDF = aqua_percentile,
+                                     targetsDF = target_df)
+
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, roc_phos_SSP585, UniformCost)
-p3 <- prioritizr::problem(out_sf, features, "cost") %>%
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                phos_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+p3 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(30/35) %>%
+  add_relative_targets(targets$target) %>%
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
+
 # 4. Solve the planning problem 
-s3 <- prioritizr::solve(p3)
-saveRDS(s3, paste0(output_solutions, "s3-EM-Percentile-phos-585.rds")) # save solution
+s3 <- solve_SPproblem(p3)
+saveRDS(s3, paste0(solutions_dir, "s3-EM-Percentile-phos-585.rds")) # save solution
+
 # 5. Plot the spatial design
 s3_plot <- s3 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
@@ -83,24 +124,47 @@ ggsave(filename = "EM-Percentile-phos-585.png",
        plot = ggSol3, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Declining oxygen concentration -----
+##################################
+###### OCEAN DEOXYGENATION #######
+##################################
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "o2os", colname = "transformed", metric_df = roc_o2os_SSP585, PUs = PUs)
-# 2. Get list of features
-features <- aqua_percentile %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
+                                          percentile = 65,
+                                          metricDF = rename_metric(o2os_SSP585),
+                                          direction = 1 # higher values are more climate-smart (more positive)
+)
+# 2. Set up features and targets
+features <- aqua_sf %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 30)
+targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
+                                     climateSmartDF = aqua_percentile,
+                                     targetsDF = target_df)
+
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, roc_o2os_SSP585, UniformCost)
-p4 <- prioritizr::problem(out_sf, features, "cost") %>%
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                o2os_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+p4 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(30/35) %>%
+  add_relative_targets(targets$target) %>%
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
+
 # 4. Solve the planning problem 
-s4 <- prioritizr::solve(p4)
-saveRDS(s4, paste0(output_solutions, "s4-EM-Percentile-o2os-585.rds")) # save solution
+s4 <- solve_SPproblem(p4)
+saveRDS(s4, paste0(solutions_dir, "s4-EM-Percentile-o2os-585.rds")) # save solution
+
 # 5. Plot the spatial design
 s4_plot <- s4 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
@@ -110,24 +174,50 @@ ggsave(filename = "EM-Percentile-o2os-585.png",
        plot = ggSol4, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Climate velocity -----
+###############################
+###### CLIMATE VELOCITY #######
+###############################
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "velocity", colname = "transformed", metric_df = velocity_SSP585, PUs = PUs)
-# 2. Get list of features
-features <- aqua_percentile %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
+                                          percentile = 35,
+                                          metricDF = rename_metric(velocity_SSP585),
+                                          direction = -1 # lower values are more climate-smart
+)
+
+# 2. Set up features and targets
+features <- aqua_sf %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 30)
+targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
+                                     climateSmartDF = aqua_percentile,
+                                     targetsDF = target_df)
+
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, velocity_SSP585, UniformCost)
-p5 <- prioritizr::problem(out_sf, features, "cost") %>%
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                velocity_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+
+p5 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(30/35) %>% 
+  add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
+
 # 4. Solve the planning problem 
-s5 <- prioritizr::solve(p5)
-saveRDS(s5, paste0(output_solutions, "s5-EM-Percentile-velocity-585.rds")) # save solution
+s5 <- prioritizr::solve(p5) %>% 
+  dplyr::select(cellID, cost, transformed, everything())
+saveRDS(s5, paste0(solutions_dir, "s5-EM-Percentile-velocity-585.rds")) # save solution
+
 # 5. Plot the spatial design
 s5_plot <- s5 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
@@ -137,102 +227,171 @@ ggsave(filename = "EM-Percentile-velocity-585.png",
        plot = ggSol5, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Sum of the cumulative MHW intensity -----
+##############################################
+###### SUM OF CUMULATIVE MHW INTENSITY #######
+##############################################
 # 1. Prepare climate layer
-aqua_percentile <- create_PercentileLayer(aqua_sf = aqua_sf, metric_name = "MHW_SumCumInt", colname = "transformed", metric_df = MHW_SumCumInt_SSP585, PUs = PUs)
-# 2. Get list of features
-features <- aqua_percentile %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
+                                          percentile = 35,
+                                          metricDF = rename_metric(MHW_SSP585),
+                                          direction = -1 # lower values are more climate-smart
+)
+
+# 2. Set up features and targets
+features <- aqua_sf %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 30)
+targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
+                                     climateSmartDF = aqua_percentile,
+                                     targetsDF = target_df)
+
 # 3. Set up the spatial planning problem
-out_sf <- cbind(aqua_percentile, MHW_SumCumInt_SSP585, UniformCost)
-p290 <- prioritizr::problem(out_sf, features, "cost") %>%
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                MHW_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+p290 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(30/35) %>% 
+  add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
+
 # 4. Solve the planning problem 
-s290 <- prioritizr::solve(p290)
-saveRDS(s290, paste0(output_solutions, "s290-EM-Percentile-MHW_SumCumInt-585.rds")) # save solution
+s290 <- prioritizr::solve(p290) %>% 
+  dplyr::select(cellID, cost, transformed, everything())
+saveRDS(s290, paste0(solutions_dir, "s290-EM-Percentile-MHW-585.rds")) # save solution
+
 # 5. Plot the spatial design
 s290_plot <- s290 %>% 
   mutate(solution_1 = as.logical(solution_1)) 
 ggSol290 <- fSpatPlan_PlotSolution(s290_plot, PUs, land) + 
   ggtitle("Climate-smart design: Sum of Cumulative Intensity", subtitle = "Percentile, SSP 5-8.5")
-ggsave(filename = "EM-Percentile-MHW_SumCumInt-585.png",
+ggsave(filename = "EM-Percentile-MHW-585.png",
        plot = ggSol290, width = 21, height = 29.7, dpi = 300,
        path = "Figures/") # save plot
-#### Summary ####
-# Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
-out_sf <- cbind(aqua_sf, UniformCost)
+
+######################################
+###### COMBINED CLIMATE METRIC #######
+######################################
+# 1. Prepare climate layer
+aqua_percentile <- fPercentile_CSapproach(featuresDF = aqua_sf, 
+                                          percentile = 65,
+                                          metricDF = rename_metric(CombinedMetric_SSP585),
+                                          direction = 1 # higher values are more climate-smart
+)
+
+# 2. Set up features and targets
 features <- aqua_sf %>% 
-  as_tibble() %>% 
-  dplyr::select(-geometry) %>% 
+  tibble::as_tibble() %>% 
+  dplyr::select(-geometry, -cellID) %>% 
   names()
-dummy_problem <- prioritizr::problem(out_sf, features, "cost") %>%
+# Using fixed targets of 30
+target_df <- tibble::as_tibble(features) %>% 
+  dplyr::rename(feature = value) %>% 
+  dplyr::mutate(target = 30)
+targets <- fAssignTargets_Percentile(featuresDF = aqua_sf,
+                                     climateSmartDF = aqua_percentile,
+                                     targetsDF = target_df)
+
+# 3. Set up the spatial planning problem
+out_sf <- cbind(UniformCost,
+                aqua_percentile %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry), 
+                CombinedMetric_SSP585 %>% 
+                  tibble::as_tibble() %>% 
+                  dplyr::select(-cellID, -geometry)
+)
+p362 <- prioritizr::problem(out_sf, targets$feature, "cost") %>%
   add_min_set_objective() %>%
-  add_relative_targets(0.3) %>%
+  add_relative_targets(targets$target) %>% 
   add_binary_decisions() %>%
-  add_gurobi_solver(gap = 0, verbose = FALSE)
+  add_cbc_solver(gap = 0.1, verbose = FALSE)
 
-problem_list <- list(dummy_problem, dummy_problem, dummy_problem, dummy_problem, dummy_problem)
+# 4. Solve the planning problem 
+s362 <- prioritizr::solve(p362) %>% 
+  dplyr::select(cellID, cost, transformed, everything())
+saveRDS(s362, paste0(solutions_dir, "s362-EM-Percentile-CombinedMetric-585.rds")) # save solution
 
-solution_list <- list(s2, s3, s4, s5, s290)
-climateLayer_list <- list(roc_tos_SSP585, roc_phos_SSP585, roc_o2os_SSP585, velocity_SSP585, MHW_SumCumInt_SSP585)
-metric_list <- c("tos", "phos", "o2os", "velocity", "MHW_SumCumInt")
-# ----- Feature representation -----
-names <- c("EM_Percentile_tos_585", "EM_Percentile_phos_585", "EM_Percentile_o2os_585", "EM_Percentile_velocity_585", "EM_Percentile_MHW_SumCumInt_585")
+# 5. Plot the spatial design
+s362_plot <- s362 %>% 
+  mutate(solution_1 = as.logical(solution_1)) 
+ggSol362 <- fSpatPlan_PlotSolution(s362_plot, PUs, land) + 
+  ggtitle("Climate-smart design: Combined Metric", subtitle = "Percentile, SSP 5-8.5")
+ggsave(filename = "EM-Percentile-CombinedMetric-585.png",
+       plot = ggSol362, width = 21, height = 29.7, dpi = 300,
+       path = "Figures/") # save plot
+
+#####################################
+###### CALCULATE SUMMARIES #########
+#####################################
+
+dummy <- call_dummy() # Make a "dummy problem" where the features are the original distributions (and not the filtered distributions)
+problem_list <- list(dummy, dummy, dummy, dummy, dummy, dummy)
+solution_list <- list(s2, s3, s4, s5, s290, s362)
+climate_list <- list(tos_SSP585, phos_SSP585, o2os_SSP585, velocity_SSP585, MHW_SSP585, CombinedMetric_SSP585)
+
+# ----- FEATURE REPRESENTATION -----
+names <- c("EM_Percentile_tos_585", "EM_Percentile_phos_585", "EM_Percentile_o2os_585", "EM_Percentile_velocity_585", "EM_Percentile_MHW_585", "EM_Percentile_CombinedMetric_585")
+
 feat_rep <- tibble(feature = character()) # empty tibble
 for(i in 1:length(names)) {
-  df <- represent_feature(problem_list[[i]], solution_list[[i]], names[i])
-  feat_rep <- left_join(df, feat_rep, by = "feature")
+  df <- fFeatureRepresent(problem_list[[i]], solution_list[[i]], names[i])
+  feat_rep <- dplyr::left_join(df, feat_rep, by = "feature")
 }
-write.csv(feat_rep, paste0(output_summary, "MetricTheme_Percentile_FeatureRepresentation.csv")) # save
+utils::write.csv(feat_rep, paste0(summary_dir, "MetricTheme_FeatureRepresentation.csv")) # save
 
-# ----- Kernel distribution plots of targets -----
+# ----- KERNEL DENSITY PLOTS OF TARGETS -----
 x <- feat_rep %>% 
-  pivot_longer(!feature, names_to = "metric", values_to = "percent") %>% 
+  tidyr::pivot_longer(!feature, names_to = "metric", values_to = "percent") %>% 
   dplyr::mutate(row_number = row_number(feature))
 
-ggRidge <- ggplot(data = x) +
-  geom_density_ridges(aes(x = percent, y = metric, group = metric, fill = metric),
-                      scale = 2) +
-  scale_fill_manual(values = c(`EM_Percentile_tos_585` = "#289E3D",
-                               `EM_Percentile_phos_585` = "#E6C173",
-                               `EM_Percentile_o2os_585` = "#81B0CC",
-                               `EM_Percentile_velocity_585` = "#855600",
-                               `EM_Percentile_MHW_SumCumInt_585` = "#3C6342")) +
-  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
-  xlim(c(30, NA)) +
-  theme_classic()
-ggsave(filename = "TargetDist-MetricTheme-percentile.png",
+ggRidge <- fPlot_RidgeTargetMetric(x)
+ggsave(filename = "TargetRidge-MetricTheme.png",
        plot = ggRidge, width = 15, height = 10, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Summary statistics -----
+# ----- SUMMARY STATISTICS -----
 df <- tibble(run = character()) # empty tibble
 for(i in 1:length(names)) {
-  statistics <- compute_summary(solution_list[[i]], total_area, PU_size, names[i], Cost = "cost")
+  statistics <- fComputeSummary(solution_list[[i]], 
+                                total_area, 
+                                PU_size, 
+                                names[i])
   df <- rbind(statistics, df)
 }
 
 climate <- list() # empty list
 for (i in 1:length(names)) {
-  climate[[i]] <- get_ClimateSummary(solution_list, climateLayer_list[[i]], metric_list[i], col_scenario = "585", col_approach = "percentile", col_run = names, climateLayer = "single")
+  climate[[i]] <- fGetClimateSummary(solution_list, 
+                                     climate_list[[i]], 
+                                     metric_list[i], 
+                                     col_scenario = "585", 
+                                     col_approach = "percentile", 
+                                     col_run = names, 
+                                     climateLayer = "single"
+                                     )
 }
 climate <- plyr::join_all(climate, by=c("run", "scenario", "approach"), type='left')
 
-summary <- left_join(climate, df, by = "run")
+summary <- dplyr::left_join(climate, df, by = "run")
+utils::write.csv(summary, paste0(summary_dir, "MetricTheme_Summary.csv")) # save
 
-write.csv(summary, paste0(output_summary, "MetricTheme_Percentile_Summary.csv")) # save
-
-ggArea <- plot_statistics(summary, col_name = "percent_area", y_axis = "% area", theme = "metric") + theme(axis.text = element_text(size = 25))
-ggsave(filename = "Area-MetricTheme-Percentile-585.png",
+ggArea <- fPlot_StatisticsMetric(summary, col_name = "percent_area", y_axis = "% area")
+ggsave(filename = "Area-MetricTheme.png",
        plot = ggArea, width = 7, height = 5, dpi = 300,
        path = "Figures/") # save plot
 
-# ----- Get Kappa Correlation Matrix -----
+# ----- KAPPA CORRELATION MATRIX -----
 object_list <- list() # empty list
 for (i in 1:length(metric_list)) {
   obj <- select_solution(solution_list[[i]], metric_list[i])
@@ -240,64 +399,44 @@ for (i in 1:length(metric_list)) {
 }
 
 # Save corrplot
-file_path_test = "Figures/MetricTheme_Percentile_CorrelationMatrix.png"
+file_path_test = "Figures/CorrMatrix-MetricTheme.png"
 png(height=1200, width=1200, res = 200, file=file_path_test, type = "cairo")
 
-matrix <- create_corrmatrix(object_list) %>% 
-    plot_corrplot(., length(object_list))
+matrix <- fGetCorrMatrix(object_list) %>% 
+  fPlot_CorrPlot(., length(object_list))
 
 # Then
 dev.off()
 
-# ----- Create selection frequency plot -----
-sFreq <- create_LowRegretSf(solution_list, names, PUs)
-saveRDS(sFreq, paste0(output_lowregret, "sFreq3-EM-Percentile-585.rds")) # save low-regret solution
+# ----- SELECTION FREQUENCY PLOT -----
+sFreq <- fGetSelFrequency(solution_list, names, PUs)
+saveRDS(sFreq, paste0(lowregret_dir, "sFreq3-EM-Percentile-585.rds")) # save low-regret solution
 
-ggFreq <- plot_SelectionFrequency(sFreq, land) + 
+ggFreq <- fPlot_SelFrequency(sFreq, land) + 
   ggtitle("Metric Theme", subtitle = "Percentile (SSP 5-8.5)") +
-  inset_element(plot_inset(sFreq), 0.7, 0.7, 0.99, 0.99)
+  inset_element(plot_inset(sFreq), 
+                0.7, 0.7, 0.99, 0.99)
 
-ggsave(filename = "Freq-Metric-Percentile-Ensemble-585.png",
+ggsave(filename = "FreqPlot-MetricTheme.png",
         plot = ggFreq, width = 21, height = 29.7, dpi = 300,
         path = "Figures/") # save plot
 
-# ----- Features according to frequency selection -----
-PlanUnits <- PUs %>% 
-  dplyr::mutate(cellID = row_number())
-name <- c("selection_1", "selection_2", "selection_3", "selection_4", "selection_5")
-
-solution <- frequencyTargets(sFreq, name)
+# ----- KERNEL DENSITY PLOTS OF TARGETS ACCORDING TO SEL FREQUENCY -----
+name <- c("selection_1", "selection_2", "selection_3", "selection_4", "selection_5", "selection_6")
+solution <- frequency_targets(sFreq, name)
 
 feat_rep <- tibble(feature = character()) # empty tibble
 for(i in 1:length(name)) {
-  df <- represent_feature(dummy_problem, solution[[i]], name[i])
-  feat_rep <- left_join(df, feat_rep, by = "feature")
+  df <- fFeatureRepresent(dummy, solution[[i]], name[i])
+  feat_rep <- dplyr::left_join(df, feat_rep, by = "feature")
 }
 
 x <- feat_rep %>% 
-  pivot_longer(!feature, names_to = "selection", values_to = "percent") %>% 
+  tidyr::pivot_longer(!feature, names_to = "selection", values_to = "percent") %>% 
   dplyr::mutate(row_number = row_number(feature))
 
-ggRidge <- ggplot(data = x) +
-  geom_density_ridges(aes(x = percent, y = selection, group = selection, fill = selection),
-                      scale = 5) +
-  scale_fill_manual(values = c(selection_1 = "#d0d1e6",
-                               selection_2 = "#a6bddb",
-                               selection_3 = "#74a9cf",
-                               selection_4 = "#2b8cbe",
-                               selection_5 = "#045a8d")) +
-  geom_vline(xintercept=c(30), linetype="dashed", color = "red", size = 1) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_discrete(expand = expansion(mult = c(0.01, 0))) +
-  labs(x = "Protection (%)", y = "selection") +
-  theme_classic() +
-  theme(axis.ticks = element_line(color = "black", size = 1),
-        axis.line = element_line(colour = "black", size = 1),
-        axis.text.x = element_text(color = "black", size = 20),
-        axis.text.y = element_blank(),
-        axis.title.x = element_text(size = 20),
-        axis.title.y = element_blank())
+ggRidge <- fPlot_RidgeSelectionMetric(x)
 
-ggsave(filename = "Freq-Targets-MetricTheme-Percentile-tos.png",
+ggsave(filename = "FreqRidge-MetricTheme.png",
        plot = ggRidge, width = 12, height = 8, dpi = 300,
        path = "Figures/") # save plot
