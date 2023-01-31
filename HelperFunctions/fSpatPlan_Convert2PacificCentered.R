@@ -1,4 +1,4 @@
-# MAKING PACIFIC-CENTERED ROBINSON PROJECTION
+# MAKING PACIFIC-CENTERED PROJECTION
 
 # Description:
 # This function reprojects a Pacific-centered sf object from a lon-lat to a Robinson projection.
