@@ -1,17 +1,17 @@
-# Climate-smart spatial planning
+# Climate-smart conservation planning framework
 
-The layers required for spatial planning were prepared using repository from `MathMarEcol/SpatialPlanning`. This repository makes use of the Western Pacific as its template, but the main framework can be replicated for different planning regions, whether marine or terrestrial.
+This repository details the analysis done on the framework proposed by Buenafe et al. (2023) (). The case study uses the Western Pacific as its planning domain, but the framework can be used on different planning regions, whether marine or terrestrial.
 
-The layers were created in `02_SpatPlan_Master_WestPac.R` and loaded in the scripts from `04` onward using code from `03_SpatPlan_Master_Preliminaries.R`.
+Climate layers were created using scripts in `Data/Climatology/` and `01_SpatPlan_ClimateMetrics.R`. All other data layers were prepared in `02_SpatPlan_Master_WestPac.R`. Layers are loaded into scripts with the prefix `04` onwards using code from `03_SpatPlan_Master_Preliminaries.R`.
 
-We advise against recreating the output layers using code from `01-02` since the calculations are computationally expensive. Instead, it is recommended to start reproducing the script from `04` onward. The scripts are independent, allowing the user to run them in their preferred order.
+We advise against recreating the output layers for the Western Pacific using code from `01-02` since the calculations are computationally intensive. The [Zenodo repository](https://doi.org/10.5281/zenodo.7553307) of this project should contain the `.rds` files of the data layers for the Western Pacific. Instead, it is recommended to start reproducing the script from `04` onward. The scripts are independent, allowing the user to run them in their preferred order.
 
 For a spatial planning project, the following are required:
 1. Planning Region - Western Pacific
-2. Conservation Features - We used AquaMaps [AquaMaps](https://www.aquamaps.org/)
-3. Climate Layers - We created a multi-model ensemble across 3 climate scenarios for 3 marine variables. From there, we calculated layers of 4 climate metrics (see `01_SpatPlan_ClimateMetrics.R`)
-4. `prioritizr` to create the spatial planning problems [prioritizr](https://prioritizr.net/)
-5. A solver (e.g. CBC - COIN-OR branch and cut) to solve the spatial planning problems [CBC](https://dirkschumacher.github.io/rcbc/articles/rcbc.html)
+2. Conservation Features - We used AquaMaps ([AquaMaps](https://www.aquamaps.org/))
+3. Climate Layers - We created a multi-model ensemble across 3 climate scenarios for 3 marine variables. From there, we calculated layers of 5 climate metrics (see `01_SpatPlan_ClimateMetrics.R`)
+4. `prioritizr` to create the spatial planning problems ([prioritizr](https://prioritizr.net/))
+5. A solver (e.g. CBC - COIN-OR branch and cut) to solve the spatial planning problems ([CBC](https://dirkschumacher.github.io/rcbc/articles/rcbc.html))
 
 This code can be adapted for any planning domain and any metric/s that the user needs.
 
@@ -41,11 +41,11 @@ Using different climate metrics to create climate-smart spatial plans:
 
 __"Approach" theme__ (`07_SpatPlan_WestPac_Runs_ApproachTheme.R`)
 
-Exploring different ways to incorporate climate layers into spatial planning:
+Exploring different ways to incorporate climate layers into conservation planning:
 
-1. "Feature" approach: treats climate layers as features (the same way as biodiversity features)
-2. "Percentile" approach: retains only "climate-smart" areas of each of the biodiversity features
-3. "Climate priority area" approach: locks in the most "climate-smart" areas of each of the biodiversity features and still protects the rest of the features' distributions
+1. "Feature" approach: protects climate-smart areas across the domain, regardless of whether they have any biodiversity value or not
+2. "Percentile" approach: retains only climate-smart areas of each of the biodiversity features
+3. "Climate priority area" approach: affords greater protection to high-value climate-smart areas of each of the biodiversity features and still protects the rest of the features' distributions
 4. "Penalty" approach: treats climate layers as linear penalties (e.g. penalizing selection of areas of high climate warming)
 
 ## Other runs
