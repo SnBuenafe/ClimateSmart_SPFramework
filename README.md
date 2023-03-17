@@ -81,6 +81,33 @@ To run the shiny app,
 3. Open `run_app.R`.
 4. Run the script.
 
+## Session Info
+
+R version 4.2.2 was used. We used macOS and Linux Mint to write the framework.
+
+Packages:
+
+1. prioritizr_7.1.1
+2. terra_1.6-7
+3. sf_1.0-9 
+4. stars_0.5-6
+5. tidyverse_1.3.2
+6. VoCC_1.0.0
+7. irr_0.84.1
+8. rnaturalearth_0.1.0
+9. purrr_0.3.4
+10. proj4_1.0-11
+11. RColorBrewer_1.1-3 
+12. corrplot_0.92
+13. irr_0.84.1
+14. doParallel_1.0.17
+15. ggridges_0.5.4 
+16. magrittr_2.0.3
+17. patchwork_1.1.1
+18. BiocManager_1.30.18
+19. raster_3.5-29 
+20. ggplot2_3.4.1
+
 
 # Questions? Feedback?
 
